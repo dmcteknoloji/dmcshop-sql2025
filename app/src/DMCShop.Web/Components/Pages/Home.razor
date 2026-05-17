@@ -115,7 +115,7 @@
 <section class="dmc-section">
     <div class="dmc-section-head">
         <span class="dmc-section-title">Demo veri tabanı</span>
-        <span class="dmc-section-meta">@loadedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</span>
+        <span class="dmc-section-meta">@loadedAtTr.ToString("yyyy-MM-dd HH:mm") TR · @loadedAt.ToString("HH:mm") UTC</span>
     </div>
     <div class="dmc-grid dmc-grid-4">
         <div class="dmc-stat"><div class="dmc-stat-label">Ürün</div>             <div class="dmc-stat-value">@productCount.ToString("N0")</div></div>
@@ -136,10 +136,22 @@
     private int productCount, customerCount, orderCount, orderLineCount,
                 categoryCount, deviceCount, queryLogCount, embeddedCount;
     private DateTime loadedAt;
+    private DateTime loadedAtTr;
+
+    private static readonly TimeZoneInfo TrTimeZone =
+        TryGetTr() ?? TimeZoneInfo.CreateCustomTimeZone("TR", TimeSpan.FromHours(3), "TR", "TR");
+
+    private static TimeZoneInfo? TryGetTr()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"); } catch { }
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"); } catch { }
+        return null;
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        loadedAt = DateTime.UtcNow;
+        loadedAt   = DateTime.UtcNow;
+        loadedAtTr = TimeZoneInfo.ConvertTimeFromUtc(loadedAt, TrTimeZone);
 
         // Sequential — DbContext thread-safe değil
         productCount   = await Db.Products.AsNoTracking().CountAsync();
