@@ -11,8 +11,8 @@
     <p class="dmc-hero-lead">
         DMCShop, SQL Server 2025'in yerleşik <strong style="color:var(--text);">VECTOR + DiskANN</strong>
         ve <strong style="color:var(--text);">GRAPH MATCH</strong> özelliklerinin üretim
-        senaryolarındaki karşılığını gösteren açık kaynak referans uygulamadır. 120 ürünlük gerçekçi
-        bir katalog üzerinde anlamsal arama ve ürün önerisi uçtan uca çalışır.
+        senaryolarındaki karşılığını gösteren açık kaynak referans uygulamadır. Gerçekçi bir e-ticaret
+        kataloğu üzerinde anlamsal arama, ürün önerisi ve fraud tespiti uçtan uca çalışır.
     </p>
 
     <div class="dmc-hero-cta">
@@ -33,7 +33,7 @@
     <section class="dmc-section">
         <div class="dmc-section-head">
             <span class="dmc-section-title">Öne çıkan ürünler</span>
-            <a href="katalog" class="dmc-card-link" style="font-size: var(--fz-sm);">Tüm katalog (120) →</a>
+            <a href="katalog" class="dmc-card-link" style="font-size: var(--fz-sm);">Tüm katalog (@productCount.ToString("N0")) →</a>
         </div>
         <div class="dmc-grid dmc-grid-cat">
             @foreach (var p in featured)
@@ -115,22 +115,45 @@
 <section class="dmc-section">
     <div class="dmc-section-head">
         <span class="dmc-section-title">Demo veri tabanı</span>
-        <span class="dmc-section-meta">deterministik seed</span>
+        <span class="dmc-section-meta">@loadedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</span>
     </div>
     <div class="dmc-grid dmc-grid-4">
-        <div class="dmc-stat"><div class="dmc-stat-label">Ürün</div><div class="dmc-stat-value">120</div></div>
-        <div class="dmc-stat"><div class="dmc-stat-label">Müşteri</div><div class="dmc-stat-value">50</div></div>
-        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş</div><div class="dmc-stat-value">400</div></div>
-        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş satırı</div><div class="dmc-stat-value">1.200</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Ürün</div>             <div class="dmc-stat-value">@productCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Müşteri</div>          <div class="dmc-stat-value">@customerCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş</div>          <div class="dmc-stat-value">@orderCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş satırı</div>   <div class="dmc-stat-value">@orderLineCount.ToString("N0")</div></div>
+    </div>
+    <div class="dmc-grid dmc-grid-4" style="margin-top: 1rem;">
+        <div class="dmc-stat"><div class="dmc-stat-label">Kategori</div>         <div class="dmc-stat-value">@categoryCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Vector'lü ürün</div>   <div class="dmc-stat-value">@embeddedCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Cihaz</div>            <div class="dmc-stat-value">@deviceCount.ToString("N0")</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">RAG çağrısı</div>      <div class="dmc-stat-value">@queryLogCount.ToString("N0")</div></div>
     </div>
 </section>
 
 @code {
     private IReadOnlyList<FeaturedView>? featured;
+    private int productCount, customerCount, orderCount, orderLineCount,
+                categoryCount, deviceCount, queryLogCount, embeddedCount;
+    private DateTime loadedAt;
 
     protected override async Task OnInitializedAsync()
     {
-        // Her kategoriden 1 showcase ürün — sabit ID'ler, deterministik seed
+        loadedAt = DateTime.UtcNow;
+
+        // Sequential — DbContext thread-safe değil
+        productCount   = await Db.Products.AsNoTracking().CountAsync();
+        customerCount  = await Db.Customers.AsNoTracking().CountAsync();
+        orderCount     = await Db.Orders.AsNoTracking().CountAsync();
+        orderLineCount = await Db.OrderLines.AsNoTracking().CountAsync();
+        categoryCount  = await Db.ProductCategories.AsNoTracking().CountAsync();
+        deviceCount    = await Db.Devices.AsNoTracking().CountAsync();
+        queryLogCount  = await Db.QueryLogs.AsNoTracking().CountAsync();
+
+        embeddedCount = await Db.Database
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM vector.product_embedding WHERE embedding_ollama_768 IS NOT NULL OR embedding_openai_1536 IS NOT NULL")
+            .FirstAsync();
+
         var ids = new[] { 1021, 1041, 1061, 1083, 1101, 1003 };
         var products = await Db.Products
             .Include(p => p.Category)

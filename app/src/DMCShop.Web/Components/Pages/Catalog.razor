@@ -9,27 +9,29 @@
 
 <section class="dmc-hero" style="padding-bottom: 1rem;">
     <div class="dmc-hero-eyebrow">Katalog</div>
-    <h1>120 ürün, 6 kategori</h1>
+    <h1>@totalCount.ToString("N0") ürün, @categories.Count kategori</h1>
     <p class="dmc-hero-lead">
-        Demo veri tabanındaki tüm ürünler. Kategoriye göre filtreleyin veya fiyata göre sıralayın.
-        Tıklayarak ürün detayına ve "Bunu alanlar bunu da aldı" graph önerilerine ulaşabilirsiniz.
+        Demo veri tabanındaki tüm ürünler. Kategoriye göre filtreleyin, ada veya fiyata göre
+        sıralayın. Tıklayarak ürün detayına ve "Bunu alanlar bunu da aldı" graph önerilerine ulaşın.
     </p>
 </section>
 
 <div class="dmc-catalog">
     <aside class="dmc-filter">
         <div class="dmc-filter-title">Kategori</div>
-        <div class="dmc-filter-list">
+        <input class="dmc-search-input" style="height: 36px; padding: 0.45rem 0.7rem; font-size: 0.86rem; margin-bottom: 0.6rem;"
+               @bind="categorySearch" @bind:event="oninput" placeholder="Kategori ara…" />
+        <div class="dmc-filter-list" style="max-height: 60vh; overflow-y: auto;">
             <button class="dmc-filter-item @(activeCat is null ? "active" : "")" @onclick="() => SetCategory(null)">
                 <span>Tümü</span>
-                <span class="dmc-filter-count">@totalCount</span>
+                <span class="dmc-filter-count">@totalCount.ToString("N0")</span>
             </button>
-            @foreach (var c in categories)
+            @foreach (var c in FilteredCategories)
             {
                 <button class="dmc-filter-item @(activeCat == c.CategoryId ? "active" : "")"
                         @onclick="() => SetCategory(c.CategoryId)">
                     <span>@c.Name</span>
-                    <span class="dmc-filter-count">@c.Count</span>
+                    <span class="dmc-filter-count">@c.Count.ToString("N0")</span>
                 </button>
             }
         </div>
@@ -38,15 +40,18 @@
     <div>
         <div class="dmc-toolbar">
             <div class="dmc-toolbar-count">
-                <strong style="color:var(--text);">@filteredProducts.Count</strong> ürün
+                <strong style="color:var(--text);">@filteredCount.ToString("N0")</strong>
+                <span> ürün</span>
                 @if (activeCatName is not null)
                 {
                     <span> · @activeCatName</span>
                 }
+                <span> · sayfa @page0 / @totalPages</span>
             </div>
             <div class="dmc-toolbar-sort">
-                <span style="font-size:0.82rem; color:var(--text-muted);">Sırala:</span>
-                <select class="dmc-select" @bind="sortKey" @bind:after="ApplySort">
+                <input class="dmc-search-input" style="height: 38px; padding: 0.5rem 0.85rem; min-width: 220px;"
+                       @bind="productSearch" @bind:event="oninput" @bind:after="ResetPage" placeholder="Ürün ara…" />
+                <select class="dmc-select" @bind="sortKey" @bind:after="ResetPage">
                     <option value="name">Ada göre (A–Z)</option>
                     <option value="price-asc">Fiyat (artan)</option>
                     <option value="price-desc">Fiyat (azalan)</option>
@@ -54,19 +59,23 @@
             </div>
         </div>
 
-        @if (filteredProducts.Count == 0)
+        @if (busy)
         {
-            <div class="dmc-empty">Bu kategoride ürün bulunamadı.</div>
+            <div class="dmc-loading">Yükleniyor…</div>
+        }
+        else if (pageItems.Count == 0)
+        {
+            <div class="dmc-empty">Bu kategoride / aramada ürün bulunamadı.</div>
         }
         else
         {
             <div class="dmc-grid dmc-grid-cat">
-                @foreach (var p in filteredProducts)
+                @foreach (var p in pageItems)
                 {
                     <a href="urun/@p.ProductId" class="dmc-pcard">
-                        <ProductImage ProductId="p.ProductId" Name="p.Name" CategoryName="p.Category?.Name" Sku="p.Sku" Variant="card" />
+                        <ProductImage ProductId="p.ProductId" Name="p.Name" CategoryName="p.CategoryName" Sku="p.Sku" Variant="card" />
                         <div class="dmc-pcard-body">
-                            <div class="dmc-pcard-cat">@p.Category?.Name</div>
+                            <div class="dmc-pcard-cat">@p.CategoryName</div>
                             <h3 class="dmc-pcard-name">@p.Name</h3>
                             <div class="dmc-pcard-price">@p.Price.ToString("N2") ₺</div>
                             <div class="dmc-pcard-foot">
@@ -77,62 +86,136 @@
                     </a>
                 }
             </div>
+
+            <div class="dmc-pager">
+                <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(1)"           disabled="@(page0 <= 1)">«</button>
+                <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(page0 - 1)"   disabled="@(page0 <= 1)">‹ Önceki</button>
+                <span class="dmc-pager-info">@page0 / @totalPages</span>
+                <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(page0 + 1)"   disabled="@(page0 >= totalPages)">Sonraki ›</button>
+                <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(totalPages)"  disabled="@(page0 >= totalPages)">»</button>
+            </div>
         }
     </div>
 </div>
 
+<style>
+    .dmc-pager {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding: 1rem 0;
+    }
+    .dmc-pager .dmc-btn { height: 38px; padding: 0 0.85rem; font-size: 0.88rem; }
+    .dmc-pager-info {
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+        padding: 0 0.85rem;
+        font-variant-numeric: tabular-nums;
+    }
+</style>
+
 @code {
-    private List<Product> allProducts = new();
-    private List<Product> filteredProducts = new();
-    private List<CategoryView> categories = new();
+    private const int PageSize = 48;
+
+    private bool busy;
     private int totalCount;
+    private int filteredCount;
+    private int page0 = 1;
+    private int totalPages = 1;
 
     private int? activeCat;
     private string? activeCatName;
-    private string sortKey = "name";
+    private string sortKey         = "name";
+    private string categorySearch  = string.Empty;
+    private string productSearch   = string.Empty;
+
+    private List<CategoryView> categories = new();
+    private List<ProductView>  pageItems  = new();
+
+    private IEnumerable<CategoryView> FilteredCategories =>
+        string.IsNullOrWhiteSpace(categorySearch)
+            ? categories
+            : categories.Where(c => c.Name.Contains(categorySearch.Trim(), StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
-        allProducts = await Db.Products
-            .Include(p => p.Category)
-            .AsNoTracking()
-            .ToListAsync();
+        totalCount = await Db.Products.AsNoTracking().CountAsync();
 
-        totalCount = allProducts.Count;
+        // Kategori sayımları
+        categories = await (
+            from p in Db.Products.AsNoTracking()
+            join c in Db.ProductCategories.AsNoTracking() on p.CategoryId equals c.CategoryId
+            group p by new { c.CategoryId, c.Name } into g
+            orderby g.Key.Name
+            select new CategoryView(g.Key.CategoryId, g.Key.Name, g.Count())
+        ).ToListAsync();
 
-        categories = allProducts
-            .Where(p => p.Category is not null)
-            .GroupBy(p => new { p.CategoryId, Name = p.Category!.Name })
-            .Select(g => new CategoryView(g.Key.CategoryId, g.Key.Name, g.Count()))
-            .OrderBy(c => c.Name)
-            .ToList();
-
-        ApplyFilters();
+        await LoadPageAsync();
     }
 
-    private void SetCategory(int? id)
+    private async Task LoadPageAsync()
+    {
+        busy = true;
+        try
+        {
+            IQueryable<Product> q = Db.Products.AsNoTracking().Include(p => p.Category);
+
+            if (activeCat is { } cid) q = q.Where(p => p.CategoryId == cid);
+
+            if (!string.IsNullOrWhiteSpace(productSearch))
+            {
+                var needle = productSearch.Trim();
+                q = q.Where(p => p.Name.Contains(needle) || p.Sku.Contains(needle));
+            }
+
+            filteredCount = await q.CountAsync();
+            totalPages    = Math.Max(1, (int)Math.Ceiling(filteredCount / (double)PageSize));
+            if (page0 > totalPages) page0 = totalPages;
+
+            q = sortKey switch
+            {
+                "price-asc"  => q.OrderBy(p => p.Price),
+                "price-desc" => q.OrderByDescending(p => p.Price),
+                _            => q.OrderBy(p => p.Name)
+            };
+
+            var products = await q
+                .Skip((page0 - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
+
+            pageItems = products
+                .Select(p => new ProductView(p.ProductId, p.Sku, p.Name, p.Category?.Name ?? "", p.Price))
+                .ToList();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task SetCategory(int? id)
     {
         activeCat     = id;
         activeCatName = id is null ? null : categories.FirstOrDefault(c => c.CategoryId == id)?.Name;
-        ApplyFilters();
+        page0         = 1;
+        await LoadPageAsync();
     }
 
-    private void ApplySort() => ApplyFilters();
-
-    private void ApplyFilters()
+    private async Task ResetPage()
     {
-        IEnumerable<Product> q = allProducts;
-        if (activeCat is { } cid) q = q.Where(p => p.CategoryId == cid);
+        page0 = 1;
+        await LoadPageAsync();
+    }
 
-        q = sortKey switch
-        {
-            "price-asc"  => q.OrderBy(p => p.Price),
-            "price-desc" => q.OrderByDescending(p => p.Price),
-            _            => q.OrderBy(p => p.Name)
-        };
-
-        filteredProducts = q.ToList();
+    private async Task GotoPage(int p)
+    {
+        page0 = Math.Max(1, Math.Min(totalPages, p));
+        await LoadPageAsync();
     }
 
     private record CategoryView(int CategoryId, string Name, int Count);
+    private record ProductView(int ProductId, string Sku, string Name, string CategoryName, decimal Price);
 }

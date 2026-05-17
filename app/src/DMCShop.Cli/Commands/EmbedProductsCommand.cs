@@ -20,17 +20,57 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         var provider = scope.ServiceProvider.GetRequiredService<IEmbeddingProvider>();
 
         var batchSize = ParseBatchSize(args);
+        var (rangeStart, rangeEnd) = ParseRange(args);
+        var onlyMissing = args.Contains("--only-missing");
 
-        var rows = await db.ProductEmbeddings
-            .AsNoTracking()
+        IQueryable<DMCShop.Domain.Entities.ProductEmbedding> q = db.ProductEmbeddings.AsNoTracking();
+        if (rangeStart is { } s) q = q.Where(e => e.ProductId >= s);
+        if (rangeEnd   is { } e2) q = q.Where(e => e.ProductId <= e2);
+
+        // onlyMissing — bu provider için embedding henüz yazılmamış kayıtlar.
+        // RAW SQL ile (kolon entity'de map'siz olduğu için)
+        if (onlyMissing)
+        {
+            var col = provider.Name == "openai" ? "embedding_openai_1536" : "embedding_ollama_768";
+            var sql = $"""
+                SELECT product_id AS ProductId, source_text AS SourceText
+                FROM   vector.product_embedding
+                WHERE  {col} IS NULL
+                  AND  product_id >= @s AND product_id <= @e
+                ORDER BY product_id
+                """;
+            var missing = await db.Database.SqlQueryRaw<MissingRow>(sql,
+                new Microsoft.Data.SqlClient.SqlParameter("@s", rangeStart ?? 0),
+                new Microsoft.Data.SqlClient.SqlParameter("@e", rangeEnd   ?? int.MaxValue))
+                .ToListAsync();
+            var rowsM = missing.Select(m => new { m.ProductId, m.SourceText }).ToList();
+            await RunBatchAsync(rowsM, batchSize, provider, db, log);
+            return 0;
+        }
+
+        var rows = await q
             .Select(e => new { e.ProductId, e.SourceText })
             .OrderBy(e => e.ProductId)
             .ToListAsync();
 
         if (rows.Count == 0)
         {
-            log.LogWarning("vector.product_embedding boş. Önce sql/07-seed-vector.sql çalıştırılmalı.");
+            log.LogWarning("vector.product_embedding boş veya filtreyle hiç ürün eşleşmedi.");
             return 4;
+        }
+
+        await RunBatchAsync(rows.Select(r => new { r.ProductId, r.SourceText }).ToList(), batchSize, provider, db, log);
+        return 0;
+    }
+
+    private async Task RunBatchAsync<T>(
+        List<T> rows, int batchSize,
+        IEmbeddingProvider provider, DMCShopDbContext db, ILogger log)
+    {
+        if (rows.Count == 0)
+        {
+            log.LogWarning("Eşleşen ürün yok.");
+            return;
         }
 
         log.LogInformation("Embedding üretimi başlıyor — {Count} ürün, provider={Provider}/{Model}, batch={Batch}",
@@ -42,14 +82,15 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         for (var offset = 0; offset < rows.Count; offset += batchSize)
         {
             var slice = rows.Skip(offset).Take(batchSize).ToList();
-            var texts = slice.Select(r => r.SourceText).ToList();
+            var texts = slice.Select(r => (string)r!.GetType().GetProperty("SourceText")!.GetValue(r)!).ToList();
+            var ids   = slice.Select(r => (int)r!.GetType().GetProperty("ProductId")!.GetValue(r)!).ToList();
 
             var vectors = await provider.EmbedBatchAsync(texts);
 
             for (var i = 0; i < slice.Count; i++)
             {
                 var literal = ToVectorLiteral(vectors[i]);
-                await UpdateEmbeddingAsync(db, provider, slice[i].ProductId, literal);
+                await UpdateEmbeddingAsync(db, provider, ids[i], literal);
                 written++;
             }
 
@@ -58,11 +99,25 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
 
         sw.Stop();
         log.LogInformation("Tamam — {Written} satır {Elapsed:N0} ms'de yazıldı (ortalama {Avg:N0} ms/ürün)",
-            written, sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / (double)written);
+            written, sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / (double)Math.Max(1, written));
 
         log.LogInformation("DiskANN index'i (yeniden) oluşturuluyor…");
         await RecreateVectorIndexAsync(db, provider, log);
-        return 0;
+    }
+
+    private sealed record MissingRow(int ProductId, string SourceText);
+
+    private static (int? start, int? end) ParseRange(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] != "--range") continue;
+            var parts = args[i + 1].Split('-');
+            int? s = parts.Length > 0 && int.TryParse(parts[0], out var ps) ? ps : null;
+            int? e = parts.Length > 1 && int.TryParse(parts[1], out var pe) ? pe : null;
+            return (s, e);
+        }
+        return (null, null);
     }
 
     private static async Task RecreateVectorIndexAsync(DMCShopDbContext db, IEmbeddingProvider provider, ILogger log)

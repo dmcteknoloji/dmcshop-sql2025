@@ -16,10 +16,40 @@
     </p>
 </section>
 
-<div style="display:flex; justify-content:flex-end; margin-bottom: 1rem;">
-    <button class="dmc-btn dmc-btn-dark" @onclick="LoadAsync" disabled="@busy">
-        @(busy ? "Taranıyor…" : "Yeniden tara")
-    </button>
+<div class="dmc-toolbar">
+    <div class="dmc-toolbar-count">
+        @if (rings is not null)
+        {
+            <strong style="color:var(--text);">@filteredRings.Count</strong>
+            <span> / @rings.Count ring</span>
+            @if (highCount > 0)
+            {
+                <span class="dmc-badge dmc-badge-high" style="margin-left: 0.8rem;">@highCount HIGH</span>
+            }
+            @if (mediumCount > 0)
+            {
+                <span class="dmc-badge dmc-badge-medium" style="margin-left: 0.4rem;">@mediumCount MEDIUM</span>
+            }
+        }
+    </div>
+    <div class="dmc-toolbar-sort">
+        <input class="dmc-search-input" style="height: 38px; padding: 0.5rem 0.85rem; min-width: 260px;"
+               @bind="search" @bind:event="oninput" placeholder="Müşteri veya pattern ara…" />
+        <select class="dmc-select" @bind="riskFilter">
+            <option value="all">Tüm riskler</option>
+            <option value="HIGH">Sadece HIGH</option>
+            <option value="MEDIUM">Sadece MEDIUM</option>
+        </select>
+        <select class="dmc-select" @bind="patternFilter">
+            <option value="all">Tüm patternler</option>
+            <option value="shared_device">Paylaşılan cihaz</option>
+            <option value="shared_ip">Paylaşılan IP</option>
+            <option value="shared_card">Paylaşılan kart</option>
+        </select>
+        <button class="dmc-btn dmc-btn-ghost" style="height: 38px; padding: 0 0.85rem;" @onclick="LoadAsync" disabled="@busy">
+            @(busy ? "Taranıyor…" : "Yenile")
+        </button>
+    </div>
 </div>
 
 @if (error is not null)
@@ -27,28 +57,33 @@
     <div class="dmc-alert dmc-alert-error">@error</div>
 }
 
-@if (rings is null && !busy)
-{
-    <div class="dmc-loading">"Yeniden tara" düğmesine basın.</div>
-}
-else if (busy)
+@if (busy && rings is null)
 {
     <div class="dmc-loading">Fraud ringleri taranıyor…</div>
 }
-else if (rings is { Count: 0 })
+else if (filteredRings.Count == 0)
 {
-    <div class="dmc-empty">Şu anda risk taşıyan herhangi bir ring tespit edilemedi.</div>
-}
-else if (rings is not null)
-{
-    <div class="dmc-grid" style="gap: 1rem;">
-        @foreach (var r in rings)
+    <div class="dmc-empty">
+        @if (rings is { Count: 0 })
         {
-            <div class="dmc-card dmc-fraud-row">
+            <span>Şu anda risk taşıyan herhangi bir ring tespit edilemedi.</span>
+        }
+        else
+        {
+            <span>Filtre ile eşleşen ring yok.</span>
+        }
+    </div>
+}
+else
+{
+    <div class="dmc-grid" style="gap: 0.85rem;">
+        @foreach (var r in filteredRings)
+        {
+            <div class="dmc-card">
                 <div class="dmc-fraud-head">
-                    <div>
+                    <div style="display:flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
                         <span class="dmc-badge @RiskBadge(r.RiskLevel)">@r.RiskLevel risk</span>
-                        <span class="dmc-badge dmc-badge-soft" style="margin-left: 0.4rem;">@PatternLabel(r.Pattern)</span>
+                        <span class="dmc-badge dmc-badge-soft">@PatternLabel(r.Pattern)</span>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-size: 1.8rem; font-weight: 700; line-height:1; font-variant-numeric: tabular-nums;">@r.CustomerCount</div>
@@ -63,7 +98,10 @@ else if (rings is not null)
                     <div style="display:flex; flex-wrap: wrap; gap: 0.35rem;">
                         @foreach (var name in r.CustomerList.Split(", ", StringSplitOptions.RemoveEmptyEntries))
                         {
-                            <span class="dmc-badge dmc-badge-soft">@name</span>
+                            <span class="dmc-badge dmc-badge-soft"
+                                  style="@(MatchesSearch(name) ? "background: var(--accent-soft); border-color: var(--accent); color: var(--accent);" : null)">
+                                @name
+                            </span>
                         }
                     </div>
                 </div>
@@ -96,6 +134,37 @@ else if (rings is not null)
     private List<FraudRing>? rings;
     private bool busy;
     private string? error;
+
+    private string search        = string.Empty;
+    private string riskFilter    = "all";
+    private string patternFilter = "all";
+
+    private int highCount   => rings?.Count(r => r.RiskLevel == "HIGH")   ?? 0;
+    private int mediumCount => rings?.Count(r => r.RiskLevel == "MEDIUM") ?? 0;
+
+    private IReadOnlyList<FraudRing> filteredRings
+    {
+        get
+        {
+            if (rings is null) return Array.Empty<FraudRing>();
+            IEnumerable<FraudRing> q = rings;
+            if (riskFilter    != "all") q = q.Where(r => r.RiskLevel == riskFilter);
+            if (patternFilter != "all") q = q.Where(r => r.Pattern   == patternFilter);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var needle = search.Trim();
+                q = q.Where(r =>
+                    r.CustomerList.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
+                    r.Evidence.Contains(needle,     StringComparison.OrdinalIgnoreCase) ||
+                    r.Pattern.Contains(needle,      StringComparison.OrdinalIgnoreCase));
+            }
+            return q.ToList();
+        }
+    }
+
+    private bool MatchesSearch(string name) =>
+        !string.IsNullOrWhiteSpace(search) &&
+        name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
