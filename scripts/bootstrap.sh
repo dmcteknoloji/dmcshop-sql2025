@@ -45,7 +45,10 @@ for script in \
     "01-schema-shop.sql" \
     "02-schema-graph.sql" \
     "03-schema-vector.sql" \
-    "04-schema-ops.sql"
+    "04-schema-ops.sql" \
+    "05-seed-shop.sql" \
+    "06-seed-graph.sql" \
+    "07-seed-vector.sql"
 do
     path="${SQL_DIR}/${script}"
     if [[ ! -f "${path}" ]]; then
@@ -67,4 +70,8 @@ WHERE TABLE_TYPE = 'BASE TABLE'
 GROUP BY TABLE_SCHEMA
 ORDER BY schema_name;"
 
-echo "> Bootstrap tamam. Sonraki adım: dotnet run --project app/src/DMCShop.Web"
+echo "> Bootstrap tamam."
+echo ""
+echo "Sonraki adımlar:"
+echo "  1) Embedding üret:  dotnet run --project app/src/DMCShop.Cli -- embed-products"
+echo "  2) Uygulamayı aç:   dotnet run --project app/src/DMCShop.Web"

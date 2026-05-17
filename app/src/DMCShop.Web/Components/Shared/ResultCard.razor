@@ -1,0 +1,26 @@
+@using DMCShop.Domain.Dtos
+
+<div class="card mb-2">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between">
+            <a href="urun/@Hit.ProductId" class="text-decoration-none">
+                <strong>@Hit.Name</strong>
+            </a>
+            <span class="text-muted small">@Hit.Sku</span>
+        </div>
+        <div class="text-muted small">@Hit.CategoryName · @Hit.Price.ToString("N2") ₺</div>
+        @if (!string.IsNullOrWhiteSpace(Hit.Preview))
+        {
+            <div class="small mt-1">@Hit.Preview</div>
+        }
+        @if (ShowDistance)
+        {
+            <div class="small text-muted mt-1">cosine distance: @Hit.Distance.ToString("F4")</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ProductHit Hit { get; set; } = default!;
+    [Parameter] public bool ShowDistance { get; set; }
+}

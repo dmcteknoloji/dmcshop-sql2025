@@ -1,0 +1,87 @@
+@page "/urun/{ProductId:int}"
+@rendermode InteractiveServer
+@using DMCShop.Data
+@using DMCShop.Domain.Dtos
+@using DMCShop.Domain.Entities
+@using DMCShop.Search
+@using Microsoft.EntityFrameworkCore
+@inject DMCShopDbContext Db
+@inject GraphRecommendService Recommend
+
+<PageTitle>Ürün @ProductId</PageTitle>
+
+@if (product is null)
+{
+    <p>Yükleniyor…</p>
+}
+else
+{
+    <h1>@product.Name</h1>
+    <p class="text-muted">
+        SKU <code>@product.Sku</code> · @category · @product.Price.ToString("N2") ₺
+    </p>
+    <p>@product.DescriptionTr</p>
+
+    <hr class="my-4" />
+
+    <h3>Bunu alanlar bunu da aldı</h3>
+    <p class="text-muted small">
+        Graph 2-hop: bu ürünü alan müşterilerin birlikte aldığı ürünler.
+    </p>
+
+    @if (recommendations is null)
+    {
+        <p>Hesaplanıyor…</p>
+    }
+    else if (recommendations.Count == 0)
+    {
+        <p class="text-muted">Bu ürün için co-purchase önerisi yok.</p>
+    }
+    else
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Ürün</th>
+                    <th>Kategori</th>
+                    <th class="text-end">Fiyat</th>
+                    <th class="text-end">Birlikte alım</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in recommendations)
+                {
+                    <tr>
+                        <td><a href="urun/@r.RecommendedProductId">@r.RecommendedName</a></td>
+                        <td>@r.CategoryName</td>
+                        <td class="text-end">@r.Price.ToString("N2") ₺</td>
+                        <td class="text-end"><strong>@r.CoBuyerCount</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter] public int ProductId { get; set; }
+
+    private Product? product;
+    private string? category;
+    private IReadOnlyList<CoPurchaseRow>? recommendations;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        product = await Db.Products
+            .Include(p => p.Category)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ProductId == ProductId);
+
+        category = product?.Category?.Name;
+
+        if (product is not null)
+        {
+            recommendations = await Recommend.CoPurchaseAsync(ProductId, topK: 10);
+        }
+    }
+}

@@ -1,0 +1,103 @@
+@page "/search"
+@rendermode InteractiveServer
+@using DMCShop.Domain.Abstractions
+@using DMCShop.Domain.Dtos
+@using DMCShop.Search
+@inject VectorSearchService SearchSvc
+@inject IEmbeddingProvider Provider
+
+<PageTitle>Semantik Arama</PageTitle>
+
+<h1>Semantik Arama</h1>
+
+<p class="text-muted">
+    Aktif provider: <code>@Provider.Name</code> / <code>@Provider.ModelName</code> (@Provider.Dimensions dim)
+</p>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-9">
+        <input @bind="query" @bind:event="oninput" @onkeyup="HandleKey"
+               class="form-control" placeholder="Örn: rahat ergonomik klavye, kahve çekirdeği, kış için sıcak kazak" />
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100" @onclick="RunAsync" disabled="@busy">
+            @(busy ? "Aranıyor…" : "Ara")
+        </button>
+    </div>
+</div>
+
+@if (error is not null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (vectorHits is not null || likeHits is not null)
+{
+    <div class="row g-3 mt-3">
+        <div class="col-md-6">
+            <h4>Vector Search</h4>
+            @if (vectorHits is null || vectorHits.Count == 0)
+            {
+                <p class="text-muted">Sonuç yok.</p>
+            }
+            else
+            {
+                @foreach (var h in vectorHits)
+                {
+                    <ResultCard Hit="h" ShowDistance="true" />
+                }
+            }
+        </div>
+        <div class="col-md-6">
+            <h4>LIKE</h4>
+            @if (likeHits is null || likeHits.Count == 0)
+            {
+                <p class="text-muted">Sonuç yok — lexical eşleşme bulunamadı.</p>
+            }
+            else
+            {
+                @foreach (var h in likeHits)
+                {
+                    <ResultCard Hit="h" ShowDistance="false" />
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string query = "rahat ergonomik klavye";
+    private bool busy;
+    private string? error;
+    private IReadOnlyList<ProductHit>? vectorHits;
+    private IReadOnlyList<ProductHit>? likeHits;
+
+    private async Task RunAsync()
+    {
+        if (string.IsNullOrWhiteSpace(query)) return;
+
+        busy  = true;
+        error = null;
+        try
+        {
+            var vectorTask = SearchSvc.SearchAsync(query, topK: 5);
+            var likeTask   = SearchSvc.LikeSearchAsync(query, topK: 5);
+            await Task.WhenAll(vectorTask, likeTask);
+            vectorHits = await vectorTask;
+            likeHits   = await likeTask;
+        }
+        catch (Exception ex)
+        {
+            error = $"Hata: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await RunAsync();
+    }
+}

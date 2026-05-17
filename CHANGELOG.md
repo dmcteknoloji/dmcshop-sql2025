@@ -4,6 +4,17 @@ Bu projenin tüm önemli değişiklikleri burada izlenir. Format [Keep a Changel
 
 ## [Unreleased]
 
+### Eklendi (Milestone 2 — semantic search + co-purchase)
+- Seed verisi: 120 ürün, 50 müşteri, 80 device, 400 sipariş, 4 fraud ring tasarımı (sql/05-07)
+- T-SQL senaryolar: 20-vector-search.sql ve 23-graph-co-purchase.sql (AI_GENERATE_EMBEDDINGS + DiskANN + MATCH 2-hop)
+- DMCShop.Domain: 9 entity, IEmbeddingProvider/IChatProvider, ProductHit/CoPurchaseRow DTO'ları
+- DMCShop.Data: DbContext + 9 IEntityTypeConfiguration; vector kolonları raw SQL ile yönetilir
+- DMCShop.Providers: OpenAIEmbeddingProvider/Chat ve OllamaEmbeddingProvider/Chat; switchable DI
+- DMCShop.Search: VectorSearchService (VECTOR_SEARCH + DiskANN) ve GraphRecommendService (co-purchase 2-hop)
+- DMCShop.Web: /search (vector + LIKE yan yana) ve /urun/{id} (co-purchase önerileri) Blazor sayfaları
+- DMCShop.Cli: dmcshop health ve dmcshop embed-products komutları
+- bootstrap.sh seed dosyalarını da çalıştırır
+
 ### Eklendi (Milestone 1 — skeleton)
 - Repo iskeleti: README, LICENSE (MIT), .gitignore, .editorconfig, global.json
 - Directory.Build.props ve Directory.Packages.props (CPM)

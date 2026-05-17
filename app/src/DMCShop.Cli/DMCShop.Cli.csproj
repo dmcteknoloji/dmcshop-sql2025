@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
@@ -19,6 +20,12 @@
     <ProjectReference Include="..\DMCShop.Domain\DMCShop.Domain.csproj" />
     <ProjectReference Include="..\DMCShop.Data\DMCShop.Data.csproj" />
     <ProjectReference Include="..\DMCShop.Providers\DMCShop.Providers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json"       CopyToOutputDirectory="PreserveNewest" />
+    <None Update="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest"
+                                          Condition="Exists('appsettings.Local.json')" />
   </ItemGroup>
 
 </Project>

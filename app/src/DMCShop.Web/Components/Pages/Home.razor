@@ -1,7 +1,46 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>DMCShop</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>DMCShop</h1>
 
-Welcome to your new app.
+<p class="lead">
+    SQL Server 2025 graph + vector demo. Klasik bir e-ticaret iskeleti üzerinde
+    <code>VECTOR_SEARCH + DiskANN</code> ve <code>GRAPH MATCH</code> özelliklerini canlandırır.
+</p>
+
+<div class="row g-3 mt-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Semantik Arama</h5>
+                <p class="card-text">
+                    "rahat klavye" gibi anlam tabanlı sorgularda LIKE'ın bulamadığı ürünleri
+                    vector search ile bulun. DiskANN approximate kNN.
+                </p>
+                <a href="search" class="btn btn-primary">Aç</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Bunu Alanlar Bunu Da Aldı</h5>
+                <p class="card-text">
+                    2-hop graph traversal: bir ürünü alan müşterilerin birlikte aldığı diğer ürünler.
+                </p>
+                <a href="urun/1041" class="btn btn-primary">Aç (Etiyopya Kahve)</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h2>Sonraki adımlar</h2>
+<ol>
+    <li><code>docker compose -f scripts/docker-compose.yml up -d</code> — SQL Server 2025 ve Ollama.</li>
+    <li><code>./scripts/bootstrap.sh</code> — schema ve seed verisi.</li>
+    <li><code>dotnet run --project app/src/DMCShop.Cli -- embed-products</code> — ürün embedding'lerini üret.</li>
+    <li><code>dotnet run --project app/src/DMCShop.Web</code> — bu sayfa.</li>
+</ol>
