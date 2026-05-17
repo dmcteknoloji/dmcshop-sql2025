@@ -37,10 +37,11 @@ write_files:
       [Service]
       Type=simple
       User=dmcshop
-      WorkingDirectory=/home/dmcshop/dmcshop-sql2025/app/src/DMCShop.Web
+      WorkingDirectory=/home/dmcshop/dmcshop-publish
       Environment=ASPNETCORE_ENVIRONMENT=Production
       Environment=ASPNETCORE_URLS=http://0.0.0.0:80
-      ExecStart=/usr/bin/dotnet run --no-launch-profile
+      Environment=DOTNET_ROOT=/usr/lib/dotnet
+      ExecStart=/usr/bin/dotnet DMCShop.Web.dll
       Restart=on-failure
       RestartSec=10
       AmbientCapabilities=CAP_NET_BIND_SERVICE

@@ -13,26 +13,27 @@
     <div class="dmc-hero-eyebrow">Senaryo 1</div>
     <h1>Anlam tabanlı ürün araması</h1>
     <p class="dmc-hero-lead">
-        VECTOR_SEARCH + DiskANN, sorgu metnini yerleştirim uzayına projekte eder ve cosine mesafesine göre
-        en yakın ürünleri döner. Aynı sorgu klasik <code>LIKE</code> ile çoğunlukla sıfır sonuç üretir.
+        VECTOR_SEARCH + DiskANN, sorgu metnini yerleştirim uzayına projekte eder ve cosine mesafesine
+        göre en yakın ürünleri döner. Aynı sorgu klasik <code>LIKE</code> ile çoğunlukla sıfır sonuç
+        üretir.
     </p>
     <div class="dmc-stack-row">
-        <span class="dmc-badge">Provider: <strong style="color:var(--dmc-text); margin-left:0.25rem;">@Provider.Name</strong></span>
+        <span class="dmc-badge dmc-badge-accent">Provider: @Provider.Name</span>
         <span class="dmc-badge">@Provider.ModelName</span>
         <span class="dmc-badge">@Provider.Dimensions dim</span>
     </div>
 </section>
 
-<div style="display:flex; gap:0.6rem; margin-bottom: 1rem;">
+<div class="dmc-search-row">
     <input @bind="query" @bind:event="oninput" @onkeydown="HandleKey"
-           class="dmc-search-input" placeholder="Bir ürün arayın — anlamsal..." />
+           class="dmc-search-input" placeholder="Bir ürün arayın — anlamsal olarak…" />
     <button class="dmc-btn dmc-btn-primary" @onclick="RunAsync" disabled="@busy">
         @(busy ? "Aranıyor…" : "Ara")
     </button>
 </div>
 
-<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:2.5rem;">
-    <span style="color:var(--dmc-text-muted); font-size:0.82rem; padding:0.42rem 0.25rem;">Örnek:</span>
+<div class="dmc-chip-row">
+    <span class="dmc-chip-label">Örnek</span>
     @foreach (var sample in samples)
     {
         <button class="dmc-chip" @onclick="() => SelectAndRun(sample)">@sample</button>
@@ -48,9 +49,9 @@
 {
     <div class="dmc-grid dmc-grid-2">
         <div>
-            <div class="dmc-panel-head">
+            <div class="dmc-section-head">
                 <span class="dmc-panel-title">Vector · DiskANN approximate kNN</span>
-                <span class="dmc-panel-meta">@vectorLatencyMs ms · top @(vectorHits?.Count ?? 0)</span>
+                <span class="dmc-section-meta">@vectorLatencyMs ms · top @(vectorHits?.Count ?? 0)</span>
             </div>
             <div class="dmc-result-list">
                 @if (vectorHits is null || vectorHits.Count == 0)
@@ -62,16 +63,17 @@
                     @foreach (var h in vectorHits)
                     {
                         <a href="urun/@h.ProductId" class="dmc-hit">
-                            <div>
+                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="thumb" />
+                            <div class="dmc-hit-meta">
                                 <div class="dmc-hit-name">@h.Name</div>
-                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺ · @h.Sku</div>
+                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺</div>
                                 @if (!string.IsNullOrWhiteSpace(h.Preview))
                                 {
                                     <div class="dmc-hit-preview">@h.Preview</div>
                                 }
                             </div>
-                            <div>
-                                <div class="dmc-hit-distance">@h.Distance.ToString("F4")</div>
+                            <div class="dmc-hit-score">
+                                <div class="dmc-hit-score-value">@h.Distance.ToString("F4")</div>
                                 <div class="dmc-hit-bar">
                                     <div class="dmc-hit-bar-fill" style="width: @(SimilarityPct(h.Distance))%;"></div>
                                 </div>
@@ -83,9 +85,9 @@
         </div>
 
         <div>
-            <div class="dmc-panel-head">
+            <div class="dmc-section-head">
                 <span class="dmc-panel-title">LIKE · lexical eşleşme</span>
-                <span class="dmc-panel-meta">@likeLatencyMs ms · top @(likeHits?.Count ?? 0)</span>
+                <span class="dmc-section-meta">@likeLatencyMs ms · top @(likeHits?.Count ?? 0)</span>
             </div>
             <div class="dmc-result-list">
                 @if (likeHits is null || likeHits.Count == 0)
@@ -97,15 +99,16 @@
                     @foreach (var h in likeHits)
                     {
                         <a href="urun/@h.ProductId" class="dmc-hit">
-                            <div>
+                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="thumb" />
+                            <div class="dmc-hit-meta">
                                 <div class="dmc-hit-name">@h.Name</div>
-                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺ · @h.Sku</div>
+                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺</div>
                                 @if (!string.IsNullOrWhiteSpace(h.Preview))
                                 {
                                     <div class="dmc-hit-preview">@h.Preview</div>
                                 }
                             </div>
-                            <div></div>
+                            <div class="dmc-hit-score"></div>
                         </a>
                     }
                 }
@@ -130,7 +133,7 @@
         "kış için sıcak yün kazak",
         "ofis için ergonomik mouse",
         "tek elime sığacak okuma cihazı",
-        "doğal el yapımı el dokuma"
+        "doğal el dokuma"
     };
 
     private async Task RunAsync()
@@ -176,10 +179,6 @@
         if (e.Key == "Enter") await RunAsync();
     }
 
-    private static int SimilarityPct(double distance)
-    {
-        // cosine distance ~ [0, 2]; benzerlik = (1 - d/2) * 100 ve [0, 100] aralığına sıkıştırılır
-        var sim = Math.Max(0, Math.Min(100, (int)((1.0 - distance / 2.0) * 100)));
-        return sim;
-    }
+    private static int SimilarityPct(double distance) =>
+        Math.Max(0, Math.Min(100, (int)((1.0 - distance / 2.0) * 100)));
 }

@@ -120,13 +120,13 @@ docker exec dmcshop-ollama ollama pull nomic-embed-text
 echo "  -> bootstrap (schema + seed)"
 ./scripts/bootstrap.sh
 
-echo "  -> dotnet restore + build (cold start uzun)"
+echo "  -> dotnet restore + publish (cold start uzun)"
 cd app
 dotnet restore
-dotnet build -c Release --no-restore
+dotnet publish src/DMCShop.Web -c Release -o /home/dmcshop/dmcshop-publish --nologo
 
 echo "  -> embed-products"
-dotnet run -c Release --no-build --project src/DMCShop.Cli -- embed-products
+dotnet run -c Release --project src/DMCShop.Cli -- embed-products
 
 echo "  -> systemd service"
 sudo systemctl daemon-reload

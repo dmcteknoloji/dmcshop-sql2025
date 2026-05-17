@@ -5,16 +5,11 @@
 <div class="dmc-shell">
 
     <header class="dmc-header">
-        <div class="dmc-brand">
-            <a href="/" style="display:flex; align-items:center; gap:0.75rem; border:none;">
-                <img src="brand/dmc-logo.png" alt="DMC" />
-            </a>
-            <div class="dmc-brand-divider"></div>
-            <div>
-                <div class="dmc-brand-title">DMCShop</div>
-                <div class="dmc-brand-sub">SQL Server 2025 — Vector & Graph referans uygulaması</div>
-            </div>
-        </div>
+        <a href="/" class="dmc-brand" style="text-decoration:none; color:inherit;">
+            <span class="dmc-brand-logo"><img src="brand/dmc-logo.png" alt="DMC" /></span>
+            <span class="dmc-brand-divider"></span>
+            <span class="dmc-brand-title">DMCShop</span>
+        </a>
 
         <nav class="dmc-nav">
             <NavLink href="" Match="NavLinkMatch.All">Genel bakış</NavLink>
@@ -31,10 +26,9 @@
     <footer class="dmc-footer">
         <div class="dmc-footer-inner">
             <div>
-                <strong style="color: var(--dmc-text);">DMC Bilgi Teknolojileri</strong>
-                <span style="margin-left: 0.5rem;">— SQL Server 2025 referans uygulaması</span>
+                <strong>DMC Bilgi Teknolojileri</strong> — SQL Server 2025 referans uygulaması
             </div>
-            <div style="display:flex; gap:1.25rem; align-items:center;">
+            <div class="dmc-footer-stack">
                 <span class="dmc-badge">SQL Server 2025 RTM-CU4</span>
                 <span class="dmc-badge">.NET 10</span>
                 <span class="dmc-badge">EF Core 10</span>

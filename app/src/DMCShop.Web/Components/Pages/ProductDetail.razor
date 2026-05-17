@@ -17,32 +17,42 @@
 else
 {
     <section class="dmc-product-hero">
-        <div>
-            <div class="dmc-hero-eyebrow">@categoryName</div>
-            <h1>@product.Name</h1>
+        <ProductImage ProductId="product.ProductId"
+                      Name="product.Name"
+                      CategoryName="categoryName"
+                      Sku="product.Sku"
+                      Variant="hero" />
+
+        <div class="dmc-product-info">
+            <span class="dmc-badge">@categoryName</span>
+            <h1 class="dmc-product-name">@product.Name</h1>
+
+            <div class="dmc-product-meta-row">
+                <span>SKU <code>@product.Sku</code></span>
+                <span>·</span>
+                <span>Ürün #@product.ProductId</span>
+            </div>
+
             <p class="dmc-product-desc">@product.DescriptionTr</p>
+
             @if (!string.IsNullOrWhiteSpace(product.DescriptionEn))
             {
-                <details style="margin-top:1.25rem;">
-                    <summary style="cursor:pointer; color:var(--dmc-text-muted); font-size:0.88rem;">İngilizce açıklama</summary>
-                    <p class="dmc-product-desc" style="font-style:italic;">@product.DescriptionEn</p>
+                <details>
+                    <summary style="cursor:pointer; color:var(--text-muted); font-size:0.86rem; margin-top:1.25rem; user-select:none;">
+                        English description
+                    </summary>
+                    <p class="dmc-product-desc-en">@product.DescriptionEn</p>
                 </details>
             }
+
+            <div class="dmc-product-price">@product.Price.ToString("N2") ₺</div>
         </div>
-        <aside>
-            <div class="dmc-card" style="position:sticky; top:96px;">
-                <div class="dmc-card-body">Fiyat</div>
-                <div class="dmc-product-price">@product.Price.ToString("N2") ₺</div>
-                <div class="dmc-product-meta">SKU <code>@product.Sku</code></div>
-                <div class="dmc-product-meta">Ürün No <code>#@product.ProductId</code></div>
-            </div>
-        </aside>
     </section>
 
-    <section>
-        <div class="dmc-panel-head">
-            <span class="dmc-panel-title">Bunu alanlar bunu da aldı</span>
-            <span class="dmc-panel-meta">graph MATCH · 2-hop</span>
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-section-title">Bunu alanlar bunu da aldı</span>
+            <span class="dmc-section-meta">graph MATCH · 2-hop</span>
         </div>
 
         @if (recommendations is null)
@@ -58,12 +68,16 @@ else
             <div class="dmc-grid dmc-grid-3">
                 @foreach (var r in recommendations)
                 {
-                    <a href="urun/@r.RecommendedProductId" class="dmc-card" style="border:none;">
-                        <span class="dmc-badge">@r.CategoryName</span>
+                    <a href="urun/@r.RecommendedProductId" class="dmc-card">
+                        <ProductImage ProductId="r.RecommendedProductId"
+                                      Name="r.RecommendedName"
+                                      CategoryName="r.CategoryName"
+                                      Variant="card" />
+                        <span class="dmc-badge" style="margin-top: 0.75rem; align-self: flex-start;">@r.CategoryName</span>
                         <h3 class="dmc-card-title">@r.RecommendedName</h3>
                         <div class="dmc-card-body">@r.Price.ToString("N2") ₺</div>
                         <div class="dmc-card-footer">
-                            <span class="dmc-badge dmc-badge-accent">@r.CoBuyerCount müşteri</span>
+                            <span class="dmc-badge dmc-badge-accent">@r.CoBuyerCount müşteri birlikte aldı</span>
                             <span class="dmc-card-link">İncele →</span>
                         </div>
                     </a>

@@ -6,86 +6,104 @@
     <div class="dmc-hero-eyebrow">DMC Bilgi Teknolojileri</div>
     <h1>SQL Server 2025'in vektör ve graf gücü, tek bir e-ticaret üzerinde.</h1>
     <p class="dmc-hero-lead">
-        DMCShop, SQL Server 2025'in yerleşik <strong>VECTOR(N) + DiskANN</strong> ve <strong>GRAPH NODE/EDGE</strong>
-        özelliklerinin üretim senaryolarındaki karşılığını gösteren açık kaynak bir referans uygulamadır.
-        120 ürünlük gerçekçi bir katalogda anlamsal arama, ürün önerisi ve ileri ilişki analizleri uçtan uca
-        çalışır.
+        DMCShop, SQL Server 2025'in yerleşik <strong style="color:var(--text);">VECTOR(N) + DiskANN</strong>
+        ve <strong style="color:var(--text);">GRAPH NODE/EDGE</strong> özelliklerinin üretim
+        senaryolarındaki karşılığını gösteren açık kaynak bir referans uygulamadır. 120 ürünlük bir
+        katalogda anlamsal arama, ürün önerisi ve ileri ilişki analizleri uçtan uca çalışır.
     </p>
 
     <div class="dmc-stack-row">
         <span class="dmc-badge dmc-badge-accent">SQL Server 2025 RTM-CU4</span>
         <span class="dmc-badge">.NET 10 · Blazor Server</span>
-        <span class="dmc-badge">EF Core 10 + raw VECTOR_SEARCH</span>
-        <span class="dmc-badge">Ollama nomic-embed-text · 768 dim</span>
+        <span class="dmc-badge">EF Core 10</span>
+        <span class="dmc-badge">Ollama · nomic-embed-text · 768 dim</span>
     </div>
 </section>
 
-<div class="dmc-panel-head">
-    <span class="dmc-panel-title">Demo senaryoları</span>
-    <span class="dmc-panel-meta">2 aktif · 2 yakında</span>
-</div>
-
-<div class="dmc-grid dmc-grid-2">
-
-    <a href="search" class="dmc-card" style="border:none;">
-        <h3 class="dmc-card-title">Semantik ürün arama</h3>
-        <p class="dmc-card-body">
-            VECTOR_SEARCH + DiskANN ile yaklaşık kNN. "rahat ergonomik klavye" gibi anlam tabanlı sorgularda
-            LIKE'ın boş döndürdüğü durumlarda doğru ürünleri yakalar. Sonuçlar cosine distance'a göre.
-        </p>
-        <div class="dmc-card-footer">
-            <span class="dmc-badge dmc-badge-positive">Aktif</span>
-            <span class="dmc-card-link">Aç →</span>
-        </div>
-    </a>
-
-    <a href="urun/1041" class="dmc-card" style="border:none;">
-        <h3 class="dmc-card-title">Bunu alanlar bunu da aldı</h3>
-        <p class="dmc-card-body">
-            Graph MATCH ile 2-hop ürün-müşteri-ürün geçişi: p1 ← (purchased) - customer - (purchased) → p2.
-            Co-purchase önerileri tek bir SQL sorgusu ile, ek bir öneri motoru kurmadan.
-        </p>
-        <div class="dmc-card-footer">
-            <span class="dmc-badge dmc-badge-positive">Aktif</span>
-            <span class="dmc-card-link">Aç →</span>
-        </div>
-    </a>
-
-    <div class="dmc-card">
-        <h3 class="dmc-card-title">RAG tabanlı ürün asistanı</h3>
-        <p class="dmc-card-body">
-            Vector retrieval + chat completion. Sohbet ekranından sorulan soruya en uygun ürünleri çekip
-            doğal dilde özet yanıt üretir. Tüm çağrılar <code>vector.query_log</code>'a yazılır.
-        </p>
-        <div class="dmc-card-footer">
-            <span class="dmc-badge">Milestone 3</span>
-            <span class="dmc-card-link" style="color: var(--dmc-text-dim);">Yakında</span>
-        </div>
+<section class="dmc-section">
+    <div class="dmc-section-head">
+        <span class="dmc-section-title">Demo senaryoları</span>
+        <span class="dmc-section-meta">2 aktif · 2 yakında</span>
     </div>
 
-    <div class="dmc-card">
-        <h3 class="dmc-card-title">Fraud ring tespiti</h3>
-        <p class="dmc-card-body">
-            SHORTEST_PATH ile aynı cihaz / IP / ödeme aracını paylaşan müşteri kümelerini tespit eder.
-            Tek SQL sorgusunda kanıt zincirini metin olarak döner.
-        </p>
-        <div class="dmc-card-footer">
-            <span class="dmc-badge">Milestone 3</span>
-            <span class="dmc-card-link" style="color: var(--dmc-text-dim);">Yakında</span>
+    <div class="dmc-grid dmc-grid-2">
+
+        <a href="search" class="dmc-card">
+            <span class="dmc-badge">Senaryo 1</span>
+            <h3 class="dmc-card-title">Semantik ürün arama</h3>
+            <p class="dmc-card-body">
+                VECTOR_SEARCH + DiskANN ile yaklaşık kNN. "rahat ergonomik klavye" gibi anlam tabanlı
+                sorgularda klasik LIKE'ın boş döndürdüğü durumlarda doğru ürünleri yakalar.
+            </p>
+            <div class="dmc-card-footer">
+                <span class="dmc-badge dmc-badge-positive">Aktif</span>
+                <span class="dmc-card-link">İncele →</span>
+            </div>
+        </a>
+
+        <a href="urun/1041" class="dmc-card">
+            <span class="dmc-badge">Senaryo 4</span>
+            <h3 class="dmc-card-title">Bunu alanlar bunu da aldı</h3>
+            <p class="dmc-card-body">
+                Graph MATCH ile 2-hop ürün-müşteri-ürün geçişi. Co-purchase önerileri tek bir SQL
+                sorgusu ile, ek bir öneri motoru kurmadan.
+            </p>
+            <div class="dmc-card-footer">
+                <span class="dmc-badge dmc-badge-positive">Aktif</span>
+                <span class="dmc-card-link">İncele →</span>
+            </div>
+        </a>
+
+        <div class="dmc-card dmc-card-disabled">
+            <span class="dmc-badge">Senaryo 2</span>
+            <h3 class="dmc-card-title">RAG tabanlı ürün asistanı</h3>
+            <p class="dmc-card-body">
+                Vector retrieval + chat completion. Sohbet ekranından sorulan soruya en uygun ürünleri
+                çekip doğal dilde özet yanıt üretir. Tüm çağrılar <code>vector.query_log</code>'a yazılır.
+            </p>
+            <div class="dmc-card-footer">
+                <span class="dmc-badge">Milestone 3</span>
+                <span class="dmc-card-link">Yakında</span>
+            </div>
         </div>
+
+        <div class="dmc-card dmc-card-disabled">
+            <span class="dmc-badge">Senaryo 3</span>
+            <h3 class="dmc-card-title">Fraud ring tespiti</h3>
+            <p class="dmc-card-body">
+                SHORTEST_PATH ile aynı cihaz, IP veya ödeme aracını paylaşan müşteri kümelerini tespit
+                eder. Tek SQL sorgusunda kanıt zincirini metin olarak döner.
+            </p>
+            <div class="dmc-card-footer">
+                <span class="dmc-badge">Milestone 3</span>
+                <span class="dmc-card-link">Yakında</span>
+            </div>
+        </div>
+
     </div>
+</section>
 
-</div>
-
-<div style="margin-top: 3.5rem;">
-    <div class="dmc-panel-head">
-        <span class="dmc-panel-title">Demo veri tabanı</span>
-        <span class="dmc-panel-meta">deterministik seed</span>
+<section class="dmc-section">
+    <div class="dmc-section-head">
+        <span class="dmc-section-title">Demo veri tabanı</span>
+        <span class="dmc-section-meta">deterministik seed</span>
     </div>
     <div class="dmc-grid dmc-grid-4">
-        <div class="dmc-card"><div class="dmc-card-body">Ürün</div><div style="font-size:1.8rem; font-weight:600;">120</div></div>
-        <div class="dmc-card"><div class="dmc-card-body">Müşteri</div><div style="font-size:1.8rem; font-weight:600;">50</div></div>
-        <div class="dmc-card"><div class="dmc-card-body">Sipariş</div><div style="font-size:1.8rem; font-weight:600;">400</div></div>
-        <div class="dmc-card"><div class="dmc-card-body">Sipariş satırı</div><div style="font-size:1.8rem; font-weight:600;">1.200</div></div>
+        <div class="dmc-stat">
+            <div class="dmc-stat-label">Ürün</div>
+            <div class="dmc-stat-value">120</div>
+        </div>
+        <div class="dmc-stat">
+            <div class="dmc-stat-label">Müşteri</div>
+            <div class="dmc-stat-value">50</div>
+        </div>
+        <div class="dmc-stat">
+            <div class="dmc-stat-label">Sipariş</div>
+            <div class="dmc-stat-value">400</div>
+        </div>
+        <div class="dmc-stat">
+            <div class="dmc-stat-label">Sipariş satırı</div>
+            <div class="dmc-stat-value">1.200</div>
+        </div>
     </div>
-</div>
+</section>

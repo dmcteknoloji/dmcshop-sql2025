@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================================
 # infra/sync.sh
-# Mevcut Azure VM'sine sadece kod değişikliklerini gönderir; bootstrap'ı
-# çalıştırmaz, sadece dotnet build + systemctl restart yapar. İdempotent.
+# Mevcut Azure VM'sine kod değişikliklerini gönderir, Release publish yapar,
+# systemd servisini restart eder. İdempotent.
 # ============================================================================
 
 set -euo pipefail
@@ -25,7 +25,16 @@ rsync -azh --delete \
     -e "ssh ${SSH_OPTS[*]}" \
     "${REPO_ROOT}/" "${USER}@${FQDN}:/home/${USER}/dmcshop-sql2025/"
 
-echo "==> rebuild + restart"
-ssh "${SSH_OPTS[@]}" "${USER}@${FQDN}" 'cd ~/dmcshop-sql2025/app && dotnet build -c Release && sudo systemctl restart dmcshop-web.service'
+echo "==> publish + restart"
+ssh "${SSH_OPTS[@]}" "${USER}@${FQDN}" 'bash -se' <<'REMOTE'
+set -euo pipefail
+cd ~/dmcshop-sql2025/app
+
+dotnet publish src/DMCShop.Web -c Release -o /home/dmcshop/dmcshop-publish --nologo 2>&1 | tail -5
+
+sudo systemctl restart dmcshop-web
+sleep 4
+sudo systemctl status dmcshop-web --no-pager | head -6
+REMOTE
 
 echo "==> tamam → http://${FQDN}"

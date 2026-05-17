@@ -1,0 +1,52 @@
+@*
+    ProductImage — kategori renk paletine göre gradient + ürün adından üretilen
+    monogram placeholder. Gerçek ürün görseli olmadığı için tutarlı bir görsel
+    dil sağlar. Variant'a göre boyut: hero (4:3 büyük), thumb (kare küçük),
+    card (16:9 orta).
+*@
+
+<div class="dmc-pimg dmc-pimg-@Variant" style="@($"background: {Gradient};")"
+     role="img" aria-label="@Name">
+    <span class="dmc-pimg-mono" style="@($"color: {Accent};")">@Monogram</span>
+    @if (Variant != "thumb")
+    {
+        <span class="dmc-pimg-watermark">@SkuOrId</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public int    ProductId    { get; set; }
+    [Parameter, EditorRequired] public string Name         { get; set; } = string.Empty;
+    [Parameter] public string? CategoryName { get; set; }
+    [Parameter] public string? Sku          { get; set; }
+
+    /// <summary>"hero" (4:3), "card" (16:9), "thumb" (1:1)</summary>
+    [Parameter] public string Variant { get; set; } = "card";
+
+    private string Monogram => BuildMonogram(Name);
+    private string SkuOrId  => Sku ?? $"#{ProductId}";
+
+    private (string from, string to, string accent) Palette =>
+        CategoryName switch
+        {
+            "Kitap"      => ("#2E2418", "#3D3322", "#E0B96C"),
+            "Elektronik" => ("#0F1F3A", "#152B52", "#6FA8FF"),
+            "Gıda"       => ("#2A1810", "#3E2419", "#E89B5C"),
+            "Giyim"      => ("#241830", "#332547", "#B89AFF"),
+            "Ev"         => ("#0F2820", "#15392E", "#6FE0B4"),
+            "Hobi"       => ("#2E1620", "#42202E", "#F08CA8"),
+            _            => ("#1A1F26", "#252B33", "#9BA7B4")
+        };
+
+    private string Gradient => $"linear-gradient(135deg, {Palette.from} 0%, {Palette.to} 100%)";
+    private string Accent   => Palette.accent;
+
+    private static string BuildMonogram(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "—";
+        var words = name.Split(new[] { ' ', '-', '/' }, StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 0) return "—";
+        if (words.Length == 1) return words[0].Length >= 2 ? words[0][..2].ToUpper() : words[0][..1].ToUpper();
+        return $"{char.ToUpper(words[0][0])}{char.ToUpper(words[1][0])}";
+    }
+}
