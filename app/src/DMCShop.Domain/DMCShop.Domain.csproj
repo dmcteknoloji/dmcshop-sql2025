@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DMCShop.Domain</RootNamespace>
+    <AssemblyName>DMCShop.Domain</AssemblyName>
+  </PropertyGroup>
+
+</Project>

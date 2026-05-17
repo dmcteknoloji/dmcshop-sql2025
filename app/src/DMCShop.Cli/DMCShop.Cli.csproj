@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DMCShop.Cli</RootNamespace>
+    <AssemblyName>dmcshop</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DMCShop.Domain\DMCShop.Domain.csproj" />
+    <ProjectReference Include="..\DMCShop.Data\DMCShop.Data.csproj" />
+    <ProjectReference Include="..\DMCShop.Providers\DMCShop.Providers.csproj" />
+  </ItemGroup>
+
+</Project>

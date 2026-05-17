@@ -1,0 +1,36 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+*.pdb
+
+# IDE
+.idea/
+.vscode/launch.json
+*.swp
+*~
+
+# Local config / secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+.env
+.env.local
+*.pfx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / cache
+seed-data/embeddings/.cache/
+*.dacpac.local.json
+node_modules/
+
+# Test output
+TestResults/
+*.trx
+coverage.cobertura.xml

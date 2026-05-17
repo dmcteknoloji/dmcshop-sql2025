@@ -1,0 +1,47 @@
+name: dmcshop
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: dmcshop-mssql
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "${DMCSHOP_SA_PASSWORD:-dmcShop_2026!Demo}"
+      MSSQL_COLLATION: "Turkish_100_CI_AS_SC_UTF8"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -C -S localhost
+          -U sa -P "$$MSSQL_SA_PASSWORD"
+          -Q "SELECT 1" -b -t 5
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: dmcshop-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          ollama list >/dev/null 2>&1 || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+
+volumes:
+  mssql-data:
+  ollama-models:

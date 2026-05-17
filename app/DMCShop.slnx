@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DMCShop.Api/DMCShop.Api.csproj" />
+    <Project Path="src/DMCShop.Cli/DMCShop.Cli.csproj" />
+    <Project Path="src/DMCShop.Data/DMCShop.Data.csproj" />
+    <Project Path="src/DMCShop.Domain/DMCShop.Domain.csproj" />
+    <Project Path="src/DMCShop.Providers/DMCShop.Providers.csproj" />
+    <Project Path="src/DMCShop.Search/DMCShop.Search.csproj" />
+    <Project Path="src/DMCShop.Web/DMCShop.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DMCShop.Tests.Integration/DMCShop.Tests.Integration.csproj" />
+    <Project Path="tests/DMCShop.Tests.Unit/DMCShop.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
