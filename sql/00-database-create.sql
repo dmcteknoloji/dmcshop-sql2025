@@ -30,6 +30,11 @@ GO
 USE dmcshop;
 GO
 
+-- VECTOR tipi, DiskANN ve AI_GENERATE_EMBEDDINGS RTM'de PREVIEW bayrağı altında.
+-- Veritabanı seviyesinde scoped configuration ile aç.
+ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;
+GO
+
 -- ----------------------------------------------------------------------------
 -- Schema'lar
 --   shop   : transactional veri (müşteri, ürün, sipariş, cihaz, ödeme)

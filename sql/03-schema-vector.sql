@@ -27,21 +27,15 @@ CREATE TABLE vector.product_embedding (
 GO
 
 -- ----------------------------------------------------------------------------
--- DiskANN vector index'leri
--- Not: SQL Server 2025 RTM'de yalnızca METRIC / TYPE / MAXDOP parametreleri var.
--- MAX_NEIGHBORS_PER_VERTEX, ALPHA gibi tuning parametreleri public yüzeyde yok.
--- Minimum 100 satır gerekir; seed (07-seed-vector.sql) bunu garantiler.
+-- DiskANN vector index'leri burada YARATILMAZ. SQL Server 2025 RTM'de:
+--   "Data modification statement failed because table has a vector index on it"
+-- Bu yüzden index sırası şöyle:
+--   1) Bu tablo oluşur (boş)
+--   2) sql/07-seed-vector.sql source_text doldurur (embedding NULL)
+--   3) `dmcshop embed-products` CLI komutu embedding kolonlarını doldurur
+--   4) Aynı komut son adımda CREATE VECTOR INDEX çağırır
+-- Workshop akışı bu sıraya göredir; bkz. scripts/bootstrap.sh + README.
 -- ----------------------------------------------------------------------------
-
-CREATE VECTOR INDEX vix_pe_openai
-ON vector.product_embedding (embedding_openai_1536)
-WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
-GO
-
-CREATE VECTOR INDEX vix_pe_ollama
-ON vector.product_embedding (embedding_ollama_768)
-WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
-GO
 
 -- ----------------------------------------------------------------------------
 -- query_log — RAG ve semantic search çağrılarının audit'i

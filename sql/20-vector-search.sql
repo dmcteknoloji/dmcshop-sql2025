@@ -59,22 +59,27 @@ DECLARE @q VECTOR(1536) = AI_GENERATE_EMBEDDINGS(
     @query_text2 USE MODEL openai_embed_small
 );
 
-SELECT TOP (5) WITH APPROXIMATE
-    vs.product_id,
+-- SQL Server 2025 RTM-CU4 sözdizimi: TOP_N parametresi VECTOR_SEARCH içinde;
+-- VECTOR_SEARCH'ün kolonlarına dış JOIN'den referans için CTE şart.
+WITH hits AS (
+    SELECT * FROM VECTOR_SEARCH(
+        TABLE      = vector.product_embedding,
+        COLUMN     = embedding_openai_1536,
+        SIMILAR_TO = @q,
+        METRIC     = 'cosine',
+        TOP_N      = 5)
+)
+SELECT
+    h.product_id,
     p.name,
     cat.name AS category,
     p.price,
-    vs.distance,
+    h.distance,
     LEFT(p.description_tr, 100) AS preview
-FROM VECTOR_SEARCH(
-    TABLE      = vector.product_embedding,
-    COLUMN     = embedding_openai_1536,
-    SIMILAR_TO = @q,
-    METRIC     = 'cosine'
-) AS vs
-JOIN shop.product          p   ON p.product_id   = vs.product_id
+FROM hits h
+JOIN shop.product          p   ON p.product_id   = h.product_id
 JOIN shop.product_category cat ON cat.category_id = p.category_id
-ORDER BY vs.distance ASC;
+ORDER BY h.distance ASC;
 GO
 
 -- ----------------------------------------------------------------------------
@@ -88,17 +93,17 @@ DECLARE @qo VECTOR(768) = AI_GENERATE_EMBEDDINGS(
     @query_text3 USE MODEL ollama_embed_text
 );
 
-SELECT TOP (5) WITH APPROXIMATE
-    vs.product_id,
-    p.name,
-    vs.distance
-FROM VECTOR_SEARCH(
-    TABLE      = vector.product_embedding,
-    COLUMN     = embedding_ollama_768,
-    SIMILAR_TO = @qo,
-    METRIC     = 'cosine'
-) AS vs
-JOIN shop.product p ON p.product_id = vs.product_id
-ORDER BY vs.distance ASC;
+WITH hits AS (
+    SELECT * FROM VECTOR_SEARCH(
+        TABLE      = vector.product_embedding,
+        COLUMN     = embedding_ollama_768,
+        SIMILAR_TO = @qo,
+        METRIC     = 'cosine',
+        TOP_N      = 5)
+)
+SELECT h.product_id, p.name, h.distance
+FROM hits h
+JOIN shop.product p ON p.product_id = h.product_id
+ORDER BY h.distance ASC;
 */
 GO

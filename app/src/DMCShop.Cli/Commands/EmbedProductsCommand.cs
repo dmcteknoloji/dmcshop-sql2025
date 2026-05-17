@@ -59,7 +59,36 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         sw.Stop();
         log.LogInformation("Tamam — {Written} satır {Elapsed:N0} ms'de yazıldı (ortalama {Avg:N0} ms/ürün)",
             written, sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / (double)written);
+
+        log.LogInformation("DiskANN index'i (yeniden) oluşturuluyor…");
+        await RecreateVectorIndexAsync(db, provider, log);
         return 0;
+    }
+
+    private static async Task RecreateVectorIndexAsync(DMCShopDbContext db, IEmbeddingProvider provider, ILogger log)
+    {
+        var (indexName, column) = provider.Name switch
+        {
+            "openai" => ("vix_pe_openai", "embedding_openai_1536"),
+            "ollama" => ("vix_pe_ollama", "embedding_ollama_768"),
+            _ => throw new InvalidOperationException($"Bilinmeyen provider: {provider.Name}")
+        };
+
+        var dropSql = $"""
+            IF EXISTS (SELECT 1 FROM sys.indexes
+                       WHERE name = '{indexName}'
+                         AND object_id = OBJECT_ID('vector.product_embedding'))
+                DROP INDEX {indexName} ON vector.product_embedding;
+            """;
+        await db.Database.ExecuteSqlRawAsync(dropSql);
+
+        var createSql = $"""
+            CREATE VECTOR INDEX {indexName}
+            ON vector.product_embedding ({column})
+            WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
+            """;
+        await db.Database.ExecuteSqlRawAsync(createSql);
+        log.LogInformation("Index {Index} hazır", indexName);
     }
 
     private static async Task UpdateEmbeddingAsync(DMCShopDbContext db, IEmbeddingProvider provider, int productId, string vectorLiteral)

@@ -34,7 +34,7 @@ echo "  host:    ${HOST}"
 echo "  sql:     ${SQL_DIR}"
 
 # Bağlantı kontrolü
-if ! sqlcmd -C -S "${HOST}" -U sa -P "${PASSWORD}" -Q "SELECT @@VERSION" -h -1 >/dev/null 2>&1; then
+if ! sqlcmd -C -I -S "${HOST}" -U sa -P "${PASSWORD}" -Q "SELECT @@VERSION" -h -1 >/dev/null 2>&1; then
     echo "HATA: SQL Server'a bağlanılamadı. docker compose ayakta mı?" >&2
     exit 2
 fi
@@ -56,12 +56,12 @@ do
         exit 3
     fi
     echo "> ${script}"
-    sqlcmd -C -S "${HOST}" -U sa -P "${PASSWORD}" -d master -i "${path}" -b
+    sqlcmd -C -I -S "${HOST}" -U sa -P "${PASSWORD}" -d master -i "${path}" -b
 done
 
 # Doğrulama
 echo "> Doğrulama: tablo sayısı"
-sqlcmd -C -S "${HOST}" -U sa -P "${PASSWORD}" -d dmcshop -h -1 -W -Q "
+sqlcmd -C -I -S "${HOST}" -U sa -P "${PASSWORD}" -d dmcshop -h -1 -W -Q "
 SET NOCOUNT ON;
 SELECT TABLE_SCHEMA AS schema_name, COUNT(*) AS table_count
 FROM INFORMATION_SCHEMA.TABLES

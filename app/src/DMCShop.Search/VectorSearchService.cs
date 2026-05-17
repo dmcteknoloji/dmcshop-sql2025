@@ -23,25 +23,34 @@ public sealed class VectorSearchService(DMCShopDbContext db, IEmbeddingProvider 
         var vectorJson = ToVectorLiteral(queryVector);
         var column = ColumnFor(provider.Name);
 
+        // SQL Server 2025 RTM-CU4 notu:
+        //   - VECTOR_SEARCH'ün ürettiği kolonlara dış SELECT'ten doğrudan
+        //     join içinde referans verirken kolon adı bulunamıyor; CTE
+        //     üzerinden okumak güvenli.
+        //   - TOP_N parametresi VECTOR_SEARCH içinde verilir; "TOP (N) WITH
+        //     APPROXIMATE" syntax'ı RTM'de geçerli değil.
         var sql = $"""
             DECLARE @v VECTOR({provider.Dimensions}) = CAST(@queryVector AS VECTOR({provider.Dimensions}));
-            SELECT TOP (@topK) WITH APPROXIMATE
-                vs.product_id              AS ProductId,
-                p.sku                      AS Sku,
-                p.name                     AS Name,
-                cat.name                   AS CategoryName,
-                p.price                    AS Price,
+            WITH hits AS (
+                SELECT * FROM VECTOR_SEARCH(
+                    TABLE      = vector.product_embedding,
+                    COLUMN     = {column},
+                    SIMILAR_TO = @v,
+                    METRIC     = 'cosine',
+                    TOP_N      = @topK)
+            )
+            SELECT
+                h.product_id              AS ProductId,
+                p.sku                     AS Sku,
+                p.name                    AS Name,
+                cat.name                  AS CategoryName,
+                p.price                   AS Price,
                 LEFT(p.description_tr,120) AS Preview,
-                vs.distance                AS Distance
-            FROM VECTOR_SEARCH(
-                TABLE      = vector.product_embedding,
-                COLUMN     = {column},
-                SIMILAR_TO = @v,
-                METRIC     = 'cosine'
-            ) AS vs
-            JOIN shop.product          p   ON p.product_id   = vs.product_id
+                h.distance                AS Distance
+            FROM hits h
+            JOIN shop.product          p   ON p.product_id   = h.product_id
             JOIN shop.product_category cat ON cat.category_id = p.category_id
-            ORDER BY vs.distance ASC;
+            ORDER BY h.distance ASC;
             """;
 
         var rows = await db.Database
