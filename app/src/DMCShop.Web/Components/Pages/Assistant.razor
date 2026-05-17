@@ -1,0 +1,142 @@
+@page "/asistan"
+@rendermode InteractiveServer
+@using DMCShop.Domain.Abstractions
+@using DMCShop.Domain.Dtos
+@using DMCShop.Search
+@inject RagAssistantService Rag
+@inject IEmbeddingProvider EmbedProvider
+@inject IChatProvider ChatProvider
+
+<PageTitle>Ürün asistanı — DMCShop</PageTitle>
+
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">Senaryo 2</div>
+    <h1>RAG tabanlı ürün asistanı</h1>
+    <p class="dmc-hero-lead">
+        Sorduğunuz soruya vector retrieval ile en yakın 5 ürünü çekip chat modeline bağlam olarak
+        verir. Her çağrı <code>vector.query_log</code>'a yazılır. Bağlam dışında ürün önermez.
+    </p>
+    <div class="dmc-stack-row">
+        <span class="dmc-badge dmc-badge-accent">Retrieval: @EmbedProvider.Name / @EmbedProvider.ModelName</span>
+        <span class="dmc-badge">Chat: @ChatProvider.Name / @ChatProvider.ModelName</span>
+    </div>
+</section>
+
+<div class="dmc-search-row">
+    <input @bind="question" @bind:event="oninput" @onkeydown="HandleKey"
+           class="dmc-search-input" placeholder="Bir ürün sorusu sorun — örn. 1500 TL altı ergonomik mouse" />
+    <button class="dmc-btn dmc-btn-dark" @onclick="AskAsync" disabled="@busy">
+        @(busy ? "Düşünüyor…" : "Sor")
+    </button>
+</div>
+
+<div class="dmc-chip-row">
+    <span class="dmc-chip-label">Örnek</span>
+    @foreach (var s in samples)
+    {
+        <button class="dmc-chip" @onclick="() => SelectAndAsk(s)">@s</button>
+    }
+</div>
+
+@if (error is not null)
+{
+    <div class="dmc-alert dmc-alert-error">@error</div>
+}
+
+@if (history.Count > 0)
+{
+    <div class="dmc-grid" style="gap: 1.25rem;">
+        @foreach (var t in history)
+        {
+            <div class="dmc-card">
+                <div class="dmc-chat-q">@t.Question</div>
+                <div class="dmc-chat-a">@t.Response</div>
+
+                <details style="margin-top: 0.75rem;">
+                    <summary style="cursor:pointer; color:var(--text-muted); font-size:0.82rem; user-select:none;">
+                        Kullanılan ürünler (@t.UsedProducts.Count) · retrieval @t.RetrievalLatencyMs ms · LLM @t.LlmLatencyMs ms · toplam @t.TotalLatencyMs ms
+                    </summary>
+                    <div class="dmc-grid dmc-results-grid dmc-results-grid-compact" style="margin-top: 0.75rem;">
+                        @foreach (var h in t.UsedProducts)
+                        {
+                            <a href="urun/@h.ProductId" class="dmc-pcard">
+                                <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                                <div class="dmc-pcard-body">
+                                    <div class="dmc-pcard-cat">@h.CategoryName</div>
+                                    <h3 class="dmc-pcard-name">@h.Name</h3>
+                                    <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </details>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .dmc-chat-q {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .dmc-chat-a {
+        color: var(--text);
+        font-size: 0.98rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+    }
+</style>
+
+@code {
+    private string question = string.Empty;
+    private bool busy;
+    private string? error;
+    private readonly List<RagAnswer> history = new();
+
+    private static readonly string[] samples =
+    {
+        "1500 TL altı ergonomik mouse",
+        "Soğuk kış günleri için sıcak bir şey",
+        "Sevdiğim biri için hediye önerin",
+        "Kahvaltıda kullanabileceğim bir ürün",
+        "Ofis için klavye ve mouse seti"
+    };
+
+    private async Task AskAsync()
+    {
+        if (string.IsNullOrWhiteSpace(question)) return;
+
+        busy  = true;
+        error = null;
+        try
+        {
+            var answer = await Rag.AskAsync(question, topK: 5);
+            history.Insert(0, answer);
+            question = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            error = $"Asistan hatası: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task SelectAndAsk(string s)
+    {
+        question = s;
+        await AskAsync();
+    }
+
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !busy) await AskAsync();
+    }
+}

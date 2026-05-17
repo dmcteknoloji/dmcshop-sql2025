@@ -8,6 +8,8 @@ public static class DependencyInjection
     {
         services.AddScoped<VectorSearchService>();
         services.AddScoped<GraphRecommendService>();
+        services.AddScoped<RagAssistantService>();
+        services.AddScoped<FraudRingService>();
         return services;
     }
 }

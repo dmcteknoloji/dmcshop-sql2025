@@ -14,6 +14,7 @@ public sealed class DMCShopDbContext(DbContextOptions<DMCShopDbContext> options)
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
     public DbSet<ProductEmbedding> ProductEmbeddings => Set<ProductEmbedding>();
     public DbSet<ProviderConfig> ProviderConfigs => Set<ProviderConfig>();
+    public DbSet<QueryLog> QueryLogs => Set<QueryLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

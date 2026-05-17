@@ -1,0 +1,134 @@
+@page "/fraud"
+@rendermode InteractiveServer
+@using DMCShop.Domain.Dtos
+@using DMCShop.Search
+@inject FraudRingService Detection
+
+<PageTitle>Fraud ring tespiti — DMCShop</PageTitle>
+
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">Senaryo 3</div>
+    <h1>Fraud ring tespiti</h1>
+    <p class="dmc-hero-lead">
+        Aynı cihazı, IP adresini veya kart parmak izini paylaşan müşterileri tek bir SQL sorgusu ile
+        ortaya çıkarır. Risk seviyesi paylaşılan sinyal sayısına göre derecelendirilir.
+        Workshop için sql/22-fraud-ring.sql içinde SHORTEST_PATH evidence chain örneği var.
+    </p>
+</section>
+
+<div style="display:flex; justify-content:flex-end; margin-bottom: 1rem;">
+    <button class="dmc-btn dmc-btn-dark" @onclick="LoadAsync" disabled="@busy">
+        @(busy ? "Taranıyor…" : "Yeniden tara")
+    </button>
+</div>
+
+@if (error is not null)
+{
+    <div class="dmc-alert dmc-alert-error">@error</div>
+}
+
+@if (rings is null && !busy)
+{
+    <div class="dmc-loading">"Yeniden tara" düğmesine basın.</div>
+}
+else if (busy)
+{
+    <div class="dmc-loading">Fraud ringleri taranıyor…</div>
+}
+else if (rings is { Count: 0 })
+{
+    <div class="dmc-empty">Şu anda risk taşıyan herhangi bir ring tespit edilemedi.</div>
+}
+else if (rings is not null)
+{
+    <div class="dmc-grid" style="gap: 1rem;">
+        @foreach (var r in rings)
+        {
+            <div class="dmc-card dmc-fraud-row">
+                <div class="dmc-fraud-head">
+                    <div>
+                        <span class="dmc-badge @RiskBadge(r.RiskLevel)">@r.RiskLevel risk</span>
+                        <span class="dmc-badge dmc-badge-soft" style="margin-left: 0.4rem;">@PatternLabel(r.Pattern)</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size: 1.8rem; font-weight: 700; line-height:1; font-variant-numeric: tabular-nums;">@r.CustomerCount</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px;">müşteri</div>
+                    </div>
+                </div>
+
+                <div class="dmc-fraud-evidence">@r.Evidence</div>
+
+                <div>
+                    <div class="dmc-panel-title" style="margin-bottom: 0.45rem;">Bağlı müşteriler</div>
+                    <div style="display:flex; flex-wrap: wrap; gap: 0.35rem;">
+                        @foreach (var name in r.CustomerList.Split(", ", StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="dmc-badge dmc-badge-soft">@name</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .dmc-fraud-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .dmc-fraud-evidence {
+        font-size: 0.92rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+        padding: 0.6rem 0.85rem;
+        background: var(--surface-2);
+        border-left: 3px solid var(--accent);
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .dmc-badge-high   { background: rgba(220,38,38,0.08); color: #B91C1C; border-color: rgba(220,38,38,0.25); font-weight: 600; }
+    .dmc-badge-medium { background: rgba(180,83,9,0.08);  color: #B45309; border-color: rgba(180,83,9,0.25);  font-weight: 600; }
+</style>
+
+@code {
+    private List<FraudRing>? rings;
+    private bool busy;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        busy  = true;
+        error = null;
+        try
+        {
+            rings = await Detection.DetectAsync();
+        }
+        catch (Exception ex)
+        {
+            error = $"Tarama başarısız: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private static string RiskBadge(string risk) => risk switch
+    {
+        "HIGH"   => "dmc-badge-high",
+        "MEDIUM" => "dmc-badge-medium",
+        _        => "dmc-badge"
+    };
+
+    private static string PatternLabel(string pattern) => pattern switch
+    {
+        "shared_device" => "Paylaşılan cihaz",
+        "shared_ip"     => "Paylaşılan IP",
+        "shared_card"   => "Paylaşılan kart",
+        _               => pattern
+    };
+}
