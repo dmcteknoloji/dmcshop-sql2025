@@ -13,20 +13,31 @@
 
 Embedding/chat provider **switchable**: Azure OpenAI (text-embedding-3-small, 1536 dim) veya local Ollama (nomic-embed-text, 768 dim). Hem T-SQL hem .NET tarafı `ops.provider_config` üzerinden aynı provider'ı kullanır.
 
-## 5 dakikada başla
+## 5 dakikada başla — local
 
-Önkoşullar: Docker, .NET 10 SDK, `sqlcmd`.
+Önkoşullar: Docker, .NET 10 SDK, `sqlcmd` (Mac: `brew install sqlcmd`).
 
 ```bash
 git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
 cd dmcshop-sql2025
 
 docker compose -f scripts/docker-compose.yml up -d
+docker exec dmcshop-ollama ollama pull nomic-embed-text
 ./scripts/bootstrap.sh
+dotnet run --project app/src/DMCShop.Cli -- embed-products
 dotnet run --project app/src/DMCShop.Web
 ```
 
-Tarayıcıda `https://localhost:5001` açılır.
+Tarayıcıda `http://localhost:5295` açılır.
+
+## Azure'da canlı demo
+
+```bash
+az login
+./infra/deploy.sh
+```
+
+Tek komutla: Resource Group + Bicep deploy + cloud-init + `rsync` + remote bootstrap. ~15-20 dk sonra public URL. Detaylar: [infra/README.md](infra/README.md).
 
 ## Mimari
 
