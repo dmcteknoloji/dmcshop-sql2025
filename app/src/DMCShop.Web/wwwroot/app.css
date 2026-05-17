@@ -1,37 +1,46 @@
 /* ============================================================================
-   DMCShop — kurumsal koyu tema
-   Tipografi, spacing ve kompozisyon Linear/Vercel/Stripe çizgisinde.
+   DMCShop — açık tema e-ticaret
+   Beyaz zemin, koyu tipografi, parlak ürün görselleri.
+   Header koyu kalır (kurumsal navigasyon hissi).
    ============================================================================ */
 
 :root {
-    color-scheme: dark;
+    color-scheme: light;
 
-    --bg:           #0B0E11;
-    --bg-2:         #11151B;
-    --surface:      #161B22;
-    --surface-2:    #1C232C;
-    --border:       #232A34;
-    --border-2:     #2F3845;
+    --bg:           #FAFBFC;
+    --bg-2:         #F4F6F8;
+    --surface:      #FFFFFF;
+    --surface-2:    #F4F6F8;
+    --border:       #E5E7EB;
+    --border-2:     #D1D5DB;
 
-    --text:         #ECEFF4;
-    --text-muted:   #9BA4B0;
-    --text-dim:     #6B7480;
+    --text:         #0F1419;
+    --text-muted:   #4B5563;
+    --text-dim:     #9CA3AF;
 
-    --accent:       #C73945;
-    --accent-2:     #DD4853;
-    --accent-soft:  rgba(199,57,69,0.12);
-    --accent-ring:  rgba(199,57,69,0.30);
+    /* Header (koyu) */
+    --hd-bg:        #0B0E11;
+    --hd-text:      #E5E7EB;
+    --hd-muted:     #9CA3AF;
+    --hd-hover:     #1A1F26;
+    --hd-border:    #232A34;
 
-    --ok:      #2EA043;
-    --warn:    #BF8700;
-    --info:    #4493F8;
+    --accent:       #A4262C;
+    --accent-2:     #BE2D34;
+    --accent-soft:  rgba(164,38,44,0.08);
+    --accent-ring:  rgba(164,38,44,0.20);
+
+    --ok:      #15803D;
+    --warn:    #B45309;
+    --info:    #1D4ED8;
 
     --radius-sm:  6px;
     --radius:     10px;
     --radius-lg:  14px;
 
-    --shadow-1: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.02);
-    --shadow-2: 0 8px 24px -8px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+    --shadow-1: 0 1px 2px rgba(15,20,25,0.06), 0 0 0 1px rgba(15,20,25,0.04);
+    --shadow-2: 0 4px 16px -4px rgba(15,20,25,0.08), 0 0 0 1px rgba(15,20,25,0.05);
+    --shadow-3: 0 12px 32px -12px rgba(15,20,25,0.18), 0 0 0 1px rgba(15,20,25,0.05);
 
     --fz-xs:    0.78rem;
     --fz-sm:    0.86rem;
@@ -57,20 +66,19 @@ html, body {
     margin: 0;
     padding: 0;
     text-rendering: optimizeLegibility;
-    font-feature-settings: 'cv11', 'ss01', 'ss03';
 }
 
 h1, h2, h3, h4, h5 {
     color: var(--text);
     margin: 0;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     font-weight: 600;
 }
 
-h1 { font-size: 2.15rem; line-height: 1.15; letter-spacing: -0.025em; }
+h1 { font-size: 2.2rem; line-height: 1.15; letter-spacing: -0.03em; }
 h2 { font-size: 1.55rem; line-height: 1.25; }
-h3 { font-size: 1.15rem; line-height: 1.3; }
-h4 { font-size: 0.98rem; font-weight: 600; }
+h3 { font-size: 1.05rem; line-height: 1.3; }
+h4 { font-size: 0.95rem; }
 
 p { margin: 0; color: var(--text-muted); }
 
@@ -79,7 +87,7 @@ a {
     text-decoration: none;
     transition: color .15s ease;
 }
-a:hover { color: var(--accent-2); }
+a:hover { color: var(--accent); }
 
 code {
     font-family: var(--font-mono);
@@ -88,7 +96,6 @@ code {
     color: var(--text);
     padding: 0.1em 0.4em;
     border-radius: 4px;
-    border: 1px solid var(--border);
 }
 
 ::selection { background: var(--accent-soft); color: var(--text); }
@@ -105,11 +112,10 @@ code {
 }
 
 .dmc-header {
-    background: rgba(11, 14, 17, 0.78);
-    backdrop-filter: saturate(180%) blur(12px);
-    -webkit-backdrop-filter: saturate(180%) blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0.55rem 1.6rem;
+    background: var(--hd-bg);
+    color: var(--hd-text);
+    border-bottom: 1px solid var(--hd-border);
+    padding: 0 1.6rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -117,38 +123,39 @@ code {
     position: sticky;
     top: 0;
     z-index: 50;
-    height: 56px;
+    height: 60px;
 }
 
 .dmc-brand {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.75rem;
     min-width: 0;
+    text-decoration: none;
+    color: var(--hd-text);
 }
 
-.dmc-brand-logo {
-    display: flex;
-    align-items: center;
-}
+.dmc-brand:hover { color: var(--hd-text); }
 
 .dmc-brand-logo img {
-    height: 20px;
+    height: 22px;
     width: auto;
     display: block;
+    filter: brightness(1.05);
 }
 
 .dmc-brand-divider {
     width: 1px;
-    height: 20px;
-    background: var(--border);
+    height: 22px;
+    background: var(--hd-border);
 }
 
 .dmc-brand-title {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
     letter-spacing: -0.01em;
+    color: var(--hd-text);
 }
 
 .dmc-nav {
@@ -158,35 +165,35 @@ code {
 }
 
 .dmc-nav a {
-    color: var(--text-muted);
+    color: var(--hd-muted);
     font-weight: 500;
-    font-size: 0.86rem;
-    padding: 0.38rem 0.75rem;
+    font-size: 0.88rem;
+    padding: 0.42rem 0.85rem;
     border-radius: var(--radius-sm);
     transition: background .12s ease, color .12s ease;
 }
 
 .dmc-nav a:hover,
 .dmc-nav a.active {
-    color: var(--text);
-    background: var(--surface);
+    color: white;
+    background: var(--hd-hover);
 }
 
 .dmc-main {
-    max-width: 1180px;
+    max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding: 2.5rem 1.6rem 4rem;
+    padding: 2.5rem 1.6rem 5rem;
 }
 
 .dmc-footer {
     border-top: 1px solid var(--border);
-    padding: 1.3rem 1.6rem;
-    background: var(--bg);
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
 }
 
 .dmc-footer-inner {
-    max-width: 1180px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
@@ -211,7 +218,7 @@ code {
    ============================================================================ */
 
 .dmc-hero {
-    padding: 1rem 0 2.5rem;
+    padding: 2rem 0 2.5rem;
     margin-bottom: 1rem;
 }
 
@@ -219,7 +226,7 @@ code {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--accent-2);
+    color: var(--accent);
     font-size: var(--fz-xs);
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -230,20 +237,25 @@ code {
 .dmc-hero-eyebrow::before {
     content: '';
     width: 16px;
-    height: 1px;
-    background: var(--accent-2);
+    height: 2px;
+    background: var(--accent);
 }
 
-.dmc-hero h1 {
-    max-width: 760px;
-}
+.dmc-hero h1 { max-width: 760px; }
 
 .dmc-hero-lead {
     color: var(--text-muted);
     font-size: 1.08rem;
     max-width: 680px;
     margin-top: 1rem;
-    line-height: 1.6;
+    line-height: 1.65;
+}
+
+.dmc-hero-cta {
+    display: flex;
+    gap: 0.65rem;
+    margin-top: 1.75rem;
+    flex-wrap: wrap;
 }
 
 .dmc-stack-row {
@@ -269,31 +281,31 @@ code {
     color: var(--text-muted);
     border: 1px solid var(--border);
     line-height: 1;
-    letter-spacing: 0.01em;
 }
 
 .dmc-badge-accent {
     background: var(--accent-soft);
-    color: var(--text);
-    border-color: rgba(199,57,69,0.3);
+    color: var(--accent);
+    border-color: rgba(164,38,44,0.25);
+    font-weight: 600;
 }
 
 .dmc-badge-positive {
     color: var(--ok);
-    border-color: rgba(46,160,67,0.35);
-    background: rgba(46,160,67,0.07);
+    border-color: rgba(21,128,61,0.25);
+    background: rgba(21,128,61,0.08);
 }
 
 .dmc-badge-soft {
     background: var(--surface-2);
     color: var(--text);
-    border-color: var(--border-2);
+    border-color: var(--border);
 }
 
 .dmc-chip {
     display: inline-flex;
     align-items: center;
-    padding: 0.38rem 0.85rem;
+    padding: 0.42rem 0.95rem;
     border-radius: 999px;
     background: var(--surface);
     color: var(--text-muted);
@@ -305,10 +317,11 @@ code {
     user-select: none;
 }
 
-.dmc-chip:hover {
-    background: var(--surface-2);
-    color: var(--text);
-    border-color: var(--accent);
+.dmc-chip:hover,
+.dmc-chip.active {
+    background: var(--text);
+    color: white;
+    border-color: var(--text);
 }
 
 /* ============================================================================
@@ -326,7 +339,6 @@ code {
     gap: 0.55rem;
     text-decoration: none;
     color: inherit;
-    position: relative;
 }
 
 a.dmc-card:hover,
@@ -359,13 +371,13 @@ a.dmc-card:hover,
 }
 
 .dmc-card-link {
-    color: var(--accent-2);
+    color: var(--accent);
     font-weight: 500;
     font-size: var(--fz-sm);
 }
 
-.dmc-card-disabled .dmc-card-title { color: var(--text-muted); }
-.dmc-card-disabled .dmc-card-link  { color: var(--text-dim); }
+.dmc-card-disabled       { opacity: 0.62; }
+.dmc-card-disabled:hover { transform: none; box-shadow: none; border-color: var(--border); }
 
 /* Stat card */
 .dmc-stat {
@@ -390,7 +402,7 @@ a.dmc-card:hover,
     color: var(--text);
     line-height: 1.1;
     margin-top: 0.4rem;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     font-variant-numeric: tabular-nums;
 }
 
@@ -398,26 +410,28 @@ a.dmc-card:hover,
    GRID
    ============================================================================ */
 
-.dmc-grid { display: grid; gap: 0.95rem; }
+.dmc-grid { display: grid; gap: 1.1rem; }
 .dmc-grid-2 { grid-template-columns: repeat(2, 1fr); }
 .dmc-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .dmc-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.dmc-grid-cat { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
 @media (max-width: 900px) {
-    .dmc-grid-2, .dmc-grid-3, .dmc-grid-4 { grid-template-columns: 1fr; }
+    .dmc-grid-2, .dmc-grid-3, .dmc-grid-4 { grid-template-columns: repeat(2, 1fr); }
     .dmc-main { padding: 1.5rem 1rem 3rem; }
-    .dmc-header { padding: 0.5rem 1rem; flex-wrap: wrap; height: auto; }
+    .dmc-header { padding: 0 1rem; }
     h1 { font-size: 1.7rem; }
 }
 
-/* ============================================================================
-   PANEL HEADER (section label + meta)
-   ============================================================================ */
-
-.dmc-section {
-    margin-top: 3rem;
+@media (max-width: 560px) {
+    .dmc-grid-2, .dmc-grid-3, .dmc-grid-4 { grid-template-columns: 1fr; }
 }
 
+/* ============================================================================
+   SECTION HEADER
+   ============================================================================ */
+
+.dmc-section { margin-top: 3rem; }
 .dmc-section:first-child { margin-top: 0; }
 
 .dmc-section-head {
@@ -488,41 +502,39 @@ a.dmc-card:hover,
     height: 44px;
     border-radius: var(--radius);
     border: 1px solid transparent;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.92rem;
     font-family: inherit;
     cursor: pointer;
-    transition: background .12s ease, border-color .12s ease;
+    transition: background .12s ease, border-color .12s ease, transform .1s ease;
     white-space: nowrap;
 }
 
-.dmc-btn-primary {
-    background: var(--accent);
-    color: white;
-}
+.dmc-btn:active { transform: translateY(1px); }
 
+.dmc-btn-primary { background: var(--accent); color: white; }
 .dmc-btn-primary:hover { background: var(--accent-2); }
+.dmc-btn-primary:disabled { background: var(--text-dim); cursor: not-allowed; }
 
-.dmc-btn-primary:disabled {
-    background: var(--surface-2);
-    color: var(--text-dim);
-    cursor: not-allowed;
-}
+.dmc-btn-dark { background: var(--text); color: white; }
+.dmc-btn-dark:hover { background: #1A1F26; }
 
 .dmc-btn-ghost {
     background: transparent;
-    color: var(--text-muted);
-    border-color: var(--border);
+    color: var(--text);
+    border-color: var(--border-2);
 }
 
-.dmc-btn-ghost:hover { color: var(--text); border-color: var(--border-2); }
+.dmc-btn-ghost:hover { background: var(--surface-2); border-color: var(--text); }
+
+.dmc-btn-lg { height: 52px; padding: 0 2rem; font-size: 0.98rem; }
 
 .dmc-chip-row {
     display: flex;
     gap: 0.35rem;
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 }
 
 .dmc-chip-label {
@@ -531,92 +543,11 @@ a.dmc-card:hover,
     text-transform: uppercase;
     letter-spacing: 0.08em;
     padding-right: 0.5rem;
-}
-
-/* ============================================================================
-   RESULT LIST (search hits)
-   ============================================================================ */
-
-.dmc-result-list {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-}
-
-.dmc-hit {
-    display: grid;
-    grid-template-columns: 56px 1fr auto;
-    gap: 0.95rem;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid var(--border);
-    align-items: center;
-    text-decoration: none;
-    color: inherit;
-    transition: background .12s ease;
-}
-
-.dmc-hit:last-child { border-bottom: none; }
-.dmc-hit:hover { background: var(--surface-2); color: inherit; }
-
-.dmc-hit-meta { min-width: 0; }
-
-.dmc-hit-name {
     font-weight: 600;
-    color: var(--text);
-    font-size: 0.94rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.dmc-hit-sub {
-    font-size: var(--fz-xs);
-    color: var(--text-muted);
-    margin-top: 0.15rem;
-}
-
-.dmc-hit-preview {
-    font-size: var(--fz-sm);
-    color: var(--text-muted);
-    margin-top: 0.3rem;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.dmc-hit-score {
-    text-align: right;
-    white-space: nowrap;
-}
-
-.dmc-hit-score-value {
-    font-family: var(--font-mono);
-    font-size: var(--fz-xs);
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.dmc-hit-bar {
-    width: 64px;
-    height: 3px;
-    background: var(--surface-2);
-    border-radius: 999px;
-    margin-top: 6px;
-    overflow: hidden;
-    margin-left: auto;
-}
-
-.dmc-hit-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    border-radius: 999px;
 }
 
 /* ============================================================================
-   PRODUCT IMAGE PLACEHOLDER
+   PRODUCT IMAGE (parlak, dekoratif desen)
    ============================================================================ */
 
 .dmc-pimg {
@@ -626,25 +557,46 @@ a.dmc-card:hover,
     justify-content: center;
     border-radius: var(--radius);
     overflow: hidden;
-    border: 1px solid var(--border);
+    isolation: isolate;
 }
 
-.dmc-pimg-hero  { aspect-ratio: 4 / 3; width: 100%; }
-.dmc-pimg-card  { aspect-ratio: 16 / 9; width: 100%; }
-.dmc-pimg-thumb { width: 56px; height: 56px; flex-shrink: 0; border-radius: 8px; }
+.dmc-pimg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.35) 0%, transparent 35%),
+        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.18) 0%, transparent 40%);
+    z-index: 0;
+}
+
+.dmc-pimg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(135deg, rgba(255,255,255,0) 65%, rgba(255,255,255,0.18) 100%);
+    z-index: 0;
+}
+
+.dmc-pimg-hero  { aspect-ratio: 1 / 1; width: 100%; }
+.dmc-pimg-card  { aspect-ratio: 4 / 3; width: 100%; }
+.dmc-pimg-thumb { width: 64px; height: 64px; flex-shrink: 0; border-radius: 8px; }
 
 .dmc-pimg-mono {
     font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: -0.04em;
-    font-size: 2.4rem;
+    font-size: 2.6rem;
     line-height: 1;
     user-select: none;
     text-transform: uppercase;
+    position: relative;
+    z-index: 1;
 }
 
-.dmc-pimg-hero  .dmc-pimg-mono { font-size: 5rem; }
-.dmc-pimg-thumb .dmc-pimg-mono { font-size: 1.2rem; }
+.dmc-pimg-hero  .dmc-pimg-mono { font-size: 6rem; }
+.dmc-pimg-thumb .dmc-pimg-mono { font-size: 1.4rem; }
 
 .dmc-pimg-watermark {
     position: absolute;
@@ -652,48 +604,192 @@ a.dmc-card:hover,
     right: 0.7rem;
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    color: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.72);
     letter-spacing: 0.05em;
+    z-index: 2;
+    font-weight: 500;
 }
 
-.dmc-pimg-hero .dmc-pimg-watermark { font-size: 0.8rem; bottom: 1rem; right: 1.2rem; }
+.dmc-pimg-hero .dmc-pimg-watermark { font-size: 0.85rem; bottom: 1.1rem; right: 1.3rem; }
+.dmc-pimg-thumb .dmc-pimg-watermark { display: none; }
+
+/* ============================================================================
+   PRODUCT CARD (e-ticaret katalog)
+   ============================================================================ */
+
+.dmc-pcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.dmc-pcard:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-3);
+    border-color: var(--border);
+    color: inherit;
+}
+
+.dmc-pcard .dmc-pimg { border-radius: 0; }
+
+.dmc-pcard-body {
+    padding: 0.95rem 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dmc-pcard-cat {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.dmc-pcard-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    min-height: 2.6em;
+}
+
+.dmc-pcard-price {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 0.4rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+.dmc-pcard-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.4rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--border);
+    font-size: var(--fz-xs);
+    color: var(--text-dim);
+}
+
+/* ============================================================================
+   RESULT LIST (search hits) — kart grid'i
+   ============================================================================ */
+
+.dmc-results-grid {
+    display: grid;
+    gap: 0.95rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.dmc-results-grid-compact {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+/* Compare hit (vector benzerlik barı) */
+.dmc-hit-score {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+.dmc-hit-score-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.dmc-hit-bar {
+    width: 70%;
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-left: 8px;
+}
+
+.dmc-hit-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px;
+}
 
 /* ============================================================================
    PRODUCT DETAIL
    ============================================================================ */
 
+.dmc-breadcrumb {
+    display: flex;
+    gap: 0.4rem;
+    font-size: var(--fz-sm);
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.dmc-breadcrumb a { color: var(--text-muted); }
+.dmc-breadcrumb a:hover { color: var(--accent); }
+.dmc-breadcrumb-sep { color: var(--text-dim); }
+
 .dmc-product-hero {
     display: grid;
-    grid-template-columns: 420px 1fr;
-    gap: 2.5rem;
-    padding: 1rem 0 2rem;
+    grid-template-columns: 480px 1fr;
+    gap: 3rem;
+    padding: 0.5rem 0 3rem;
     margin-bottom: 2.5rem;
     border-bottom: 1px solid var(--border);
     align-items: start;
 }
 
 @media (max-width: 900px) {
-    .dmc-product-hero { grid-template-columns: 1fr; }
+    .dmc-product-hero { grid-template-columns: 1fr; gap: 1.5rem; }
 }
 
-.dmc-product-info { padding-top: 0.5rem; }
+.dmc-product-info { padding-top: 0.25rem; }
 
 .dmc-product-name {
-    font-size: 2rem;
+    font-size: 1.95rem;
     font-weight: 600;
     line-height: 1.15;
-    letter-spacing: -0.025em;
-    margin: 0.25rem 0 0.85rem;
+    letter-spacing: -0.03em;
+    margin: 0.5rem 0 0.85rem;
+}
+
+.dmc-product-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
 }
 
 .dmc-product-price {
     font-family: var(--font-display);
-    font-size: 1.85rem;
-    font-weight: 600;
+    font-size: 2.4rem;
+    font-weight: 700;
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
-    margin-top: 1.2rem;
+    line-height: 1;
+}
+
+.dmc-product-price-tax {
+    font-size: 0.82rem;
+    color: var(--text-muted);
 }
 
 .dmc-product-meta-row {
@@ -707,7 +803,6 @@ a.dmc-card:hover,
 .dmc-product-meta-row code {
     color: var(--text-muted);
     background: transparent;
-    border: none;
     padding: 0;
 }
 
@@ -715,7 +810,7 @@ a.dmc-card:hover,
     color: var(--text-muted);
     font-size: var(--fz-md);
     line-height: 1.65;
-    margin-top: 1.5rem;
+    margin-top: 0.5rem;
     max-width: 60ch;
 }
 
@@ -726,6 +821,156 @@ a.dmc-card:hover,
     margin-top: 0.75rem;
     max-width: 60ch;
     font-style: italic;
+}
+
+.dmc-product-cta {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.dmc-qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+    height: 52px;
+}
+
+.dmc-qty button {
+    width: 40px;
+    height: 52px;
+    background: var(--surface);
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .1s ease;
+}
+
+.dmc-qty button:hover { background: var(--surface-2); }
+
+.dmc-qty-value {
+    width: 48px;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.dmc-product-trust {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.dmc-trust-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: var(--fz-xs);
+}
+
+.dmc-trust-label { color: var(--text); font-weight: 600; }
+.dmc-trust-sub   { color: var(--text-muted); }
+
+/* ============================================================================
+   CATALOG (filter sidebar + grid)
+   ============================================================================ */
+
+.dmc-catalog {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .dmc-catalog { grid-template-columns: 1fr; }
+}
+
+.dmc-filter {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    position: sticky;
+    top: 80px;
+}
+
+.dmc-filter-title {
+    font-size: var(--fz-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.85rem;
+}
+
+.dmc-filter-list { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.dmc-filter-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.42rem 0.7rem;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: var(--text-muted);
+    font-size: var(--fz-sm);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .1s ease, color .1s ease;
+}
+
+.dmc-filter-item:hover { background: var(--surface-2); color: var(--text); }
+.dmc-filter-item.active { background: var(--text); color: white; font-weight: 600; }
+
+.dmc-filter-count {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.dmc-filter-item.active .dmc-filter-count { color: rgba(255,255,255,0.7); }
+
+.dmc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dmc-toolbar-count {
+    font-size: var(--fz-sm);
+    color: var(--text-muted);
+}
+
+.dmc-toolbar-sort {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.dmc-select {
+    padding: 0.5rem 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.86rem;
+    cursor: pointer;
 }
 
 /* ============================================================================
@@ -755,21 +1000,7 @@ a.dmc-card:hover,
 }
 
 .dmc-alert-error {
-    background: rgba(218,54,51,0.08);
-    border-color: rgba(218,54,51,0.35);
-    color: #FBA1A1;
-}
-
-/* Skeleton shimmer */
-.dmc-skel {
-    background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
-    background-size: 200% 100%;
-    animation: dmc-shimmer 1.4s ease-in-out infinite;
-    border-radius: var(--radius-sm);
-    height: 1rem;
-}
-
-@keyframes dmc-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    background: rgba(220,38,38,0.05);
+    border-color: rgba(220,38,38,0.3);
+    color: #B91C1C;
 }

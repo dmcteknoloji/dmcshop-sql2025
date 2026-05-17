@@ -1,24 +1,55 @@
 @page "/"
+@using DMCShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject DMCShopDbContext Db
 
 <PageTitle>DMCShop — SQL Server 2025 referans uygulaması</PageTitle>
 
 <section class="dmc-hero">
     <div class="dmc-hero-eyebrow">DMC Bilgi Teknolojileri</div>
-    <h1>SQL Server 2025'in vektör ve graf gücü, tek bir e-ticaret üzerinde.</h1>
+    <h1>SQL Server 2025'in vektör ve graf gücü, gerçek bir e-ticarette.</h1>
     <p class="dmc-hero-lead">
-        DMCShop, SQL Server 2025'in yerleşik <strong style="color:var(--text);">VECTOR(N) + DiskANN</strong>
-        ve <strong style="color:var(--text);">GRAPH NODE/EDGE</strong> özelliklerinin üretim
-        senaryolarındaki karşılığını gösteren açık kaynak bir referans uygulamadır. 120 ürünlük bir
-        katalogda anlamsal arama, ürün önerisi ve ileri ilişki analizleri uçtan uca çalışır.
+        DMCShop, SQL Server 2025'in yerleşik <strong style="color:var(--text);">VECTOR + DiskANN</strong>
+        ve <strong style="color:var(--text);">GRAPH MATCH</strong> özelliklerinin üretim
+        senaryolarındaki karşılığını gösteren açık kaynak referans uygulamadır. 120 ürünlük gerçekçi
+        bir katalog üzerinde anlamsal arama ve ürün önerisi uçtan uca çalışır.
     </p>
+
+    <div class="dmc-hero-cta">
+        <a href="katalog" class="dmc-btn dmc-btn-dark dmc-btn-lg">Kataloğa göz at</a>
+        <a href="search"  class="dmc-btn dmc-btn-ghost dmc-btn-lg">Semantik arama</a>
+    </div>
 
     <div class="dmc-stack-row">
         <span class="dmc-badge dmc-badge-accent">SQL Server 2025 RTM-CU4</span>
         <span class="dmc-badge">.NET 10 · Blazor Server</span>
         <span class="dmc-badge">EF Core 10</span>
-        <span class="dmc-badge">Ollama · nomic-embed-text · 768 dim</span>
+        <span class="dmc-badge">Ollama nomic-embed-text · 768 dim</span>
     </div>
 </section>
+
+@if (featured is not null && featured.Count > 0)
+{
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-section-title">Öne çıkan ürünler</span>
+            <a href="katalog" class="dmc-card-link" style="font-size: var(--fz-sm);">Tüm katalog (120) →</a>
+        </div>
+        <div class="dmc-grid dmc-grid-cat">
+            @foreach (var p in featured)
+            {
+                <a href="urun/@p.Id" class="dmc-pcard">
+                    <ProductImage ProductId="p.Id" Name="p.Name" CategoryName="p.Category" Sku="p.Sku" Variant="card" />
+                    <div class="dmc-pcard-body">
+                        <div class="dmc-pcard-cat">@p.Category</div>
+                        <h3 class="dmc-pcard-name">@p.Name</h3>
+                        <div class="dmc-pcard-price">@p.Price.ToString("N2") ₺</div>
+                    </div>
+                </a>
+            }
+        </div>
+    </section>
+}
 
 <section class="dmc-section">
     <div class="dmc-section-head">
@@ -27,7 +58,6 @@
     </div>
 
     <div class="dmc-grid dmc-grid-2">
-
         <a href="search" class="dmc-card">
             <span class="dmc-badge">Senaryo 1</span>
             <h3 class="dmc-card-title">Semantik ürün arama</h3>
@@ -46,7 +76,7 @@
             <h3 class="dmc-card-title">Bunu alanlar bunu da aldı</h3>
             <p class="dmc-card-body">
                 Graph MATCH ile 2-hop ürün-müşteri-ürün geçişi. Co-purchase önerileri tek bir SQL
-                sorgusu ile, ek bir öneri motoru kurmadan.
+                sorgusuyla, ek bir öneri motoru kurmadan.
             </p>
             <div class="dmc-card-footer">
                 <span class="dmc-badge dmc-badge-positive">Aktif</span>
@@ -71,15 +101,14 @@
             <span class="dmc-badge">Senaryo 3</span>
             <h3 class="dmc-card-title">Fraud ring tespiti</h3>
             <p class="dmc-card-body">
-                SHORTEST_PATH ile aynı cihaz, IP veya ödeme aracını paylaşan müşteri kümelerini tespit
-                eder. Tek SQL sorgusunda kanıt zincirini metin olarak döner.
+                SHORTEST_PATH ile aynı cihaz, IP veya ödeme aracını paylaşan müşteri kümelerini
+                tespit eder. Tek SQL sorgusunda kanıt zincirini metin olarak döner.
             </p>
             <div class="dmc-card-footer">
                 <span class="dmc-badge">Milestone 3</span>
                 <span class="dmc-card-link">Yakında</span>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -89,21 +118,31 @@
         <span class="dmc-section-meta">deterministik seed</span>
     </div>
     <div class="dmc-grid dmc-grid-4">
-        <div class="dmc-stat">
-            <div class="dmc-stat-label">Ürün</div>
-            <div class="dmc-stat-value">120</div>
-        </div>
-        <div class="dmc-stat">
-            <div class="dmc-stat-label">Müşteri</div>
-            <div class="dmc-stat-value">50</div>
-        </div>
-        <div class="dmc-stat">
-            <div class="dmc-stat-label">Sipariş</div>
-            <div class="dmc-stat-value">400</div>
-        </div>
-        <div class="dmc-stat">
-            <div class="dmc-stat-label">Sipariş satırı</div>
-            <div class="dmc-stat-value">1.200</div>
-        </div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Ürün</div><div class="dmc-stat-value">120</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Müşteri</div><div class="dmc-stat-value">50</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş</div><div class="dmc-stat-value">400</div></div>
+        <div class="dmc-stat"><div class="dmc-stat-label">Sipariş satırı</div><div class="dmc-stat-value">1.200</div></div>
     </div>
 </section>
+
+@code {
+    private IReadOnlyList<FeaturedView>? featured;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Her kategoriden 1 showcase ürün — sabit ID'ler, deterministik seed
+        var ids = new[] { 1021, 1041, 1061, 1083, 1101, 1003 };
+        var products = await Db.Products
+            .Include(p => p.Category)
+            .Where(p => ids.Contains(p.ProductId))
+            .AsNoTracking()
+            .ToListAsync();
+
+        featured = products
+            .OrderBy(p => Array.IndexOf(ids, p.ProductId))
+            .Select(p => new FeaturedView(p.ProductId, p.Sku, p.Name, p.Category?.Name ?? "", p.Price))
+            .ToList();
+    }
+
+    private record FeaturedView(int Id, string Sku, string Name, string Category, decimal Price);
+}

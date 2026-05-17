@@ -27,7 +27,7 @@
 <div class="dmc-search-row">
     <input @bind="query" @bind:event="oninput" @onkeydown="HandleKey"
            class="dmc-search-input" placeholder="Bir ürün arayın — anlamsal olarak…" />
-    <button class="dmc-btn dmc-btn-primary" @onclick="RunAsync" disabled="@busy">
+    <button class="dmc-btn dmc-btn-dark" @onclick="RunAsync" disabled="@busy">
         @(busy ? "Aranıyor…" : "Ara")
     </button>
 </div>
@@ -53,35 +53,32 @@
                 <span class="dmc-panel-title">Vector · DiskANN approximate kNN</span>
                 <span class="dmc-section-meta">@vectorLatencyMs ms · top @(vectorHits?.Count ?? 0)</span>
             </div>
-            <div class="dmc-result-list">
-                @if (vectorHits is null || vectorHits.Count == 0)
-                {
-                    <div class="dmc-empty">Sonuç yok.</div>
-                }
-                else
-                {
+            @if (vectorHits is null || vectorHits.Count == 0)
+            {
+                <div class="dmc-empty">Sonuç yok.</div>
+            }
+            else
+            {
+                <div class="dmc-grid dmc-results-grid dmc-results-grid-compact">
                     @foreach (var h in vectorHits)
                     {
-                        <a href="urun/@h.ProductId" class="dmc-hit">
-                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="thumb" />
-                            <div class="dmc-hit-meta">
-                                <div class="dmc-hit-name">@h.Name</div>
-                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺</div>
-                                @if (!string.IsNullOrWhiteSpace(h.Preview))
-                                {
-                                    <div class="dmc-hit-preview">@h.Preview</div>
-                                }
-                            </div>
-                            <div class="dmc-hit-score">
-                                <div class="dmc-hit-score-value">@h.Distance.ToString("F4")</div>
-                                <div class="dmc-hit-bar">
-                                    <div class="dmc-hit-bar-fill" style="width: @(SimilarityPct(h.Distance))%;"></div>
+                        <a href="urun/@h.ProductId" class="dmc-pcard">
+                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                            <div class="dmc-pcard-body">
+                                <div class="dmc-pcard-cat">@h.CategoryName</div>
+                                <h3 class="dmc-pcard-name">@h.Name</h3>
+                                <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
+                                <div class="dmc-hit-score">
+                                    <span class="dmc-hit-score-num">@h.Distance.ToString("F4")</span>
+                                    <span class="dmc-hit-bar">
+                                        <span class="dmc-hit-bar-fill" style="width: @(SimilarityPct(h.Distance))%; display: block;"></span>
+                                    </span>
                                 </div>
                             </div>
                         </a>
                     }
-                }
-            </div>
+                </div>
+            }
         </div>
 
         <div>
@@ -89,30 +86,26 @@
                 <span class="dmc-panel-title">LIKE · lexical eşleşme</span>
                 <span class="dmc-section-meta">@likeLatencyMs ms · top @(likeHits?.Count ?? 0)</span>
             </div>
-            <div class="dmc-result-list">
-                @if (likeHits is null || likeHits.Count == 0)
-                {
-                    <div class="dmc-empty">Bu sorgu için lexical eşleşme bulunamadı.</div>
-                }
-                else
-                {
+            @if (likeHits is null || likeHits.Count == 0)
+            {
+                <div class="dmc-empty">Bu sorgu için lexical eşleşme bulunamadı.</div>
+            }
+            else
+            {
+                <div class="dmc-grid dmc-results-grid dmc-results-grid-compact">
                     @foreach (var h in likeHits)
                     {
-                        <a href="urun/@h.ProductId" class="dmc-hit">
-                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="thumb" />
-                            <div class="dmc-hit-meta">
-                                <div class="dmc-hit-name">@h.Name</div>
-                                <div class="dmc-hit-sub">@h.CategoryName · @h.Price.ToString("N2") ₺</div>
-                                @if (!string.IsNullOrWhiteSpace(h.Preview))
-                                {
-                                    <div class="dmc-hit-preview">@h.Preview</div>
-                                }
+                        <a href="urun/@h.ProductId" class="dmc-pcard">
+                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                            <div class="dmc-pcard-body">
+                                <div class="dmc-pcard-cat">@h.CategoryName</div>
+                                <h3 class="dmc-pcard-name">@h.Name</h3>
+                                <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
                             </div>
-                            <div class="dmc-hit-score"></div>
                         </a>
                     }
-                }
-            </div>
+                </div>
+            }
         </div>
     </div>
 }
@@ -145,10 +138,9 @@
         try
         {
             var vSw = Stopwatch.StartNew();
-            var vectorTask = SearchSvc.SearchAsync(query, topK: 5);
-
+            var vectorTask = SearchSvc.SearchAsync(query, topK: 6);
             var lSw = Stopwatch.StartNew();
-            var likeTask = SearchSvc.LikeSearchAsync(query, topK: 5);
+            var likeTask = SearchSvc.LikeSearchAsync(query, topK: 6);
 
             await Task.WhenAll(vectorTask, likeTask);
 

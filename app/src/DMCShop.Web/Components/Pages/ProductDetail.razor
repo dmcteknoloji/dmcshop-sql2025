@@ -16,6 +16,16 @@
 }
 else
 {
+    <div class="dmc-breadcrumb">
+        <a href="/">Anasayfa</a>
+        <span class="dmc-breadcrumb-sep">/</span>
+        <a href="katalog">Katalog</a>
+        <span class="dmc-breadcrumb-sep">/</span>
+        <span>@categoryName</span>
+        <span class="dmc-breadcrumb-sep">/</span>
+        <span style="color: var(--text);">@product.Name</span>
+    </div>
+
     <section class="dmc-product-hero">
         <ProductImage ProductId="product.ProductId"
                       Name="product.Name"
@@ -24,28 +34,65 @@ else
                       Variant="hero" />
 
         <div class="dmc-product-info">
-            <span class="dmc-badge">@categoryName</span>
+            <span class="dmc-pcard-cat">@categoryName</span>
             <h1 class="dmc-product-name">@product.Name</h1>
 
             <div class="dmc-product-meta-row">
                 <span>SKU <code>@product.Sku</code></span>
                 <span>·</span>
                 <span>Ürün #@product.ProductId</span>
+                <span>·</span>
+                <span class="dmc-badge dmc-badge-positive">Stokta</span>
             </div>
 
             <p class="dmc-product-desc">@product.DescriptionTr</p>
 
+            <div class="dmc-product-price-row">
+                <span class="dmc-product-price">@product.Price.ToString("N2") ₺</span>
+                <span class="dmc-product-price-tax">KDV dahil</span>
+            </div>
+
+            <div class="dmc-product-cta">
+                <div class="dmc-qty">
+                    <button @onclick="DecQty" type="button">−</button>
+                    <span class="dmc-qty-value">@quantity</span>
+                    <button @onclick="IncQty" type="button">+</button>
+                </div>
+                <button class="dmc-btn dmc-btn-dark dmc-btn-lg" @onclick="AddToCart">Sepete ekle</button>
+                <button class="dmc-btn dmc-btn-ghost dmc-btn-lg" @onclick="Favorite">Favori</button>
+            </div>
+
+            @if (cartMessage is not null)
+            {
+                <div class="dmc-alert" style="margin-top:1.25rem; background:var(--accent-soft); border-color:rgba(164,38,44,0.25); color:var(--accent);">
+                    @cartMessage
+                </div>
+            }
+
+            <div class="dmc-product-trust">
+                <div class="dmc-trust-item">
+                    <span class="dmc-trust-label">Hızlı teslim</span>
+                    <span class="dmc-trust-sub">Aynı gün kargo</span>
+                </div>
+                <div class="dmc-trust-item">
+                    <span class="dmc-trust-label">Güvenli ödeme</span>
+                    <span class="dmc-trust-sub">3D Secure</span>
+                </div>
+                <div class="dmc-trust-item">
+                    <span class="dmc-trust-label">Kolay iade</span>
+                    <span class="dmc-trust-sub">14 gün</span>
+                </div>
+            </div>
+
             @if (!string.IsNullOrWhiteSpace(product.DescriptionEn))
             {
-                <details>
-                    <summary style="cursor:pointer; color:var(--text-muted); font-size:0.86rem; margin-top:1.25rem; user-select:none;">
+                <details style="margin-top:1.75rem;">
+                    <summary style="cursor:pointer; color:var(--text-muted); font-size:0.86rem; user-select:none;">
                         English description
                     </summary>
                     <p class="dmc-product-desc-en">@product.DescriptionEn</p>
                 </details>
             }
-
-            <div class="dmc-product-price">@product.Price.ToString("N2") ₺</div>
         </div>
     </section>
 
@@ -65,20 +112,22 @@ else
         }
         else
         {
-            <div class="dmc-grid dmc-grid-3">
+            <div class="dmc-grid dmc-grid-cat">
                 @foreach (var r in recommendations)
                 {
-                    <a href="urun/@r.RecommendedProductId" class="dmc-card">
+                    <a href="urun/@r.RecommendedProductId" class="dmc-pcard">
                         <ProductImage ProductId="r.RecommendedProductId"
                                       Name="r.RecommendedName"
                                       CategoryName="r.CategoryName"
                                       Variant="card" />
-                        <span class="dmc-badge" style="margin-top: 0.75rem; align-self: flex-start;">@r.CategoryName</span>
-                        <h3 class="dmc-card-title">@r.RecommendedName</h3>
-                        <div class="dmc-card-body">@r.Price.ToString("N2") ₺</div>
-                        <div class="dmc-card-footer">
-                            <span class="dmc-badge dmc-badge-accent">@r.CoBuyerCount müşteri birlikte aldı</span>
-                            <span class="dmc-card-link">İncele →</span>
+                        <div class="dmc-pcard-body">
+                            <div class="dmc-pcard-cat">@r.CategoryName</div>
+                            <h3 class="dmc-pcard-name">@r.RecommendedName</h3>
+                            <div class="dmc-pcard-price">@r.Price.ToString("N2") ₺</div>
+                            <div class="dmc-pcard-foot">
+                                <span class="dmc-badge dmc-badge-accent">@r.CoBuyerCount müşteri</span>
+                                <span class="dmc-card-link">İncele →</span>
+                            </div>
                         </div>
                     </a>
                 }
@@ -95,6 +144,9 @@ else
     private IReadOnlyList<CoPurchaseRow>? recommendations;
     private int lastLoadedFor = -1;
 
+    private int quantity = 1;
+    private string? cartMessage;
+
     protected override async Task OnParametersSetAsync()
     {
         if (ProductId == lastLoadedFor) return;
@@ -107,10 +159,25 @@ else
 
         categoryName    = product?.Category?.Name;
         recommendations = null;
+        quantity        = 1;
+        cartMessage     = null;
 
         if (product is not null)
         {
             recommendations = await Recommend.CoPurchaseAsync(ProductId, topK: 9);
         }
+    }
+
+    private void IncQty() => quantity = Math.Min(99, quantity + 1);
+    private void DecQty() => quantity = Math.Max(1, quantity - 1);
+
+    private void AddToCart()
+    {
+        cartMessage = $"{quantity} adet sepete eklendi — bu demo'da sepet kalıcı değildir.";
+    }
+
+    private void Favorite()
+    {
+        cartMessage = "Favorilere eklendi — bu demo'da kalıcı değildir.";
     }
 }

@@ -1,0 +1,138 @@
+@page "/katalog"
+@rendermode InteractiveServer
+@using DMCShop.Data
+@using DMCShop.Domain.Entities
+@using Microsoft.EntityFrameworkCore
+@inject DMCShopDbContext Db
+
+<PageTitle>Katalog — DMCShop</PageTitle>
+
+<section class="dmc-hero" style="padding-bottom: 1rem;">
+    <div class="dmc-hero-eyebrow">Katalog</div>
+    <h1>120 ürün, 6 kategori</h1>
+    <p class="dmc-hero-lead">
+        Demo veri tabanındaki tüm ürünler. Kategoriye göre filtreleyin veya fiyata göre sıralayın.
+        Tıklayarak ürün detayına ve "Bunu alanlar bunu da aldı" graph önerilerine ulaşabilirsiniz.
+    </p>
+</section>
+
+<div class="dmc-catalog">
+    <aside class="dmc-filter">
+        <div class="dmc-filter-title">Kategori</div>
+        <div class="dmc-filter-list">
+            <button class="dmc-filter-item @(activeCat is null ? "active" : "")" @onclick="() => SetCategory(null)">
+                <span>Tümü</span>
+                <span class="dmc-filter-count">@totalCount</span>
+            </button>
+            @foreach (var c in categories)
+            {
+                <button class="dmc-filter-item @(activeCat == c.CategoryId ? "active" : "")"
+                        @onclick="() => SetCategory(c.CategoryId)">
+                    <span>@c.Name</span>
+                    <span class="dmc-filter-count">@c.Count</span>
+                </button>
+            }
+        </div>
+    </aside>
+
+    <div>
+        <div class="dmc-toolbar">
+            <div class="dmc-toolbar-count">
+                <strong style="color:var(--text);">@filteredProducts.Count</strong> ürün
+                @if (activeCatName is not null)
+                {
+                    <span> · @activeCatName</span>
+                }
+            </div>
+            <div class="dmc-toolbar-sort">
+                <span style="font-size:0.82rem; color:var(--text-muted);">Sırala:</span>
+                <select class="dmc-select" @bind="sortKey" @bind:after="ApplySort">
+                    <option value="name">Ada göre (A–Z)</option>
+                    <option value="price-asc">Fiyat (artan)</option>
+                    <option value="price-desc">Fiyat (azalan)</option>
+                </select>
+            </div>
+        </div>
+
+        @if (filteredProducts.Count == 0)
+        {
+            <div class="dmc-empty">Bu kategoride ürün bulunamadı.</div>
+        }
+        else
+        {
+            <div class="dmc-grid dmc-grid-cat">
+                @foreach (var p in filteredProducts)
+                {
+                    <a href="urun/@p.ProductId" class="dmc-pcard">
+                        <ProductImage ProductId="p.ProductId" Name="p.Name" CategoryName="p.Category?.Name" Sku="p.Sku" Variant="card" />
+                        <div class="dmc-pcard-body">
+                            <div class="dmc-pcard-cat">@p.Category?.Name</div>
+                            <h3 class="dmc-pcard-name">@p.Name</h3>
+                            <div class="dmc-pcard-price">@p.Price.ToString("N2") ₺</div>
+                            <div class="dmc-pcard-foot">
+                                <span>@p.Sku</span>
+                                <span class="dmc-card-link">İncele →</span>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Product> allProducts = new();
+    private List<Product> filteredProducts = new();
+    private List<CategoryView> categories = new();
+    private int totalCount;
+
+    private int? activeCat;
+    private string? activeCatName;
+    private string sortKey = "name";
+
+    protected override async Task OnInitializedAsync()
+    {
+        allProducts = await Db.Products
+            .Include(p => p.Category)
+            .AsNoTracking()
+            .ToListAsync();
+
+        totalCount = allProducts.Count;
+
+        categories = allProducts
+            .Where(p => p.Category is not null)
+            .GroupBy(p => new { p.CategoryId, Name = p.Category!.Name })
+            .Select(g => new CategoryView(g.Key.CategoryId, g.Key.Name, g.Count()))
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        ApplyFilters();
+    }
+
+    private void SetCategory(int? id)
+    {
+        activeCat     = id;
+        activeCatName = id is null ? null : categories.FirstOrDefault(c => c.CategoryId == id)?.Name;
+        ApplyFilters();
+    }
+
+    private void ApplySort() => ApplyFilters();
+
+    private void ApplyFilters()
+    {
+        IEnumerable<Product> q = allProducts;
+        if (activeCat is { } cid) q = q.Where(p => p.CategoryId == cid);
+
+        q = sortKey switch
+        {
+            "price-asc"  => q.OrderBy(p => p.Price),
+            "price-desc" => q.OrderByDescending(p => p.Price),
+            _            => q.OrderBy(p => p.Name)
+        };
+
+        filteredProducts = q.ToList();
+    }
+
+    private record CategoryView(int CategoryId, string Name, int Count);
+}
