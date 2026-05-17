@@ -8,80 +8,95 @@
 @inject DMCShopDbContext Db
 @inject GraphRecommendService Recommend
 
-<PageTitle>Ürün @ProductId</PageTitle>
+<PageTitle>@(product?.Name ?? "Ürün") — DMCShop</PageTitle>
 
 @if (product is null)
 {
-    <p>Yükleniyor…</p>
+    <div class="dmc-loading">Ürün yükleniyor…</div>
 }
 else
 {
-    <h1>@product.Name</h1>
-    <p class="text-muted">
-        SKU <code>@product.Sku</code> · @category · @product.Price.ToString("N2") ₺
-    </p>
-    <p>@product.DescriptionTr</p>
+    <section class="dmc-product-hero">
+        <div>
+            <div class="dmc-hero-eyebrow">@categoryName</div>
+            <h1>@product.Name</h1>
+            <p class="dmc-product-desc">@product.DescriptionTr</p>
+            @if (!string.IsNullOrWhiteSpace(product.DescriptionEn))
+            {
+                <details style="margin-top:1.25rem;">
+                    <summary style="cursor:pointer; color:var(--dmc-text-muted); font-size:0.88rem;">İngilizce açıklama</summary>
+                    <p class="dmc-product-desc" style="font-style:italic;">@product.DescriptionEn</p>
+                </details>
+            }
+        </div>
+        <aside>
+            <div class="dmc-card" style="position:sticky; top:96px;">
+                <div class="dmc-card-body">Fiyat</div>
+                <div class="dmc-product-price">@product.Price.ToString("N2") ₺</div>
+                <div class="dmc-product-meta">SKU <code>@product.Sku</code></div>
+                <div class="dmc-product-meta">Ürün No <code>#@product.ProductId</code></div>
+            </div>
+        </aside>
+    </section>
 
-    <hr class="my-4" />
+    <section>
+        <div class="dmc-panel-head">
+            <span class="dmc-panel-title">Bunu alanlar bunu da aldı</span>
+            <span class="dmc-panel-meta">graph MATCH · 2-hop</span>
+        </div>
 
-    <h3>Bunu alanlar bunu da aldı</h3>
-    <p class="text-muted small">
-        Graph 2-hop: bu ürünü alan müşterilerin birlikte aldığı ürünler.
-    </p>
-
-    @if (recommendations is null)
-    {
-        <p>Hesaplanıyor…</p>
-    }
-    else if (recommendations.Count == 0)
-    {
-        <p class="text-muted">Bu ürün için co-purchase önerisi yok.</p>
-    }
-    else
-    {
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>Ürün</th>
-                    <th>Kategori</th>
-                    <th class="text-end">Fiyat</th>
-                    <th class="text-end">Birlikte alım</th>
-                </tr>
-            </thead>
-            <tbody>
+        @if (recommendations is null)
+        {
+            <div class="dmc-loading">Hesaplanıyor…</div>
+        }
+        else if (recommendations.Count == 0)
+        {
+            <div class="dmc-empty">Bu ürün için co-purchase önerisi henüz yok.</div>
+        }
+        else
+        {
+            <div class="dmc-grid dmc-grid-3">
                 @foreach (var r in recommendations)
                 {
-                    <tr>
-                        <td><a href="urun/@r.RecommendedProductId">@r.RecommendedName</a></td>
-                        <td>@r.CategoryName</td>
-                        <td class="text-end">@r.Price.ToString("N2") ₺</td>
-                        <td class="text-end"><strong>@r.CoBuyerCount</strong></td>
-                    </tr>
+                    <a href="urun/@r.RecommendedProductId" class="dmc-card" style="border:none;">
+                        <span class="dmc-badge">@r.CategoryName</span>
+                        <h3 class="dmc-card-title">@r.RecommendedName</h3>
+                        <div class="dmc-card-body">@r.Price.ToString("N2") ₺</div>
+                        <div class="dmc-card-footer">
+                            <span class="dmc-badge dmc-badge-accent">@r.CoBuyerCount müşteri</span>
+                            <span class="dmc-card-link">İncele →</span>
+                        </div>
+                    </a>
                 }
-            </tbody>
-        </table>
-    }
+            </div>
+        }
+    </section>
 }
 
 @code {
     [Parameter] public int ProductId { get; set; }
 
     private Product? product;
-    private string? category;
+    private string? categoryName;
     private IReadOnlyList<CoPurchaseRow>? recommendations;
+    private int lastLoadedFor = -1;
 
     protected override async Task OnParametersSetAsync()
     {
+        if (ProductId == lastLoadedFor) return;
+        lastLoadedFor = ProductId;
+
         product = await Db.Products
             .Include(p => p.Category)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ProductId == ProductId);
 
-        category = product?.Category?.Name;
+        categoryName    = product?.Category?.Name;
+        recommendations = null;
 
         if (product is not null)
         {
-            recommendations = await Recommend.CoPurchaseAsync(ProductId, topK: 10);
+            recommendations = await Recommend.CoPurchaseAsync(ProductId, topK: 9);
         }
     }
 }

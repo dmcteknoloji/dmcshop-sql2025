@@ -1,46 +1,91 @@
 @page "/"
 
-<PageTitle>DMCShop</PageTitle>
+<PageTitle>DMCShop — SQL Server 2025 referans uygulaması</PageTitle>
 
-<h1>DMCShop</h1>
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">DMC Bilgi Teknolojileri</div>
+    <h1>SQL Server 2025'in vektör ve graf gücü, tek bir e-ticaret üzerinde.</h1>
+    <p class="dmc-hero-lead">
+        DMCShop, SQL Server 2025'in yerleşik <strong>VECTOR(N) + DiskANN</strong> ve <strong>GRAPH NODE/EDGE</strong>
+        özelliklerinin üretim senaryolarındaki karşılığını gösteren açık kaynak bir referans uygulamadır.
+        120 ürünlük gerçekçi bir katalogda anlamsal arama, ürün önerisi ve ileri ilişki analizleri uçtan uca
+        çalışır.
+    </p>
 
-<p class="lead">
-    SQL Server 2025 graph + vector demo. Klasik bir e-ticaret iskeleti üzerinde
-    <code>VECTOR_SEARCH + DiskANN</code> ve <code>GRAPH MATCH</code> özelliklerini canlandırır.
-</p>
-
-<div class="row g-3 mt-3">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Semantik Arama</h5>
-                <p class="card-text">
-                    "rahat klavye" gibi anlam tabanlı sorgularda LIKE'ın bulamadığı ürünleri
-                    vector search ile bulun. DiskANN approximate kNN.
-                </p>
-                <a href="search" class="btn btn-primary">Aç</a>
-            </div>
-        </div>
+    <div class="dmc-stack-row">
+        <span class="dmc-badge dmc-badge-accent">SQL Server 2025 RTM-CU4</span>
+        <span class="dmc-badge">.NET 10 · Blazor Server</span>
+        <span class="dmc-badge">EF Core 10 + raw VECTOR_SEARCH</span>
+        <span class="dmc-badge">Ollama nomic-embed-text · 768 dim</span>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Bunu Alanlar Bunu Da Aldı</h5>
-                <p class="card-text">
-                    2-hop graph traversal: bir ürünü alan müşterilerin birlikte aldığı diğer ürünler.
-                </p>
-                <a href="urun/1041" class="btn btn-primary">Aç (Etiyopya Kahve)</a>
-            </div>
-        </div>
-    </div>
+</section>
+
+<div class="dmc-panel-head">
+    <span class="dmc-panel-title">Demo senaryoları</span>
+    <span class="dmc-panel-meta">2 aktif · 2 yakında</span>
 </div>
 
-<hr class="my-4" />
+<div class="dmc-grid dmc-grid-2">
 
-<h2>Sonraki adımlar</h2>
-<ol>
-    <li><code>docker compose -f scripts/docker-compose.yml up -d</code> — SQL Server 2025 ve Ollama.</li>
-    <li><code>./scripts/bootstrap.sh</code> — schema ve seed verisi.</li>
-    <li><code>dotnet run --project app/src/DMCShop.Cli -- embed-products</code> — ürün embedding'lerini üret.</li>
-    <li><code>dotnet run --project app/src/DMCShop.Web</code> — bu sayfa.</li>
-</ol>
+    <a href="search" class="dmc-card" style="border:none;">
+        <h3 class="dmc-card-title">Semantik ürün arama</h3>
+        <p class="dmc-card-body">
+            VECTOR_SEARCH + DiskANN ile yaklaşık kNN. "rahat ergonomik klavye" gibi anlam tabanlı sorgularda
+            LIKE'ın boş döndürdüğü durumlarda doğru ürünleri yakalar. Sonuçlar cosine distance'a göre.
+        </p>
+        <div class="dmc-card-footer">
+            <span class="dmc-badge dmc-badge-positive">Aktif</span>
+            <span class="dmc-card-link">Aç →</span>
+        </div>
+    </a>
+
+    <a href="urun/1041" class="dmc-card" style="border:none;">
+        <h3 class="dmc-card-title">Bunu alanlar bunu da aldı</h3>
+        <p class="dmc-card-body">
+            Graph MATCH ile 2-hop ürün-müşteri-ürün geçişi: p1 ← (purchased) - customer - (purchased) → p2.
+            Co-purchase önerileri tek bir SQL sorgusu ile, ek bir öneri motoru kurmadan.
+        </p>
+        <div class="dmc-card-footer">
+            <span class="dmc-badge dmc-badge-positive">Aktif</span>
+            <span class="dmc-card-link">Aç →</span>
+        </div>
+    </a>
+
+    <div class="dmc-card">
+        <h3 class="dmc-card-title">RAG tabanlı ürün asistanı</h3>
+        <p class="dmc-card-body">
+            Vector retrieval + chat completion. Sohbet ekranından sorulan soruya en uygun ürünleri çekip
+            doğal dilde özet yanıt üretir. Tüm çağrılar <code>vector.query_log</code>'a yazılır.
+        </p>
+        <div class="dmc-card-footer">
+            <span class="dmc-badge">Milestone 3</span>
+            <span class="dmc-card-link" style="color: var(--dmc-text-dim);">Yakında</span>
+        </div>
+    </div>
+
+    <div class="dmc-card">
+        <h3 class="dmc-card-title">Fraud ring tespiti</h3>
+        <p class="dmc-card-body">
+            SHORTEST_PATH ile aynı cihaz / IP / ödeme aracını paylaşan müşteri kümelerini tespit eder.
+            Tek SQL sorgusunda kanıt zincirini metin olarak döner.
+        </p>
+        <div class="dmc-card-footer">
+            <span class="dmc-badge">Milestone 3</span>
+            <span class="dmc-card-link" style="color: var(--dmc-text-dim);">Yakında</span>
+        </div>
+    </div>
+
+</div>
+
+<div style="margin-top: 3.5rem;">
+    <div class="dmc-panel-head">
+        <span class="dmc-panel-title">Demo veri tabanı</span>
+        <span class="dmc-panel-meta">deterministik seed</span>
+    </div>
+    <div class="dmc-grid dmc-grid-4">
+        <div class="dmc-card"><div class="dmc-card-body">Ürün</div><div style="font-size:1.8rem; font-weight:600;">120</div></div>
+        <div class="dmc-card"><div class="dmc-card-body">Müşteri</div><div style="font-size:1.8rem; font-weight:600;">50</div></div>
+        <div class="dmc-card"><div class="dmc-card-body">Sipariş</div><div style="font-size:1.8rem; font-weight:600;">400</div></div>
+        <div class="dmc-card"><div class="dmc-card-body">Sipariş satırı</div><div style="font-size:1.8rem; font-weight:600;">1.200</div></div>
+    </div>
+</div>

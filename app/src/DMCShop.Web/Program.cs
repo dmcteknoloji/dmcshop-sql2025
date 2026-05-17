@@ -2,13 +2,15 @@ using DMCShop.Data;
 using DMCShop.Providers;
 using DMCShop.Search;
 using DMCShop.Web.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddDMCShopData(builder.Configuration)
     .AddDMCShopProviders(builder.Configuration)
-    .AddDMCShopSearch();
+    .AddDMCShopSearch()
+    .AddFluentUIComponents();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

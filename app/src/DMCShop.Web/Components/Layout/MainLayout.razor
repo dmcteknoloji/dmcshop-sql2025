@@ -1,23 +1,56 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<FluentDesignTheme Mode="DesignThemeModes.Dark" CustomColor="#A4262C" StorageName="dmcshop-theme" />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="dmc-shell">
+
+    <header class="dmc-header">
+        <div class="dmc-brand">
+            <a href="/" style="display:flex; align-items:center; gap:0.75rem; border:none;">
+                <img src="brand/dmc-logo.png" alt="DMC" />
+            </a>
+            <div class="dmc-brand-divider"></div>
+            <div>
+                <div class="dmc-brand-title">DMCShop</div>
+                <div class="dmc-brand-sub">SQL Server 2025 — Vector & Graph referans uygulaması</div>
+            </div>
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
+        <nav class="dmc-nav">
+            <NavLink href="" Match="NavLinkMatch.All">Genel bakış</NavLink>
+            <NavLink href="search">Semantik arama</NavLink>
+            <NavLink href="urun/1041">Co-purchase</NavLink>
+            <a href="https://github.com/dmcteknoloji/dmcshop-sql2025" target="_blank" rel="noreferrer">GitHub</a>
+        </nav>
+    </header>
+
+    <main class="dmc-main">
+        @Body
     </main>
+
+    <footer class="dmc-footer">
+        <div class="dmc-footer-inner">
+            <div>
+                <strong style="color: var(--dmc-text);">DMC Bilgi Teknolojileri</strong>
+                <span style="margin-left: 0.5rem;">— SQL Server 2025 referans uygulaması</span>
+            </div>
+            <div style="display:flex; gap:1.25rem; align-items:center;">
+                <span class="dmc-badge">SQL Server 2025 RTM-CU4</span>
+                <span class="dmc-badge">.NET 10</span>
+                <span class="dmc-badge">EF Core 10</span>
+                <a href="https://dmcteknoloji.com" target="_blank" rel="noreferrer">dmcteknoloji.com</a>
+            </div>
+        </div>
+    </footer>
+
 </div>
 
+<FluentToastProvider />
+<FluentDialogProvider />
+<FluentTooltipProvider />
+
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    Beklenmedik bir hata oluştu.
+    <a href="." class="reload">Yeniden yükle</a>
+    <span class="dismiss">x</span>
 </div>
