@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1f3a"/>
+      <stop offset="60%" stop-color="#0f2c4d"/>
+      <stop offset="100%" stop-color="#1a3a5e"/>
+    </linearGradient>
+    <linearGradient id="vecGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#58a6ff" stop-opacity="0.1"/>
+    </linearGradient>
+    <style>
+      .publisher-tag { font: 500 11px "Avenir Next", "Helvetica Neue", sans-serif; fill: #c9d1d9; letter-spacing: 0.25em; text-transform: uppercase; }
+      .main-title    { font: 700 86px "Avenir Next", "Helvetica Neue", sans-serif; fill: #ffffff; }
+      .sub-version   { font: 400 24px "Iowan Old Style", Georgia, serif; fill: #c9d1d9; font-style: italic; }
+      .pitch         { font: 400 14px "Iowan Old Style", Georgia, serif; fill: #e0e6ed; }
+      .author-tag    { font: 600 14px "Avenir Next", sans-serif; fill: #ffffff; letter-spacing: 0.2em; text-transform: uppercase; }
+      .author-name   { font: 700 30px "Avenir Next", sans-serif; fill: #ffffff; }
+      .author-meta   { font: 400 13px "Iowan Old Style", Georgia, serif; fill: #c9d1d9; font-style: italic; }
+      .publisher-foot{ font: 500 11px "Avenir Next", sans-serif; fill: #c9d1d9; letter-spacing: 0.2em; text-transform: uppercase; }
+      .vec-num       { font: 400 9px "JetBrains Mono", "SF Mono", monospace; fill: #58a6ff; opacity: 0.5; }
+      .badge         { font: 600 10px "Avenir Next", sans-serif; fill: #0f2c4d; letter-spacing: 0.15em; text-transform: uppercase; }
+    </style>
+  </defs>
+
+  <!-- Arkaplan -->
+  <rect width="600" height="900" fill="url(#bgGrad)"/>
+
+  <!-- Vector koordinat dokusu (arka plan dekorasyonu) -->
+  <g opacity="0.25">
+    <text x="40" y="240" class="vec-num">[0.234, -0.412, 0.873,</text>
+    <text x="40" y="252" class="vec-num">  0.156, 0.928, -0.341,</text>
+    <text x="40" y="264" class="vec-num">  -0.789, 0.432, 0.612,</text>
+    <text x="40" y="276" class="vec-num">  0.058, -0.247, 0.891, ...]</text>
+
+    <text x="420" y="540" class="vec-num">SELECT TOP(N)</text>
+    <text x="420" y="552" class="vec-num">VECTOR_DISTANCE(</text>
+    <text x="420" y="564" class="vec-num">  'cosine', v1, v2)</text>
+    <text x="420" y="576" class="vec-num">WITH APPROXIMATE</text>
+  </g>
+
+  <!-- Vector mesh (görsel öğe — dekorasyon) -->
+  <g opacity="0.18" stroke="#58a6ff" stroke-width="0.6" fill="none">
+    <circle cx="120" cy="380" r="3"/>
+    <circle cx="180" cy="420" r="3"/>
+    <circle cx="240" cy="395" r="3"/>
+    <circle cx="300" cy="445" r="3"/>
+    <circle cx="380" cy="410" r="3"/>
+    <circle cx="450" cy="455" r="3"/>
+    <line x1="120" y1="380" x2="180" y2="420"/>
+    <line x1="180" y1="420" x2="240" y2="395"/>
+    <line x1="240" y1="395" x2="300" y2="445"/>
+    <line x1="300" y1="445" x2="380" y2="410"/>
+    <line x1="380" y1="410" x2="450" y2="455"/>
+    <line x1="180" y1="420" x2="300" y2="445"/>
+    <line x1="240" y1="395" x2="380" y2="410"/>
+  </g>
+
+  <!-- Üst: yayıncı etiketi -->
+  <text x="60" y="90" class="publisher-tag">DMC Bilgi Teknolojileri · Türkçe Teknik Kitaplık</text>
+  <line x1="60" y1="105" x2="280" y2="105" stroke="#58a6ff" stroke-width="1"/>
+
+  <!-- Ana başlık -->
+  <text x="60" y="280" class="main-title">SQL</text>
+  <text x="60" y="370" class="main-title">Server</text>
+  <text x="60" y="460" class="main-title">2025</text>
+
+  <!-- Ayırıcı çizgi -->
+  <line x1="60" y1="490" x2="180" y2="490" stroke="#ffffff" stroke-width="1.5"/>
+
+  <!-- Pitch / alt başlık -->
+  <text x="60" y="525" class="sub-version">Vector, AI, Fabric ve doğal dil çağında</text>
+  <text x="60" y="555" class="sub-version">her rol için Türkçe rehber</text>
+
+  <!-- Özellik etiketleri -->
+  <g transform="translate(60,600)">
+    <rect width="120" height="22" rx="11" fill="#58a6ff"/>
+    <text x="60" y="15" text-anchor="middle" class="badge">VECTOR + DiskANN</text>
+  </g>
+  <g transform="translate(190,600)">
+    <rect width="130" height="22" rx="11" fill="#58a6ff"/>
+    <text x="65" y="15" text-anchor="middle" class="badge">AI_GENERATE_*</text>
+  </g>
+  <g transform="translate(330,600)">
+    <rect width="105" height="22" rx="11" fill="#58a6ff"/>
+    <text x="52" y="15" text-anchor="middle" class="badge">SQL MCP Server</text>
+  </g>
+  <g transform="translate(60,630)">
+    <rect width="100" height="22" rx="11" fill="#58a6ff"/>
+    <text x="50" y="15" text-anchor="middle" class="badge">Copilot in SSMS</text>
+  </g>
+  <g transform="translate(170,630)">
+    <rect width="120" height="22" rx="11" fill="#58a6ff"/>
+    <text x="60" y="15" text-anchor="middle" class="badge">11 Rol için yol</text>
+  </g>
+
+  <!-- Yazar bloğu -->
+  <line x1="60" y1="730" x2="540" y2="730" stroke="#58a6ff" stroke-width="0.6" opacity="0.6"/>
+  <text x="60" y="760" class="author-tag">Çağlar Özenç</text>
+  <text x="60" y="800" class="author-name">Çağlar Özenç</text>
+  <text x="60" y="822" class="author-meta">Microsoft Data Platform MVP</text>
+
+  <!-- Alt: yayın bilgisi -->
+  <line x1="60" y1="855" x2="540" y2="855" stroke="#58a6ff" stroke-width="0.6" opacity="0.6"/>
+  <text x="60" y="880" class="publisher-foot">DMC Bilgi Teknolojileri · v1.0 · 15 Mayıs 2026</text>
+</svg>

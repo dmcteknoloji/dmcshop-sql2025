@@ -4,14 +4,25 @@
     Emoji/icon yok — sadece tipografi + gradient kompozisyon.
 *@
 
-<div class="dmc-pimg dmc-pimg-@Variant" style="@($"background: {Gradient};")"
-     role="img" aria-label="@Name">
-    <span class="dmc-pimg-mono" style="@($"color: {Mono};")">@Monogram</span>
-    @if (Variant != "thumb")
-    {
-        <span class="dmc-pimg-watermark">@SkuOrId</span>
-    }
-</div>
+@if (CustomImage is { Length: > 0 })
+{
+    <div class="dmc-pimg dmc-pimg-@Variant" style="background: #FFFFFF; padding: 0; overflow: hidden;"
+         role="img" aria-label="@Name">
+        <img src="@CustomImage" alt="@Name"
+             style="width: 100%; height: 100%; object-fit: contain; display: block;" />
+    </div>
+}
+else
+{
+    <div class="dmc-pimg dmc-pimg-@Variant" style="@($"background: {Gradient};")"
+         role="img" aria-label="@Name">
+        <span class="dmc-pimg-mono" style="@($"color: {Mono};")">@Monogram</span>
+        @if (Variant != "thumb")
+        {
+            <span class="dmc-pimg-watermark">@SkuOrId</span>
+        }
+    </div>
+}
 
 @code {
     [Parameter, EditorRequired] public int    ProductId    { get; set; }
@@ -24,6 +35,13 @@
 
     private string Monogram => BuildMonogram(Name);
     private string SkuOrId  => Sku ?? $"#{ProductId}";
+
+    /// <summary>Özel kapak/görsel URL'i olan ürünler. Diğerleri monogram gradient.</summary>
+    private string? CustomImage => ProductId switch
+    {
+        100001 => "brand/book-cover-sql2025.svg",   // SQL Server 2025: Herkes İçin, Her Rol İçin
+        _      => null
+    };
 
     private (string from, string to, string mono) Palette =>
         CategoryName switch
