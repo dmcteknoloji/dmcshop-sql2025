@@ -66,7 +66,25 @@ html, body {
     margin: 0;
     padding: 0;
     text-rendering: optimizeLegibility;
+    /* Mobil yatay kayma koruması: tek element viewport'u aşsa bile
+       sayfa kaymaz. Bir alt katman içeride scrollable olmalı (pre/table). */
+    overflow-x: hidden;
+    width: 100%;
 }
+
+/* Medya elemanları container'a sığsın */
+img, svg, video, canvas { max-width: 100%; height: auto; }
+
+/* Uzun URL / yapıştırılmış metin satır taşırmasın */
+.dmc-chat-a, .dmc-chat-q, .dmc-pcard-name, .dmc-section-title,
+.dmc-hero-lead, p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Pre/kod blokları kendi içinde kaysın, sayfayı kaydırmasın */
+pre, code, table { max-width: 100%; }
+pre { overflow-x: auto; }
 
 h1, h2, h3, h4, h5 {
     color: var(--text);
