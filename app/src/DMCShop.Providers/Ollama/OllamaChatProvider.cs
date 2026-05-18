@@ -37,7 +37,8 @@ public sealed class OllamaChatProvider(IHttpClientFactory httpFactory, IOptions<
                 new OllamaMessage("system", systemPrompt),
                 new OllamaMessage("user",   fullUser)
             ],
-            Stream: false);
+            Stream: false,
+            Options: new OllamaChatOptions());
 
         var response = await http.PostAsJsonAsync("/api/chat", request, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -70,7 +71,8 @@ public sealed class OllamaChatProvider(IHttpClientFactory httpFactory, IOptions<
                 new OllamaMessage("system", systemPrompt),
                 new OllamaMessage("user",   fullUser)
             ],
-            Stream: true);
+            Stream: true,
+            Options: new OllamaChatOptions(NumPredict: 200));
 
         using var content = JsonContent.Create(request);
         using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = content };
@@ -102,7 +104,15 @@ public sealed class OllamaChatProvider(IHttpClientFactory httpFactory, IOptions<
 internal sealed record OllamaChatRequest(
     [property: JsonPropertyName("model")]    string Model,
     [property: JsonPropertyName("messages")] IReadOnlyList<OllamaMessage> Messages,
-    [property: JsonPropertyName("stream")]   bool Stream);
+    [property: JsonPropertyName("stream")]   bool Stream,
+    [property: JsonPropertyName("options")]  OllamaChatOptions? Options = null);
+
+// num_predict: yanıt token tavanı. CPU-only B4ms'te tek token ~50-80 ms;
+// 160 token üst sınır ortalama yanıtı ~10-13 sn'ye çeker. System prompt
+// zaten "3-4 cümle" kısıtı koyduğu için kesim çok nadir görülür.
+internal sealed record OllamaChatOptions(
+    [property: JsonPropertyName("num_predict")] int NumPredict = 160,
+    [property: JsonPropertyName("temperature")] double Temperature = 0.2);
 
 internal sealed record OllamaMessage(
     [property: JsonPropertyName("role")]    string Role,

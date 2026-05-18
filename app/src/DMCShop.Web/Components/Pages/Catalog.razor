@@ -50,7 +50,7 @@
             </div>
             <div class="dmc-toolbar-sort">
                 <input class="dmc-search-input" style="height: 38px; padding: 0.5rem 0.85rem; min-width: 220px;"
-                       @bind="productSearch" @bind:event="oninput" @bind:after="ResetPage" placeholder="Ürün ara…" />
+                       @bind="productSearch" @bind:event="oninput" @bind:after="OnSearchChanged" placeholder="Ürün ara…" />
                 <select class="dmc-select" @bind="sortKey" @bind:after="ResetPage">
                     <option value="name">Ada göre (A–Z)</option>
                     <option value="price-asc">Fiyat (artan)</option>
@@ -131,6 +131,12 @@
     private string categorySearch  = string.Empty;
     private string productSearch   = string.Empty;
 
+    // Her tuş vuruşunda DB sorgusu atmak Blazor SignalR pipeline'ını ve DbContext'i
+    // tıkar (concurrent operation). 300 ms debounce + tek-uçucu CancellationTokenSource
+    // yalnızca "yazma duraklayınca" arama tetikler.
+    private CancellationTokenSource? searchCts;
+    private readonly SemaphoreSlim loadGate = new(1, 1);
+
     private List<CategoryView> categories = new();
     private List<ProductView>  pageItems  = new();
 
@@ -155,8 +161,29 @@
         await LoadPageAsync();
     }
 
+    private async Task OnSearchChanged()
+    {
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+        var token = searchCts.Token;
+        try
+        {
+            await Task.Delay(300, token);
+            page0 = 1;
+            await LoadPageAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Daha yeni bir tuş vuruşu geldi; bu çağrı atlanır.
+        }
+    }
+
     private async Task LoadPageAsync()
     {
+        // Concurrent çağrıları seri hale getir — DbContext tek bir EF Core sorgusunu
+        // aynı anda paylaşamaz; aksi halde "An attempt was made to use the context
+        // while it is being configured" istisnası gelir.
+        await loadGate.WaitAsync();
         busy = true;
         try
         {
@@ -166,8 +193,11 @@
 
             if (!string.IsNullOrWhiteSpace(productSearch))
             {
-                var needle = productSearch.Trim();
-                q = q.Where(p => p.Name.Contains(needle) || p.Sku.Contains(needle));
+                var needle = "%" + productSearch.Trim() + "%";
+                q = q.Where(p =>
+                    EF.Functions.Like(p.Name, needle) ||
+                    EF.Functions.Like(p.Sku,  needle) ||
+                    (p.DescriptionTr != null && EF.Functions.Like(p.DescriptionTr, needle)));
             }
 
             filteredCount = await q.CountAsync();
@@ -193,6 +223,7 @@
         finally
         {
             busy = false;
+            loadGate.Release();
         }
     }
 

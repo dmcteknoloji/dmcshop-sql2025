@@ -34,7 +34,7 @@ public sealed class RagAssistantService(
         var total = Stopwatch.StartNew();
 
         var rSw = Stopwatch.StartNew();
-        var hits = await vectorSearch.SearchAsync(question, topK, cancellationToken);
+        var hits = await vectorSearch.HybridSearchAsync(question, topK, cancellationToken: cancellationToken);
         rSw.Stop();
 
         var contextChunks = hits.Select(h =>
@@ -79,7 +79,7 @@ public sealed class RagAssistantService(
         var total = Stopwatch.StartNew();
 
         var rSw = Stopwatch.StartNew();
-        var hits = await vectorSearch.SearchAsync(question, topK, cancellationToken);
+        var hits = await vectorSearch.HybridSearchAsync(question, topK, cancellationToken: cancellationToken);
         rSw.Stop();
 
         // İlk chunk: retrieval bitti, henüz token yok.

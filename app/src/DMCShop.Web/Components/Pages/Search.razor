@@ -13,9 +13,10 @@
     <div class="dmc-hero-eyebrow">Senaryo 1</div>
     <h1>Anlam tabanlı ürün araması</h1>
     <p class="dmc-hero-lead">
-        VECTOR_SEARCH + DiskANN, sorgu metnini yerleştirim uzayına projekte eder ve cosine mesafesine
-        göre en yakın ürünleri döner. Aynı sorgu klasik <code>LIKE</code> ile çoğunlukla sıfır sonuç
-        üretir.
+        Hybrid retrieval: VECTOR_SEARCH + DiskANN ile cosine yakın 300 aday çekilir, ardından
+        sorgudaki anahtar terimlerle keyword overlap rerank uygulanır. Pure vector kalitesi 50K
+        ürün arasında generic terim baskınlığında bozulabilir; hybrid bunu telafi eder. Sağdaki
+        klasik <code>LIKE</code> sütunu çoğu doğal dil sorgusunda sıfır sonuç verir.
     </p>
     <div class="dmc-stack-row">
         <span class="dmc-badge dmc-badge-accent">Provider: @Provider.Name</span>
@@ -50,7 +51,7 @@
     <div class="dmc-grid dmc-grid-2">
         <div>
             <div class="dmc-section-head">
-                <span class="dmc-panel-title">Vector · DiskANN approximate kNN</span>
+                <span class="dmc-panel-title">Hybrid · vector + keyword rerank</span>
                 <span class="dmc-section-meta">@vectorLatencyMs ms · top @(vectorHits?.Count ?? 0)</span>
             </div>
             @if (vectorHits is null || vectorHits.Count == 0)
@@ -138,7 +139,7 @@
         try
         {
             var vSw = Stopwatch.StartNew();
-            var vectorTask = SearchSvc.SearchAsync(query, topK: 6);
+            var vectorTask = SearchSvc.HybridSearchAsync(query, topK: 6);
             var lSw = Stopwatch.StartNew();
             var likeTask = SearchSvc.LikeSearchAsync(query, topK: 6);
 

@@ -24,6 +24,9 @@ public sealed class OllamaOptions
 {
     public string Endpoint { get; set; } = "http://localhost:11434";
     public string EmbeddingModel { get; set; } = "nomic-embed-text";
-    public string ChatModel { get; set; } = "llama3.1:8b-instruct";
+    // qwen2.5:3b-instruct-q4_K_M — Türkçe yanıt kalitesi yüksek, B4ms VM'de
+    // 8B'ye göre 3x hızlı (25-65s → 8-15s). Daha büyük model isteniyorsa
+    // appsettings/env override edilir.
+    public string ChatModel { get; set; } = "qwen2.5:3b-instruct-q4_K_M";
     public int EmbeddingDimensions { get; set; } = 768;
 }
