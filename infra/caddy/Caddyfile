@@ -1,49 +1,37 @@
 # Caddyfile — DMCShop HTTPS reverse proxy
 #
-# İki mod:
-#   1) DOMAIN ortam değişkeni set ise: otomatik Let's Encrypt
-#   2) Yoksa: self-signed (workshop / lokal demo)
+# Self-signed (Caddy internal CA) mode için bu dosya, FQDN için
+# tls internal kullanır. Tarayıcı "güvensiz" uyarısı verir, "devam et" ile
+# geçilir.
 #
-# Önkoşul (Let's Encrypt için):
-#   - Domain DNS A-record: <DOMAIN> → <vm public ip>
-#   - Port 80 ve 443 dışarıya açık (NSG)
-#
-# Çalıştırma: docker compose -f infra/caddy/docker-compose.yml up -d
+# Production / Let's Encrypt için:
+#   - Caddyfile başındaki FQDN'i kendi domain'inle değiştir
+#   - "tls internal" satırını sil
+#   - DNS A-record: <DOMAIN> → VM public IP
+#   - NSG: 80 ve 443 açık
+#   - Caddy 2 otomatik Let's Encrypt sertifika alır
 
-{
-    # Global directives
-    email iletisim@dmcteknoloji.com
-    auto_https disable_redirects
-}
-
-{$DOMAIN:localhost} {
-    # Self-signed fallback için tls internal — DOMAIN set değilse devreye girer
-    @no-domain expression `{env.DOMAIN}` == ''
-    tls {
-        on_demand
-    }
-
+dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
+    tls internal
     encode gzip zstd
-
-    # Blazor Server SignalR + static
-    reverse_proxy host.docker.internal:80 {
+    reverse_proxy localhost:5000 {
         flush_interval -1
         header_up X-Forwarded-Proto {scheme}
         header_up X-Forwarded-For   {remote_host}
     }
-
     header {
-        # Güvenlik header'ları
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options    "nosniff"
-        X-Frame-Options           "SAMEORIGIN"
-        Referrer-Policy           "strict-origin-when-cross-origin"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
         -Server
     }
-
     log {
         output stdout
         format console
         level INFO
     }
+}
+
+http://dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
+    redir https://{host}{uri} permanent
 }

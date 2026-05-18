@@ -23,13 +23,24 @@ docker logs -f dmcshop-caddy
 
 ## 2 — Self-signed (workshop / local)
 
-DOMAIN set etmeden çalıştır:
+Caddyfile içindeki FQDN otomatik olarak Caddy'nin internal CA'sıyla sertifika alır.
+Domain DNS gerekmiyor — Azure'un default `*.cloudapp.azure.com` adresi yeterli.
+
 ```bash
+# VM'de dmcshop-web'in port'unu 5000'e taşı (Caddy 80/443 alır)
+sudo sed -i 's|ASPNETCORE_URLS=http://0.0.0.0:80|ASPNETCORE_URLS=http://0.0.0.0:5000|g' \
+    /etc/systemd/system/dmcshop-web.service
+sudo systemctl daemon-reload && sudo systemctl restart dmcshop-web
+
+# Caddy compose up
 docker compose -f infra/caddy/docker-compose.yml up -d
 ```
 
 Tarayıcı "güvenli değil" uyarısı verir → "Detayları göster" → "yine de devam et".
-Workshop demoları için yeterli ama gerçek paylaşım için Let's Encrypt'e geç.
+Workshop demoları için yeterli ama public paylaşım için Let's Encrypt'e geç.
+
+> Caddyfile içindeki FQDN'i kendi VM'inin FQDN'iyle güncelle:
+> `az network public-ip show -g rg-dmcshop-demo -n dmcshop-pip --query dnsSettings.fqdn -o tsv`
 
 ## DMCShop ile birlikte çalıştırma
 
