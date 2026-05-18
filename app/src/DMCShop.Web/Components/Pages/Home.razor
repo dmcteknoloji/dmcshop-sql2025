@@ -54,7 +54,7 @@
 <section class="dmc-section">
     <div class="dmc-section-head">
         <span class="dmc-section-title">Demo senaryoları</span>
-        <span class="dmc-section-meta">4 aktif</span>
+        <span class="dmc-section-meta">5 aktif</span>
     </div>
 
     <div class="dmc-grid dmc-grid-2">
@@ -103,6 +103,22 @@
             <p class="dmc-card-body">
                 SHORTEST_PATH ile aynı cihaz, IP veya ödeme aracını paylaşan müşteri kümelerini
                 tespit eder. Tek SQL sorgusunda kanıt zincirini metin olarak döner.
+            </p>
+            <div class="dmc-card-footer">
+                <span class="dmc-badge dmc-badge-positive">Aktif</span>
+                <span class="dmc-card-link">İncele →</span>
+            </div>
+        </a>
+
+        <a href="bana-ozel" class="dmc-card" style="grid-column: 1 / -1; border-color: var(--accent);">
+            <span class="dmc-badge dmc-badge-accent">Senaryo 5 · Vector + Graph hibrit</span>
+            <h3 class="dmc-card-title">Sana özel — kişiselleştirilmiş öneri</h3>
+            <p class="dmc-card-body">
+                Müşterinin son siparişlerindeki ürünlerin <strong style="color:var(--text);">vector
+                centroid</strong>'ine en yakın ürünleri çeker, ardından <code>graph.purchased</code>'tan
+                <strong style="color:var(--text);">social proof</strong> (kaç sipariş aldı) ile yeniden
+                sıralar. Tek SELECT'te <code>VECTOR_SEARCH</code> + <code>GRAPH MATCH</code> — SQL
+                Server 2025'in iki amiral özelliğinin birlikteliği.
             </p>
             <div class="dmc-card-footer">
                 <span class="dmc-badge dmc-badge-positive">Aktif</span>

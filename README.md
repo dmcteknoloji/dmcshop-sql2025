@@ -46,9 +46,10 @@
 
 ## Senaryolar
 
-| # | Senaryo                          | Özellik                            | UI                                                   |
-| - | -------------------------------- | ---------------------------------- | ---------------------------------------------------- |
-| 1 | **Semantik ürün arama**          | `VECTOR_SEARCH` + DiskANN          | [`/search`](docs/02-senaryo-semantic-search.md)      |
+| # | Senaryo                          | Özellik                                          | UI                                                   |
+| - | -------------------------------- | ------------------------------------------------ | ---------------------------------------------------- |
+| 5 | **Sana özel · hibrit öneri**     | `VECTOR_SEARCH` + `GRAPH MATCH` (tek SELECT)      | [`/bana-ozel`](sql/24-personalized.sql)              |
+| 1 | **Semantik ürün arama**          | `VECTOR_SEARCH` + DiskANN                         | [`/search`](docs/02-senaryo-semantic-search.md)      |
 | 2 | **RAG tabanlı ürün asistanı**    | Retrieval + chat (streaming)       | [`/asistan`](docs/03-senaryo-rag-asistan.md)         |
 | 3 | **Fraud ring tespiti**           | `GRAPH MATCH` + `SHORTEST_PATH`    | [`/fraud`](docs/04-senaryo-fraud-ring.md)            |
 | 4 | **Bunu alanlar bunu da aldı**    | `GRAPH MATCH` 2-hop                | [`/urun/{id}`](docs/05-senaryo-co-purchase.md)       |

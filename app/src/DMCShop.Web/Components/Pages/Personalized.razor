@@ -1,0 +1,158 @@
+@page "/bana-ozel"
+@rendermode InteractiveServer
+@using DMCShop.Domain.Abstractions
+@using DMCShop.Domain.Dtos
+@using DMCShop.Search
+@inject PersonalizedRecommendService Personalize
+@inject IEmbeddingProvider EmbedProvider
+
+<PageTitle>Sana özel — Vector + Graph hibrit · DMCShop</PageTitle>
+
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">Senaryo 5 · Vector + Graph</div>
+    <h1>Hibrit kişiselleştirilmiş ürün önerisi</h1>
+    <p class="dmc-hero-lead">
+        Müşterinin son siparişlerindeki ürünlerin <strong style="color:var(--text);">vector centroid</strong>'ine
+        en yakın ürünleri çekiyor, ardından <code>graph.purchased</code>'tan
+        <strong style="color:var(--text);">social proof</strong> (kaç farklı sipariş alındı) ekliyor.
+        Tek SELECT'te <code>VECTOR_SEARCH</code> + <code>GRAPH MATCH</code> bir arada.
+    </p>
+    <div class="dmc-stack-row">
+        <span class="dmc-badge dmc-badge-accent">Provider: @EmbedProvider.Name / @EmbedProvider.ModelName</span>
+        <span class="dmc-badge">@EmbedProvider.Dimensions dim centroid</span>
+    </div>
+</section>
+
+<div class="dmc-toolbar">
+    <div class="dmc-toolbar-count">
+        @if (context is { BasisProductCount: > 0 })
+        {
+            <strong style="color:var(--text);">@context.CustomerName</strong>
+            <span> · son @context.BasisProductCount ürünün centroid'i kullanıldı</span>
+            <span> · @context.EmbeddingDim boyut</span>
+        }
+        else if (context is not null)
+        {
+            <span>Bu müşterinin embedding'li sipariş geçmişi yok.</span>
+        }
+    </div>
+    <div class="dmc-toolbar-sort">
+        <label style="font-size:0.82rem; color:var(--text-muted);">Müşteri:</label>
+        <select class="dmc-select" style="min-width: 280px;" @bind="selectedCustomerId" @bind:after="LoadAsync">
+            @if (customers is not null)
+            {
+                @foreach (var c in customers)
+                {
+                    <option value="@c.CustomerId">@c.FullName (@c.OrderCount sipariş)</option>
+                }
+            }
+        </select>
+        <button class="dmc-btn dmc-btn-ghost" style="height: 38px; padding: 0 0.85rem;" @onclick="LoadAsync" disabled="@busy">
+            @(busy ? "Hesaplanıyor…" : "Yenile")
+        </button>
+    </div>
+</div>
+
+@if (error is not null)
+{
+    <div class="dmc-alert dmc-alert-error">@error</div>
+}
+
+@if (busy && items is null)
+{
+    <div class="dmc-loading">Centroid hesaplanıyor + vector search + graph join…</div>
+}
+else if (items is { Count: 0 })
+{
+    <div class="dmc-empty">
+        Bu müşteri için öneri üretilemedi (embedding'li satın alım geçmişi yok).
+    </div>
+}
+else if (items is not null && context is not null)
+{
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-section-title">Hibrit skorla sıralı öneriler</span>
+            <span class="dmc-section-meta">distance + 1/(1+social) · küçük = daha iyi</span>
+        </div>
+        <div class="dmc-grid dmc-grid-cat">
+            @foreach (var r in items)
+            {
+                <a href="urun/@r.ProductId" class="dmc-pcard">
+                    <ProductImage ProductId="r.ProductId" Name="r.Name" CategoryName="r.CategoryName" Sku="r.Sku" Variant="card" />
+                    <div class="dmc-pcard-body">
+                        <div class="dmc-pcard-cat">@r.CategoryName</div>
+                        <h3 class="dmc-pcard-name">@r.Name</h3>
+                        <div class="dmc-pcard-price">@r.Price.ToString("N2") ₺</div>
+                        <div class="dmc-hit-score">
+                            <span class="dmc-hit-score-num">vec @r.VectorDistance.ToString("F4")</span>
+                            <span class="dmc-badge dmc-badge-soft" style="font-size:0.66rem;">
+                                @r.SocialBuyerCount sipariş
+                            </span>
+                        </div>
+                        <div class="dmc-hit-bar">
+                            <span class="dmc-hit-bar-fill" style="width: @(HybridPct(r.HybridScore))%; display:block;"></span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-section-title">Centroid'i oluşturan ürünler</span>
+            <span class="dmc-section-meta">@context.BasisProductCount son satın alınan</span>
+        </div>
+        <div style="display:flex; flex-wrap: wrap; gap: 0.4rem;">
+            @foreach (var id in context.BasisProductIds)
+            {
+                <a href="urun/@id" class="dmc-badge dmc-badge-soft" style="text-decoration:none;">#@id</a>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private List<(int CustomerId, string FullName, int OrderCount)>? customers;
+    private int selectedCustomerId = 10;
+    private bool busy;
+    private string? error;
+    private PersonalizationContext? context;
+    private IReadOnlyList<PersonalizedRecommendation>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await Personalize.TopCustomersAsync(50);
+        if (customers.Count > 0)
+            selectedCustomerId = customers[0].CustomerId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        busy  = true;
+        error = null;
+        try
+        {
+            var (ctx, recommended) = await Personalize.RecommendAsync(selectedCustomerId, basisLimit: 8, topK: 10);
+            context = ctx;
+            items   = recommended;
+        }
+        catch (Exception ex)
+        {
+            error = $"Öneri üretilemedi: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private static int HybridPct(double score)
+    {
+        // hybrid_score yaklaşık [0.0, 2.0] aralığında — bar için tersine çevir, küçük=dolu
+        var sim = Math.Max(0, Math.Min(100, (int)((1.0 - score / 2.0) * 100)));
+        return sim;
+    }
+}
