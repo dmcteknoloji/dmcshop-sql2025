@@ -138,17 +138,17 @@
         error = null;
         try
         {
+            // DbContext scoped per-circuit ve thread-safe değil; iki sorguyu
+            // Task.WhenAll ile paralel başlatmak "second operation on this context"
+            // istisnasını tetikler. Seri çalıştır — toplam ~+200 ms.
             var vSw = Stopwatch.StartNew();
-            var vectorTask = SearchSvc.HybridSearchAsync(query, topK: 6);
-            var lSw = Stopwatch.StartNew();
-            var likeTask = SearchSvc.LikeSearchAsync(query, topK: 6);
-
-            await Task.WhenAll(vectorTask, likeTask);
-
-            vSw.Stop();  lSw.Stop();
-            vectorHits = await vectorTask;
-            likeHits   = await likeTask;
+            vectorHits      = await SearchSvc.HybridSearchAsync(query, topK: 6);
+            vSw.Stop();
             vectorLatencyMs = vSw.ElapsedMilliseconds;
+
+            var lSw = Stopwatch.StartNew();
+            likeHits        = await SearchSvc.LikeSearchAsync(query, topK: 6);
+            lSw.Stop();
             likeLatencyMs   = lSw.ElapsedMilliseconds;
         }
         catch (Exception ex)
