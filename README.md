@@ -120,6 +120,19 @@ flowchart LR
     Q --> UI[/urun/&#123;id&#125; · Bunu alanlar bunu da aldı/]
 ```
 
+### Senaryo 5 — Vector + Graph hibrit (tek SELECT)
+
+```mermaid
+flowchart LR
+    M[Müşterinin son N siparişi] --> E[Embedding'leri al]
+    E --> AVG[.NET centroid hesapla]
+    AVG --> VS[VECTOR_SEARCH TOP_N=30]
+    VS --> F[Filter: zaten alınmış değil]
+    F --> GR[GRAPH MATCH co-purchase sayısı]
+    GR --> H{Hibrit skor: distance + 1/&#40;1+social&#41;}
+    H --> UI[/bana-ozel · TOP 10 öneri/]
+```
+
 ---
 
 ## Hızlı başlangıç
@@ -169,27 +182,35 @@ dmcshop-sql2025/
 │   ├── 05-07                     # showcase seed (120 ürün)
 │   ├── 08-create-vector-indexes  # DiskANN (embed sonrası)
 │   ├── 10-11                     # ops.sp_embed_text · ops.sp_chat_complete
-│   ├── 20-23                     # 4 senaryo T-SQL örnekleri
-│   └── 30-33                     # kurumsal ölçek seed (50K ürün, 10K müşteri)
+│   ├── 12-create-external-model  # AI_GENERATE_EMBEDDINGS için EXTERNAL MODEL
+│   ├── 20-24                     # 5 senaryo T-SQL örnekleri
+│   ├── 30-33                     # kurumsal ölçek seed (50K ürün, 10K müşteri)
+│   └── 40-retention              # vector.query_log + rest_call_log purge proc
 ├── app/                          # .NET 10 solution
 │   └── src/
 │       ├── DMCShop.Domain        # entity + abstraction (DB-agnostic)
 │       ├── DMCShop.Data          # EF Core 10 DbContext + configurations
 │       ├── DMCShop.Providers     # OpenAI ve Ollama adapter'leri (embed + chat + streaming)
-│       ├── DMCShop.Search        # VectorSearch · GraphRecommend · RagAssistant · FraudRing
+│       ├── DMCShop.Search        # Vector · GraphRecommend · RagAssistant · FraudRing · Personalized
 │       ├── DMCShop.Api           # Minimal API (planlı)
-│       ├── DMCShop.Web           # Blazor Server — 5 sayfa
+│       ├── DMCShop.Web           # Blazor Server — 6 sayfa
 │       └── DMCShop.Cli           # dmcshop CLI: seed, embed-products, health
 ├── infra/                        # Azure deployment
 │   ├── main.bicep                # VM + VNet + NSG + Public IP
 │   ├── cloud-init.yaml           # Docker + .NET 10 + sqlcmd + systemd unit
 │   ├── deploy.sh                 # ilk kurulum
-│   ├── sync.sh                   # sonraki güncellemeler
-│   └── teardown.sh               # az group delete
+│   ├── caddy/                    # HTTPS reverse proxy (Let's Encrypt veya self-signed)
+│   └── security-hardening.md     # NSG daraltma, Key Vault, log retention, scheduled VM
 ├── scripts/
-│   ├── docker-compose.yml        # SQL Server 2025 + Ollama (restart: unless-stopped)
-│   └── bootstrap.sh              # sqlcmd ile sql/ dosyalarını sırayla çalıştırır
-└── docs/                         # senaryo dökümanları + assets
+│   ├── setup.sh                  # tek komutluk local kurulum
+│   ├── bootstrap.sh              # sqlcmd ile sql/ dosyalarını çalıştırır
+│   ├── docker-compose.yml        # mssql + ollama (restart: unless-stopped)
+│   ├── vm-schedule.sh            # az vm start/stop helper
+│   └── backup.sh                 # BACKUP DATABASE → /backups, rotation 7gün
+└── docs/
+    ├── 01-getting-started.md     # adım adım kurulum + sorun giderme
+    ├── handbook.md               # workshop 60-90 dk turu
+    └── assets/                   # banner.svg · architecture.svg · setup-flow.svg
 ```
 
 ---
@@ -205,7 +226,9 @@ dmcshop-sql2025/
 | M3 — Senaryo 2 + 3 (RAG + fraud) | ✓ Tamam | 2026-05-17 |
 | Kurumsal ölçek (50K ürün)         | ✓ Tamam | 2026-05-18 |
 | Streaming RAG + server-side pagination | ✓ Tamam | 2026-05-18 |
-| HTTPS + custom domain             | Planlı  | —           |
+| Senaryo 5 (Vector + Graph hibrit) | ✓ Tamam | 2026-05-18 |
+| External model + retention + smoke tests + Caddy | ✓ Tamam | 2026-05-18 |
+| HTTPS + custom domain (DNS bekleniyor) | Hazır · DNS dışında | — |
 | Container Apps autoscale (refaktör) | Planlı  | —           |
 | GitHub Actions CI/CD              | Planlı  | —           |
 

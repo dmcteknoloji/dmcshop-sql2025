@@ -118,6 +118,35 @@
     </div>
 }
 
+@if (history.Count == 0 && active is null && persistedHistory.Count > 0)
+{
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-section-title">Geçmiş sorgular</span>
+            <span class="dmc-section-meta">vector.query_log · son @persistedHistory.Count</span>
+        </div>
+        @foreach (var h in persistedHistory)
+        {
+            <div class="dmc-card" style="margin-bottom: 0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; gap:1rem;">
+                    <div class="dmc-chat-q" style="margin:0; padding:0; border:0;">@h.Question</div>
+                    <span class="dmc-section-meta">@h.CreatedAt.ToString("yyyy-MM-dd HH:mm") · @h.Provider · @h.LatencyMs ms</span>
+                </div>
+                <div class="dmc-chat-a" style="margin-top: 0.5rem;">@h.Response</div>
+                @if (h.UsedProductIds.Count > 0)
+                {
+                    <div style="margin-top: 0.6rem; display:flex; gap: 0.3rem; flex-wrap: wrap;">
+                        @foreach (var id in h.UsedProductIds)
+                        {
+                            <a href="urun/@id" class="dmc-badge dmc-badge-soft" style="text-decoration:none;">#@id</a>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}
+
 <style>
     .dmc-active-card { border-color: var(--accent); }
     .dmc-chat-q {
@@ -166,8 +195,15 @@
     private bool busy;
     private string? error;
     private readonly List<RagAnswer> history = new();
+    private List<RagHistoryEntry> persistedHistory = new();
     private ActiveStream? active;
     private CancellationTokenSource? cts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { persistedHistory = await Rag.HistoryAsync(limit: 8); }
+        catch { /* history yoksa sessiz geç */ }
+    }
 
     private static readonly string[] samples =
     {

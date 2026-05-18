@@ -1,0 +1,49 @@
+# Caddyfile — DMCShop HTTPS reverse proxy
+#
+# İki mod:
+#   1) DOMAIN ortam değişkeni set ise: otomatik Let's Encrypt
+#   2) Yoksa: self-signed (workshop / lokal demo)
+#
+# Önkoşul (Let's Encrypt için):
+#   - Domain DNS A-record: <DOMAIN> → <vm public ip>
+#   - Port 80 ve 443 dışarıya açık (NSG)
+#
+# Çalıştırma: docker compose -f infra/caddy/docker-compose.yml up -d
+
+{
+    # Global directives
+    email iletisim@dmcteknoloji.com
+    auto_https disable_redirects
+}
+
+{$DOMAIN:localhost} {
+    # Self-signed fallback için tls internal — DOMAIN set değilse devreye girer
+    @no-domain expression `{env.DOMAIN}` == ''
+    tls {
+        on_demand
+    }
+
+    encode gzip zstd
+
+    # Blazor Server SignalR + static
+    reverse_proxy host.docker.internal:80 {
+        flush_interval -1
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-For   {remote_host}
+    }
+
+    header {
+        # Güvenlik header'ları
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options    "nosniff"
+        X-Frame-Options           "SAMEORIGIN"
+        Referrer-Policy           "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+}

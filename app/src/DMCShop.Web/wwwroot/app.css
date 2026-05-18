@@ -421,10 +421,40 @@ a.dmc-card:hover,
     .dmc-main { padding: 1.5rem 1rem 3rem; }
     .dmc-header { padding: 0 1rem; }
     h1 { font-size: 1.7rem; }
+
+    /* Header: nav alt satıra alınır, brand sub gizlenir */
+    .dmc-header { flex-wrap: wrap; height: auto; padding: 0.5rem 1rem; gap: 0.5rem; }
+    .dmc-nav    { width: 100%; overflow-x: auto; gap: 0.1rem; }
+    .dmc-nav a  { padding: 0.35rem 0.6rem; font-size: 0.82rem; white-space: nowrap; }
+
+    /* Toolbar (fraud/katalog): tek sütun, dropdown'lar full-width */
+    .dmc-toolbar       { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+    .dmc-toolbar-sort  { flex-wrap: wrap; gap: 0.4rem; }
+    .dmc-toolbar-sort .dmc-search-input { min-width: 0; flex: 1 1 100%; }
+    .dmc-toolbar-sort .dmc-select       { flex: 1 1 calc(50% - 0.2rem); }
+
+    /* Catalog: sidebar üstte */
+    .dmc-catalog { grid-template-columns: 1fr; }
+    .dmc-filter  { position: static; max-height: none; }
+    .dmc-filter-list { max-height: 240px; }
+
+    /* Search row */
+    .dmc-search-row { flex-wrap: wrap; }
+    .dmc-search-row .dmc-search-input { flex: 1 1 100%; }
+    .dmc-search-row .dmc-btn          { flex: 1 1 100%; }
+
+    /* Product hero tek sütun */
+    .dmc-product-hero { grid-template-columns: 1fr; gap: 1.25rem; }
 }
 
 @media (max-width: 560px) {
     .dmc-grid-2, .dmc-grid-3, .dmc-grid-4 { grid-template-columns: 1fr; }
+    .dmc-hero { padding: 1rem 0 1.5rem; }
+    .dmc-hero h1 { font-size: 1.45rem; }
+    .dmc-hero-lead { font-size: 0.96rem; }
+    .dmc-stat-value { font-size: 1.45rem; }
+    .dmc-pcard-name { min-height: auto; }
+    .dmc-brand-title { display: none; }
 }
 
 /* ============================================================================

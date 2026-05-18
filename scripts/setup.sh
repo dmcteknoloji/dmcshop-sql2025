@@ -102,6 +102,15 @@ for model in "${OLLAMA_EMBED_MODEL}" "${OLLAMA_CHAT_MODEL}"; do
     fi
 done
 
+# ---- 3a) External REST endpoint + external model -------------------------
+say "External REST endpoint + EXTERNAL MODEL setup"
+sqlcmd -C -I -S "${DMCSHOP_HOST}" -U sa -P "${DMCSHOP_SA_PASSWORD}" -d master -Q "
+IF (SELECT value FROM sys.configurations WHERE name = 'external rest endpoint enabled') = 0
+BEGIN
+    EXEC sp_configure 'external rest endpoint enabled', 1;
+    RECONFIGURE;
+END" >/dev/null 2>&1 || warn "sp_configure başarısız (sysadmin gerekli)"
+
 # ---- 3) Schema + showcase seed --------------------------------------------
 say "Schema + showcase seed (bootstrap.sh)"
 if sqlcmd -C -I -S "${DMCSHOP_HOST}" -U sa -P "${DMCSHOP_SA_PASSWORD}" \
@@ -175,6 +184,12 @@ WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
 
 SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID('vector.product_embedding') AND type = 8;
 " 600
+
+# ---- 6.5) External model (T-SQL workshop için) ---------------------------
+say "EXTERNAL MODEL tanımları (T-SQL'den AI_GENERATE_EMBEDDINGS için)"
+sqlcmd -C -I -t 60 -S "${DMCSHOP_HOST}" -U sa -P "${DMCSHOP_SA_PASSWORD}" -d dmcshop \
+       -i "${SQL_DIR}/12-create-external-model.sql" 2>&1 | tail -5 \
+       || warn "External model setup başarısız (host.docker.internal erişilemiyor olabilir)"
 
 # ---- 7) Özet --------------------------------------------------------------
 say "Hazır"

@@ -1,0 +1,27 @@
+name: dmcshop-caddy
+
+# Caddy reverse proxy — DMCShop'u 80/443 üzerinden HTTPS ile yayınlar.
+# Mevcut dmcshop-web (port 80) önüne geçer.
+#
+# Kullanım:
+#   export DOMAIN=demo.dmcshop.dmcteknoloji.com   # Let's Encrypt için
+#   docker compose -f infra/caddy/docker-compose.yml up -d
+#
+# DOMAIN set değilse self-signed (tarayıcı uyarısı verir).
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: dmcshop-caddy
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -6,6 +6,7 @@ using DMCShop.Data;
 using DMCShop.Domain.Abstractions;
 using DMCShop.Domain.Dtos;
 using DMCShop.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DMCShop.Search;
 
@@ -16,9 +17,16 @@ public sealed class RagAssistantService(
     IEmbeddingProvider embed)
 {
     private const string SystemPrompt = """
-        Sen DMCShop'un ürün asistanısın. SADECE sana verilen ürün listesinden faydalanarak yanıt ver.
-        Listede olmayan ürünü uydurma. Yanıtın kısa olsun (en fazla 3-4 cümle). Türkçe konuş.
-        Her ürünü #ürün_no formatıyla referans ver (örn. #1041). Para birimi: ₺.
+        Sen DMCShop'un ürün asistanısın. Aşağıdaki davranış kuralları KESİN:
+
+        1. SADECE sana verilen ürün listesinden faydalan. Listede olmayan ürünü asla uydurma.
+        2. YANIT DİLİ: yalnızca Türkçe. İngilizce, başka dilde tek kelime veya garip
+           karakter kombinasyonu (örn. selectorselam, mergeword) yazma.
+        3. Yanıt kısa olsun (en fazla 3-4 cümle). Madde işareti ya da uzun açıklama yok.
+        4. Her ürünü #ürün_no formatıyla referans ver (örn. #1041).
+        5. Para birimi: ₺ (Türk Lirası). Fiyat varsa "X.XXX,XX ₺" formatıyla yaz.
+        6. Eğer bağlamda hiç ürün yoksa veya hiçbiri kullanıcı sorusuyla ilgili değilse,
+           "Bu sorgu için bağlamda uygun ürün bulamadım" de.
         """;
 
     public async Task<RagAnswer> AskAsync(string question, int topK = 5, CancellationToken cancellationToken = default)
@@ -125,6 +133,41 @@ public sealed class RagAssistantService(
             TotalLatencyMs: (int)total.ElapsedMilliseconds,
             IsFinal: true);
     }
+
+    /// <summary>
+    /// Geçmiş RAG kayıtları. /asistan açılışında geçmiş gösterimi için.
+    /// vector.query_log'tan scenario IN ('rag','rag-stream') filtre.
+    /// </summary>
+    public async Task<List<RagHistoryEntry>> HistoryAsync(int limit = 10, CancellationToken cancellationToken = default)
+    {
+        var rows = await db.QueryLogs
+            .AsNoTracking()
+            .Where(q => q.Scenario == "rag" || q.Scenario == "rag-stream")
+            .OrderByDescending(q => q.QueryId)
+            .Take(limit)
+            .Select(q => new
+            {
+                q.QueryId, q.CreatedAt, q.QueryText, q.LlmResponse,
+                q.Provider, q.LatencyMs, q.UsedProductIds
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows.Select(r => new RagHistoryEntry(
+            QueryId:        r.QueryId,
+            CreatedAt:      r.CreatedAt,
+            Question:       r.QueryText,
+            Response:       r.LlmResponse ?? string.Empty,
+            Provider:       r.Provider,
+            LatencyMs:      r.LatencyMs ?? 0,
+            UsedProductIds: ParseIdArray(r.UsedProductIds))).ToList();
+    }
+
+    private static IReadOnlyList<int> ParseIdArray(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return Array.Empty<int>();
+        try { return JsonSerializer.Deserialize<int[]>(json) ?? Array.Empty<int>(); }
+        catch { return Array.Empty<int>(); }
+    }
 }
 
 public sealed record RagStreamChunk(
@@ -134,3 +177,12 @@ public sealed record RagStreamChunk(
     int LlmLatencyMs,
     int TotalLatencyMs,
     bool IsFinal);
+
+public sealed record RagHistoryEntry(
+    long QueryId,
+    DateTime CreatedAt,
+    string Question,
+    string Response,
+    string Provider,
+    int LatencyMs,
+    IReadOnlyList<int> UsedProductIds);
