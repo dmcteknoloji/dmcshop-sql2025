@@ -254,7 +254,8 @@
                 active.TotalLatencyMs);
             history.Insert(0, finalAnswer);
             active   = null;
-            question = string.Empty;
+            // question'i KORU — kullanıcı önceki yanıt akarken yeni soru yazmaya
+            // başlamış olabilir; otomatik temizleme yazısını sıfırlardı.
         }
         catch (OperationCanceledException)
         {
