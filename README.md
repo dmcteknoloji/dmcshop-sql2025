@@ -34,7 +34,7 @@
 | Entity              |     Adet | Açıklama                                                            |
 | ------------------- | -------: | ------------------------------------------------------------------- |
 | Kategori            |      100 | 10 ana × 10 alt — kitap, elektronik, gıda, giyim, ev, hobi, ...     |
-| Ürün                | **50.120** | 120 showcase (elle yazılmış) + 50.000 T-SQL CROSS JOIN üreteç      |
+| Ürün                | **50.120** | 120 showcase (kategori başına kurgulanmış somut isim + açıklama) + 50.000 T-SQL CROSS JOIN üreteç |
 | Müşteri             |   10.050 | Türkçe rastgele ad-soyad-şehir                                      |
 | Sipariş             |  100.400 | 2026 ilk 4 ayına yayılmış                                           |
 | Sipariş satırı      |  451.202 | Ortalama 4.5 satır/sipariş                                          |
