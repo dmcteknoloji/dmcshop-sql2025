@@ -179,3 +179,150 @@ public sealed class FraudRingService(DMCShopDbContext db)
 }
 
 public sealed record FraudSummary(long Total, int HighCount, int MediumCount, int DeviceCount, int IpCount, int CardCount);
+
+/// <summary>Fraud ring detay sorguları — /fraud/{pattern}/{signal} visualizer için.</summary>
+public sealed class FraudRingDetailService(DMCShopDbContext db)
+{
+    public async Task<FraudRingDetail?> GetAsync(string pattern, string signal, CancellationToken ct = default)
+    {
+        return pattern switch
+        {
+            "shared_device" => await DeviceRingAsync(signal, ct),
+            "shared_ip"     => await IpRingAsync(signal, ct),
+            "shared_card"   => await CardRingAsync(signal, ct),
+            _               => null
+        };
+    }
+
+    private async Task<FraudRingDetail?> DeviceRingAsync(string signal, CancellationToken ct)
+    {
+        var sql = """
+            SELECT TOP (1) d.device_id, d.fingerprint, d.ip_address
+            FROM   shop.device d
+            WHERE  LEFT(d.fingerprint, 12) = @sig;
+
+            SELECT c.customer_id, c.full_name, ISNULL(c.city, '') AS city,
+                   (SELECT COUNT(*) FROM shop.[order] o WHERE o.customer_id = c.customer_id) AS orders
+            FROM   shop.customer_device cd
+            JOIN   shop.customer        c ON c.customer_id = cd.customer_id
+            JOIN   shop.device          d ON d.device_id   = cd.device_id
+            WHERE  LEFT(d.fingerprint, 12) = @sig
+            ORDER BY c.full_name;
+            """;
+        var (conn, opened) = await OpenAsync(ct);
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Parameters.Add(new SqlParameter("@sig", signal));
+            await using var rdr = await cmd.ExecuteReaderAsync(ct);
+            if (!await rdr.ReadAsync(ct)) return null;
+            var deviceId    = rdr.GetInt64(0);
+            var fingerprint = rdr.GetString(1);
+            var ip          = rdr.GetString(2);
+
+            await rdr.NextResultAsync(ct);
+            var customers = new List<FraudCustomer>();
+            while (await rdr.ReadAsync(ct))
+                customers.Add(new FraudCustomer(rdr.GetInt32(0), rdr.GetString(1), rdr.GetString(2), rdr.GetInt32(3)));
+
+            return new FraudRingDetail(
+                Pattern: "shared_device",
+                SignalLabel: $"device:{fingerprint[..12]}…",
+                RiskLevel: customers.Count >= 4 ? "HIGH" : "MEDIUM",
+                Customers: customers,
+                Devices: new List<FraudDevice> { new(deviceId, fingerprint[..12], ip) },
+                OrderCountTotal: customers.Sum(c => c.OrderCount));
+        }
+        finally { if (opened) await conn.CloseAsync(); }
+    }
+
+    private async Task<FraudRingDetail?> IpRingAsync(string signal, CancellationToken ct)
+    {
+        var sql = """
+            SELECT DISTINCT d.device_id, LEFT(d.fingerprint, 12), d.ip_address
+            FROM   shop.device d WHERE d.ip_address = @sig ORDER BY d.device_id;
+
+            SELECT DISTINCT c.customer_id, c.full_name, ISNULL(c.city, '') AS city,
+                   (SELECT COUNT(*) FROM shop.[order] o WHERE o.customer_id = c.customer_id) AS orders
+            FROM   shop.customer_device cd
+            JOIN   shop.customer c ON c.customer_id = cd.customer_id
+            JOIN   shop.device   d ON d.device_id   = cd.device_id
+            WHERE  d.ip_address = @sig
+            ORDER BY c.full_name;
+            """;
+        var (conn, opened) = await OpenAsync(ct);
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Parameters.Add(new SqlParameter("@sig", signal));
+            await using var rdr = await cmd.ExecuteReaderAsync(ct);
+
+            var devices = new List<FraudDevice>();
+            while (await rdr.ReadAsync(ct))
+                devices.Add(new FraudDevice(rdr.GetInt64(0), rdr.GetString(1), rdr.GetString(2)));
+            if (devices.Count == 0) return null;
+
+            await rdr.NextResultAsync(ct);
+            var customers = new List<FraudCustomer>();
+            while (await rdr.ReadAsync(ct))
+                customers.Add(new FraudCustomer(rdr.GetInt32(0), rdr.GetString(1), rdr.GetString(2), rdr.GetInt32(3)));
+
+            return new FraudRingDetail(
+                Pattern: "shared_ip",
+                SignalLabel: $"ip:{signal}",
+                RiskLevel: customers.Count >= 5 ? "HIGH" : "MEDIUM",
+                Customers: customers, Devices: devices,
+                OrderCountTotal: customers.Sum(c => c.OrderCount));
+        }
+        finally { if (opened) await conn.CloseAsync(); }
+    }
+
+    private async Task<FraudRingDetail?> CardRingAsync(string signal, CancellationToken ct)
+    {
+        var sql = """
+            SELECT TOP (1) pm.card_fingerprint
+            FROM   shop.payment_method pm
+            WHERE  LEFT(pm.card_fingerprint, 8) = @sig;
+
+            SELECT c.customer_id, c.full_name, ISNULL(c.city, '') AS city,
+                   (SELECT COUNT(*) FROM shop.[order] o WHERE o.customer_id = c.customer_id) AS orders
+            FROM   shop.payment_method pm
+            JOIN   shop.customer       c ON c.customer_id = pm.customer_id
+            WHERE  LEFT(pm.card_fingerprint, 8) = @sig
+            ORDER BY c.full_name;
+            """;
+        var (conn, opened) = await OpenAsync(ct);
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Parameters.Add(new SqlParameter("@sig", signal));
+            await using var rdr = await cmd.ExecuteReaderAsync(ct);
+            if (!await rdr.ReadAsync(ct)) return null;
+            var fp = rdr.GetString(0);
+
+            await rdr.NextResultAsync(ct);
+            var customers = new List<FraudCustomer>();
+            while (await rdr.ReadAsync(ct))
+                customers.Add(new FraudCustomer(rdr.GetInt32(0), rdr.GetString(1), rdr.GetString(2), rdr.GetInt32(3)));
+
+            return new FraudRingDetail(
+                Pattern: "shared_card",
+                SignalLabel: $"card:{fp[..8]}…",
+                RiskLevel: customers.Count >= 3 ? "HIGH" : "MEDIUM",
+                Customers: customers, Devices: Array.Empty<FraudDevice>(),
+                OrderCountTotal: customers.Sum(c => c.OrderCount));
+        }
+        finally { if (opened) await conn.CloseAsync(); }
+    }
+
+    private async Task<(SqlConnection conn, bool opened)> OpenAsync(CancellationToken ct)
+    {
+        var conn = (SqlConnection)db.Database.GetDbConnection();
+        var opened = conn.State != System.Data.ConnectionState.Open;
+        if (opened) await conn.OpenAsync(ct);
+        return (conn, opened);
+    }
+}

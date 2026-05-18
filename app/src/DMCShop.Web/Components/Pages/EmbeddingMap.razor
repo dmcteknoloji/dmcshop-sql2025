@@ -1,0 +1,165 @@
+@page "/harita"
+@rendermode InteractiveServer
+@using System.Text.Json
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+
+<PageTitle>Embedding 2D haritası — DMCShop</PageTitle>
+
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">Workshop görselleştirme</div>
+    <h1>Embedding 2D haritası</h1>
+    <p class="dmc-hero-lead">
+        @if (map is null)
+        {
+            <span>Henüz harita üretilmedi. VM'de
+                <code>dotnet run --project app/src/DMCShop.Cli -- build-map --sample 5000</code>
+                çalıştırın ve <code>wwwroot/embedding-map.json</code> oluşsun.</span>
+        }
+        else
+        {
+            <span>768 boyutlu vektörler <strong style="color:var(--text);">random projection</strong>
+                (deterministic seed) ile 2D'ye projekte edilmiş. Aynı kategorideki ürünler — açıklamaları
+                Türkçe ve birbirine yakın anlamda — uzayda birbirine yakın çıkıyor. Workshop'ta
+                "vector uzayı işte budur" göstergesi.</span>
+        }
+    </p>
+    @if (map is not null)
+    {
+        <div class="dmc-stack-row">
+            <span class="dmc-badge dmc-badge-accent">@map.Count.ToString("N0") ürün</span>
+            <span class="dmc-badge">@map.Dim dim → 2D</span>
+            <span class="dmc-badge">@map.Method</span>
+            <span class="dmc-badge">@categoryColors.Count kategori</span>
+        </div>
+    }
+</section>
+
+@if (map is null)
+{
+    <div class="dmc-empty">
+        <p>Harita dosyası bulunamadı: <code>wwwroot/embedding-map.json</code></p>
+        <p style="margin-top:0.6rem; font-size:0.86rem;">
+            CLI ile üret: <code>dotnet run --project app/src/DMCShop.Cli -- build-map</code>
+        </p>
+    </div>
+}
+else
+{
+    <div class="dmc-card" style="padding: 1rem;">
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom: 1rem;">
+            <span style="font-size:0.78rem; color:var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; padding: 0.42rem 0;">Kategori:</span>
+            <button class="dmc-chip @(activeCat is null ? "active" : "")" @onclick="() => { activeCat = null; }">
+                Tümü (@map.Count.ToString("N0"))
+            </button>
+            @foreach (var (cat, count) in categoryCounts.OrderByDescending(c => c.Value).Take(15))
+            {
+                <button class="dmc-chip @(activeCat == cat ? "active" : "")"
+                        style="@(activeCat == cat ? "" : $"background: {categoryColors[cat]}22; border-color: {categoryColors[cat]}; color: {categoryColors[cat]};")"
+                        @onclick="() => { activeCat = cat; }">
+                    @cat (@count)
+                </button>
+            }
+        </div>
+
+        @((MarkupString)BuildSvg())
+
+        <p style="margin-top: 0.85rem; font-size: 0.82rem; color: var(--text-muted); text-align:center;">
+            Bir nokta üzerine gel → tarayıcı tooltip'i ürün adı + kategoriyi gösterir
+        </p>
+    </div>
+
+    <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+        <strong>Not</strong>: Random projection görsel sezgisi için yeterli. Daha keskin küme ayrımı
+        için UMAP veya t-SNE tercih edilir (Python <code>umap-learn</code> · <code>scikit-learn</code>).
+        Bu basit yöntem harici bağımlılık olmadan saf .NET ile çalışır.
+    </p>
+}
+
+@code {
+    private MapPayload? map;
+    private Dictionary<string, string> categoryColors = new();
+    private Dictionary<string, int> categoryCounts = new();
+    private string? activeCat;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var path = Path.Combine(Env.WebRootPath, "embedding-map.json");
+        if (!File.Exists(path)) return;
+
+        var json = await File.ReadAllTextAsync(path);
+        var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        map = JsonSerializer.Deserialize<MapPayload>(json, opts);
+        if (map is null) return;
+
+        categoryCounts = map.Items.GroupBy(i => i.Cat).ToDictionary(g => g.Key, g => g.Count());
+
+        var palette = new[]
+        {
+            "#A4262C", "#5C7CFA", "#F76707", "#9775FA", "#37B24D",
+            "#F03E3E", "#1098AD", "#FAB005", "#7950F2", "#FF6B6B",
+            "#0EA5E9", "#16A34A", "#E76F51", "#A78BFA", "#22D3EE"
+        };
+        var idx = 0;
+        foreach (var c in categoryCounts.Keys.OrderByDescending(k => categoryCounts[k]))
+        {
+            categoryColors[c] = palette[idx++ % palette.Length];
+        }
+    }
+
+    private string BuildSvg()
+    {
+        if (map is null) return string.Empty;
+
+        const int W = 1100, H = 680, M = 30;
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"<svg viewBox=\"0 0 {W} {H}\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%; height:auto; background:#FAFBFC; border-radius: 8px;\">");
+
+        // Eksen ızgarası
+        sb.Append("<g stroke=\"#E5E7EB\" stroke-width=\"0.5\">");
+        for (var i = 0; i <= 10; i++)
+        {
+            var x = M + (W - 2 * M) * i / 10;
+            var y = M + (H - 2 * M) * i / 10;
+            sb.Append($"<line x1=\"{x}\" y1=\"{M}\" x2=\"{x}\" y2=\"{H - M}\"/>");
+            sb.Append($"<line x1=\"{M}\" y1=\"{y}\" x2=\"{W - M}\" y2=\"{y}\"/>");
+        }
+        sb.Append("</g>");
+
+        // Noktalar
+        foreach (var item in map.Items)
+        {
+            var faded = activeCat is not null && activeCat != item.Cat;
+            var color = categoryColors.TryGetValue(item.Cat, out var c) ? c : "#9BA4B0";
+            var cx = M + (item.X + 1.0) / 2.0 * (W - 2 * M);
+            var cy = M + (1.0 - item.Y) / 2.0 * (H - 2 * M);   // y ters çevir (SVG yukarı=küçük)
+            var r = activeCat == item.Cat ? 4 : 2.5;
+            var op = faded ? 0.06 : 0.7;
+            sb.Append($"<circle cx=\"{cx:F1}\" cy=\"{cy:F1}\" r=\"{r}\" fill=\"{color}\" opacity=\"{op:F2}\">");
+            sb.Append($"<title>#{item.Id} · {EscJs(item.Cat)} · {EscJs(item.Name)}</title>");
+            sb.Append("</circle>");
+        }
+
+        sb.Append("</svg>");
+        return sb.ToString();
+    }
+
+    private static string EscJs(string s) => System.Net.WebUtility.HtmlEncode(s);
+
+    private sealed class MapPayload
+    {
+        public string GeneratedAt { get; set; } = "";
+        public string Method { get; set; } = "";
+        public int Dim { get; set; }
+        public int Count { get; set; }
+        public List<MapItem> Items { get; set; } = new();
+    }
+
+    private sealed class MapItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Cat { get; set; } = "";
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+}

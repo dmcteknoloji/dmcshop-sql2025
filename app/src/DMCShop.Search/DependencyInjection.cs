@@ -10,6 +10,7 @@ public static class DependencyInjection
         services.AddScoped<GraphRecommendService>();
         services.AddScoped<RagAssistantService>();
         services.AddScoped<FraudRingService>();
+        services.AddScoped<FraudRingDetailService>();
         services.AddScoped<PersonalizedRecommendService>();
         return services;
     }

@@ -1,0 +1,248 @@
+@page "/fraud/{Pattern}/{Signal}"
+@rendermode InteractiveServer
+@using DMCShop.Domain.Dtos
+@using DMCShop.Search
+@inject FraudRingDetailService Detail
+
+<PageTitle>Fraud ring @Signal — DMCShop</PageTitle>
+
+@if (busy)
+{
+    <div class="dmc-loading">Ring detayı yükleniyor…</div>
+}
+else if (ring is null)
+{
+    <div class="dmc-empty">Bu pattern + sinyal için ring bulunamadı.</div>
+}
+else
+{
+    <div class="dmc-breadcrumb">
+        <a href="/">Anasayfa</a>
+        <span class="dmc-breadcrumb-sep">/</span>
+        <a href="fraud">Fraud</a>
+        <span class="dmc-breadcrumb-sep">/</span>
+        <span style="color: var(--text);">@ring.SignalLabel</span>
+    </div>
+
+    <section class="dmc-hero" style="padding-bottom: 1rem;">
+        <div class="dmc-hero-eyebrow">Fraud ring detayı</div>
+        <h1>@ring.SignalLabel</h1>
+        <div class="dmc-stack-row">
+            <span class="dmc-badge @(ring.RiskLevel == "HIGH" ? "dmc-badge-high" : "dmc-badge-medium")">@ring.RiskLevel risk</span>
+            <span class="dmc-badge dmc-badge-soft">@PatternLabel(ring.Pattern)</span>
+            <span class="dmc-badge dmc-badge-soft">@ring.Customers.Count müşteri</span>
+            <span class="dmc-badge dmc-badge-soft">@ring.OrderCountTotal toplam sipariş</span>
+        </div>
+    </section>
+
+    <div class="dmc-grid dmc-grid-2" style="gap: 1.5rem;">
+        <div class="dmc-card" style="overflow: hidden;">
+            <div class="dmc-panel-title" style="margin-bottom: 1rem;">İlişki ağı</div>
+            @((MarkupString)BuildGraphSvg(ring))
+        </div>
+
+        <div>
+            <div class="dmc-section-head">
+                <span class="dmc-panel-title">Müşteriler (@ring.Customers.Count)</span>
+                <span class="dmc-section-meta">isim · şehir · sipariş</span>
+            </div>
+            <table class="dmc-table" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="text-align:left; padding: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;">Müşteri</th>
+                        <th style="text-align:left; padding: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;">Şehir</th>
+                        <th style="text-align:right; padding: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;">Sipariş</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in ring.Customers)
+                {
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.65rem 0.5rem; font-weight: 500;">@c.FullName <span style="color: var(--text-dim); font-family: var(--font-mono); font-size: 0.78rem; margin-left: 0.3rem;">#@c.CustomerId</span></td>
+                        <td style="padding: 0.65rem 0.5rem; color: var(--text-muted);">@(string.IsNullOrEmpty(c.City) ? "—" : c.City)</td>
+                        <td style="padding: 0.65rem 0.5rem; text-align: right; font-variant-numeric: tabular-nums;">@c.OrderCount</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            @if (ring.Devices.Count > 0)
+            {
+                <div class="dmc-section-head" style="margin-top: 1.5rem;">
+                    <span class="dmc-panel-title">Bağlı cihazlar (@ring.Devices.Count)</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    @foreach (var d in ring.Devices)
+                    {
+                        <span class="dmc-badge dmc-badge-soft" title="@d.IpAddress" style="font-family: var(--font-mono);">
+                            @d.FingerprintShort…@(ring.Devices.Count > 1 ? $" · {d.IpAddress}" : "")
+                        </span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <section class="dmc-section">
+        <div class="dmc-section-head">
+            <span class="dmc-panel-title">T-SQL evidence (workshop)</span>
+            <span class="dmc-section-meta">sql/22-fraud-ring.sql</span>
+        </div>
+        <pre style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted);"><code>@BuildTSqlSnippet(ring)</code></pre>
+    </section>
+}
+
+@code {
+    [Parameter] public string Pattern { get; set; } = "";
+    [Parameter] public string Signal  { get; set; } = "";
+
+    private FraudRingDetail? ring;
+    private bool busy = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        busy = true;
+        ring = await Detail.GetAsync(Pattern, Uri.UnescapeDataString(Signal));
+        busy = false;
+    }
+
+    private static string PatternLabel(string p) => p switch
+    {
+        "shared_device" => "Paylaşılan cihaz",
+        "shared_ip"     => "Paylaşılan IP",
+        "shared_card"   => "Paylaşılan kart",
+        _               => p
+    };
+
+    /// <summary>
+    /// Saf SVG graph render — bağımlılık yok. Düzen:
+    ///   Soldan sağa: müşteriler  → ortak sinyal (cihaz/ip/kart)  → (varsa) cihazlar
+    /// Edge'ler: customer → signal node'a
+    /// </summary>
+    private static string BuildGraphSvg(FraudRingDetail r)
+    {
+        const int W = 540, RowH = 56, NodeR = 22;
+        var top = 40;
+        var leftX  = 80;
+        var midX   = 270;
+        var rightX = 460;
+
+        var customerY = Enumerable.Range(0, r.Customers.Count)
+            .Select(i => top + i * RowH)
+            .ToArray();
+        var deviceY = Enumerable.Range(0, r.Devices.Count)
+            .Select(i => top + i * RowH)
+            .ToArray();
+
+        var H = Math.Max(top + Math.Max(r.Customers.Count, r.Devices.Count) * RowH + 20,
+                         top + RowH + 60);
+        var sigY = H / 2;
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"<svg viewBox=\"0 0 {W} {H}\" style=\"width:100%; height:auto; min-height:300px;\" xmlns=\"http://www.w3.org/2000/svg\">");
+        sb.Append("<defs><marker id=\"arr\" markerWidth=\"8\" markerHeight=\"8\" refX=\"7\" refY=\"3\" orient=\"auto\">");
+        sb.Append("<path d=\"M0,0 L0,6 L7,3 z\" fill=\"#A4262C\"/></marker></defs>");
+
+        // Edges customer → signal
+        for (var i = 0; i < r.Customers.Count; i++)
+        {
+            sb.Append($"<line x1=\"{leftX + NodeR}\" y1=\"{customerY[i]}\" x2=\"{midX - NodeR}\" y2=\"{sigY}\" stroke=\"#A4262C\" stroke-width=\"1.5\" opacity=\"0.55\" marker-end=\"url(#arr)\"/>");
+        }
+        // Edges signal → devices (shared_ip)
+        for (var i = 0; i < r.Devices.Count && r.Pattern == "shared_ip"; i++)
+        {
+            sb.Append($"<line x1=\"{midX + NodeR}\" y1=\"{sigY}\" x2=\"{rightX - NodeR}\" y2=\"{deviceY[i]}\" stroke=\"#9BA4B0\" stroke-width=\"1.2\" opacity=\"0.6\" marker-end=\"url(#arr)\"/>");
+        }
+
+        // Müşteri node'ları
+        for (var i = 0; i < r.Customers.Count; i++)
+        {
+            var c = r.Customers[i];
+            var mono = MonogramOf(c.FullName);
+            sb.Append($"<circle cx=\"{leftX}\" cy=\"{customerY[i]}\" r=\"{NodeR}\" fill=\"#1F2937\" stroke=\"#A4262C\" stroke-width=\"1.5\"/>");
+            sb.Append($"<text x=\"{leftX}\" y=\"{customerY[i] + 4}\" text-anchor=\"middle\" fill=\"#ECEFF4\" font-size=\"11\" font-weight=\"700\" font-family=\"Inter,sans-serif\">{Esc(mono)}</text>");
+            sb.Append($"<text x=\"{leftX - NodeR - 6}\" y=\"{customerY[i] + 4}\" text-anchor=\"end\" fill=\"#0F1419\" font-size=\"11\" font-family=\"Inter,sans-serif\">{Esc(Truncate(c.FullName, 22))}</text>");
+        }
+
+        // Orta sinyal node
+        var sigLabel = r.Pattern switch
+        {
+            "shared_device" => "CİHAZ",
+            "shared_ip"     => "IP",
+            "shared_card"   => "KART",
+            _ => "•"
+        };
+        sb.Append($"<rect x=\"{midX - 50}\" y=\"{sigY - 28}\" width=\"100\" height=\"56\" rx=\"8\" fill=\"#A4262C\"/>");
+        sb.Append($"<text x=\"{midX}\" y=\"{sigY - 8}\" text-anchor=\"middle\" fill=\"#FFF\" font-size=\"11\" font-weight=\"700\" font-family=\"Inter,sans-serif\" letter-spacing=\"1\">{sigLabel}</text>");
+        sb.Append($"<text x=\"{midX}\" y=\"{sigY + 10}\" text-anchor=\"middle\" fill=\"#FFF\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">{Esc(r.SignalLabel.Length > 14 ? r.SignalLabel[..14] : r.SignalLabel)}</text>");
+
+        // Sağ taraf: cihazlar (shared_ip pattern için)
+        if (r.Pattern == "shared_ip")
+        {
+            for (var i = 0; i < r.Devices.Count; i++)
+            {
+                var d = r.Devices[i];
+                sb.Append($"<circle cx=\"{rightX}\" cy=\"{deviceY[i]}\" r=\"{NodeR}\" fill=\"#FFFFFF\" stroke=\"#9BA4B0\" stroke-width=\"1.5\"/>");
+                sb.Append($"<text x=\"{rightX}\" y=\"{deviceY[i] + 4}\" text-anchor=\"middle\" fill=\"#0F1419\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">{Esc(d.FingerprintShort)}</text>");
+                sb.Append($"<text x=\"{rightX + NodeR + 6}\" y=\"{deviceY[i] + 4}\" text-anchor=\"start\" fill=\"#6B7280\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">#{d.DeviceId}</text>");
+            }
+        }
+
+        sb.Append("</svg>");
+        return sb.ToString();
+    }
+
+    private static string BuildTSqlSnippet(FraudRingDetail r) => r.Pattern switch
+    {
+        "shared_device" =>
+            "-- Paylaşılan cihaz pattern (graph)\n" +
+            "SELECT c.full_name, d.fingerprint, d.ip_address\n" +
+            "FROM   graph.customer_node cn,\n" +
+            "       graph.uses_device  ud,\n" +
+            "       graph.device_node  dn,\n" +
+            "       shop.customer      c,\n" +
+            "       shop.device        d\n" +
+            "WHERE  MATCH(cn-(ud)->dn)\n" +
+            "  AND  c.customer_id  = cn.customer_id\n" +
+            "  AND  d.device_id    = dn.device_id\n" +
+            "  AND  LEFT(d.fingerprint, 12) = '" + r.SignalLabel.Replace("device:", "").Replace("…", "") + "';",
+
+        "shared_ip" =>
+            "-- Paylaşılan IP — SHORTEST_PATH ile evidence chain\n" +
+            "SELECT *\n" +
+            "FROM (\n" +
+            "    SELECT cn1.display_name AS start_customer,\n" +
+            "           LAST_VALUE(cn2.display_name) WITHIN GROUP (GRAPH PATH) AS end_customer,\n" +
+            "           STRING_AGG(cn2.display_name, ' → ') WITHIN GROUP (GRAPH PATH) AS hops\n" +
+            "    FROM   graph.customer_node AS cn1,\n" +
+            "           graph.uses_device   FOR PATH AS ud1,\n" +
+            "           graph.device_node   FOR PATH AS dn,\n" +
+            "           graph.uses_ip       FOR PATH AS ui,\n" +
+            "           graph.ip_node       FOR PATH AS ip,\n" +
+            "           graph.uses_device   FOR PATH AS ud2,\n" +
+            "           graph.customer_node FOR PATH AS cn2\n" +
+            "    WHERE  MATCH(SHORTEST_PATH(cn1(-(ud1)->dn-(ui)->ip<-(ui)-dn<-(ud2)-cn2)+))\n" +
+            ") AS sp WHERE end_customer IS NOT NULL;",
+
+        "shared_card" =>
+            "-- Paylaşılan kart (relational)\n" +
+            "SELECT c.full_name, pm.last4, LEFT(pm.card_fingerprint, 8) AS card_fp\n" +
+            "FROM   shop.payment_method pm\n" +
+            "JOIN   shop.customer       c ON c.customer_id = pm.customer_id\n" +
+            "WHERE  LEFT(pm.card_fingerprint, 8) = '" + r.SignalLabel.Replace("card:", "").Replace("…", "") + "';",
+
+        _ => "-- pattern bilinmiyor"
+    };
+
+    private static string MonogramOf(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "??";
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 0) return "??";
+        if (words.Length == 1) return words[0].Length >= 2 ? words[0][..2].ToUpper() : words[0][..1].ToUpper();
+        return $"{char.ToUpper(words[0][0])}{char.ToUpper(words[1][0])}";
+    }
+
+    private static string Truncate(string s, int max) => s.Length <= max ? s : s[..(max - 1)] + "…";
+    private static string Esc(string s) => System.Net.WebUtility.HtmlEncode(s);
+}

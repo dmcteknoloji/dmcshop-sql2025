@@ -89,11 +89,19 @@ else if (currentPageRings is not null)
     <div class="dmc-grid" style="gap: 0.85rem;">
         @foreach (var r in currentPageRings)
         {
-            <div class="dmc-card">
+            var signalKey = ExtractSignal(r);
+            var href = signalKey is null
+                ? "javascript:void(0)"
+                : $"/fraud/{r.Pattern}/{Uri.EscapeDataString(signalKey)}";
+            <a href="@href" class="dmc-card" style="text-decoration:none; color:inherit; display:block;">
                 <div class="dmc-fraud-head">
                     <div style="display:flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
                         <span class="dmc-badge @RiskBadge(r.RiskLevel)">@r.RiskLevel risk</span>
                         <span class="dmc-badge dmc-badge-soft">@PatternLabel(r.Pattern)</span>
+                        @if (signalKey is not null)
+                        {
+                            <span class="dmc-card-link" style="font-size: 0.8rem;">Detay →</span>
+                        }
                     </div>
                     <div style="text-align:right;">
                         <div style="font-size: 1.8rem; font-weight: 700; line-height:1; font-variant-numeric: tabular-nums;">@r.CustomerCount</div>
@@ -115,7 +123,7 @@ else if (currentPageRings is not null)
                         }
                     </div>
                 </div>
-            </div>
+            </a>
         }
     </div>
 
@@ -247,5 +255,20 @@ else if (currentPageRings is not null)
         "shared_ip"     => "Paylaşılan IP",
         "shared_card"   => "Paylaşılan kart",
         _               => pattern
+    };
+
+    /// <summary>
+    /// Evidence string'inden FraudRingDetailService'in beklediği signal key'i çıkarır.
+    /// Pattern bazlı:
+    ///   shared_device: "...fp:<12hex>…)..." → 12 hex char
+    ///   shared_ip:     "...IP adresi (<ip>)..."
+    ///   shared_card:   "...SHA-256 ... müşteride kayıtlı" → DTO'da signal yok (henüz)
+    /// </summary>
+    private static string? ExtractSignal(FraudRing r) => r.Pattern switch
+    {
+        "shared_device" => System.Text.RegularExpressions.Regex.Match(r.Evidence, @"fp:([0-9a-fA-F]{12})").Groups[1].Value is { Length: 12 } fp ? fp : null,
+        "shared_ip"     => System.Text.RegularExpressions.Regex.Match(r.Evidence, @"\(([^)]+)\)").Groups[1].Value is { Length: > 0 } ip ? ip : null,
+        "shared_card"   => null,   // SignalKey DTO'da yok; future-work: SQL'de signal kolonu döndürmek
+        _               => null
     };
 }

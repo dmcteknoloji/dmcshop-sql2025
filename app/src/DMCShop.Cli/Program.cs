@@ -15,6 +15,7 @@ var config = new ConfigurationBuilder()
 
 var services = new ServiceCollection()
     .AddLogging(b => b.AddSimpleConsole(o => { o.SingleLine = true; o.TimestampFormat = "HH:mm:ss "; }))
+    .AddSingleton<IConfiguration>(config)
     .AddDMCShopData(config)
     .AddDMCShopProviders(config)
     .BuildServiceProvider();
@@ -24,6 +25,7 @@ return args switch
     [] or ["-h"] or ["--help"]            => PrintUsage(),
     ["health"]                            => await new HealthCommand(services).RunAsync(),
     ["embed-products", .. var tail]       => await new EmbedProductsCommand(services).RunAsync(tail),
+    ["build-map", .. var mapArgs]         => await new BuildMapCommand(services).RunAsync(mapArgs),
     _                                     => PrintUsage()
 };
 
@@ -34,8 +36,8 @@ static int PrintUsage()
 
         Komutlar:
           dmcshop health                              DB ve provider bağlantı kontrolü
-          dmcshop embed-products [--batch N]          120 ürün için embedding üret ve vector.product_embedding'a yaz
-                                                     (aktif provider appsettings veya DMCSHOP_PROVIDER__ACTIVE ile seçilir)
+          dmcshop embed-products [--batch N]          embedding üret ve vector.product_embedding'a yaz
+          dmcshop build-map [--sample N]              50K vector'den 2D harita JSON üret (/harita sayfası için)
         """);
     return 1;
 }
