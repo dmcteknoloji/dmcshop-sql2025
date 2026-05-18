@@ -166,8 +166,11 @@
 
             if (!string.IsNullOrWhiteSpace(productSearch))
             {
-                var needle = productSearch.Trim();
-                q = q.Where(p => p.Name.Contains(needle) || p.Sku.Contains(needle));
+                var needle = "%" + productSearch.Trim() + "%";
+                q = q.Where(p =>
+                    EF.Functions.Like(p.Name, needle) ||
+                    EF.Functions.Like(p.Sku,  needle) ||
+                    (p.DescriptionTr != null && EF.Functions.Like(p.DescriptionTr, needle)));
             }
 
             filteredCount = await q.CountAsync();

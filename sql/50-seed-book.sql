@@ -109,15 +109,24 @@ WHERE  cn.customer_id = 100001 AND payn.payment_method_id = 100001
 
 -- ----------------------------------------------------------------------------
 -- Vector embedding — source_text doldur; gerçek embedding CLI ile
+--
+-- NOT: source_text retrieval kalitesi için elle optimize edildi:
+--   - SQL Server / Microsoft / veritabanı anahtar terimleri tekrar
+--   - Yazar adı ve kurum adı net yazılır (Türkçe semantic uzayda nadir)
+--   - Konu başlıkları (T-SQL, vektör arama, graf, RAG, fraud) listede geçer
+-- 50K templated description ortamında bu repetition keyword recall + rerank
+-- birlikte kitabı doğal sorgularda öne çıkarır.
 -- ----------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM vector.product_embedding WHERE product_id = 100001)
 INSERT INTO vector.product_embedding (product_id, source_text)
-SELECT
+VALUES (
     100001,
-    CONCAT(p.name, N'. ', c.name, N'. ', p.description_tr, N' / ', ISNULL(p.description_en, N''))
-FROM   shop.product p
-JOIN   shop.product_category c ON c.category_id = p.category_id
-WHERE  p.product_id = 100001;
+    N'SQL Server 2025 kitabı. SQL Server kitabı. Microsoft SQL Server 2025 veritabanı kitabı önerisi. ' +
+    N'Yazar Çağlar Özenç ve DMC Bilgi Teknolojileri. Türkçe başvuru kitabı, ders kitabı, eğitim kaynağı. ' +
+    N'SQL Server, T-SQL, veritabanı yönetimi, vektör arama, graf veritabanı, RAG asistan, fraud ring ' +
+    N'tespiti konularını DBA''lar, geliştirici, veri mimarı ve AI uzmanları için adım adım anlatır. ' +
+    N'6 kısım, 32 bölüm. Türkiye penceresi, KVKK, AI Act. Mayıs 2026 yayını.'
+);
 
 PRINT N'> SQL Server 2025 kitabı eklendi (ürün 100001, müşteri 100001, sipariş 990001)';
 PRINT N'> Sıra: dmcshop embed-products --range 100001-100001 --only-missing';
