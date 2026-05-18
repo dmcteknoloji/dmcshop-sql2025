@@ -217,8 +217,10 @@ Workshop için kayda değer üç davranış:
    ```sql
    ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;
    ```
-2. **DiskANN vector index varken tabloya DML (INSERT/UPDATE) yapılamaz** (`Msg 42231`). Önce
-   index drop, sonra DML, sonra index yeniden oluştur. CLI `embed-products` bunu otomatik yönetir.
+2. **DiskANN vector index varken tabloya hiçbir DML yapılamaz** (`Msg 42231` — INSERT, UPDATE
+   ve DELETE hepsi reddedilir). Tek yol: önce `DROP INDEX`, sonra DML, sonra yeniden `CREATE
+   VECTOR INDEX`. CLI `embed-products` bunu otomatik yönetir; manuel toplu yükleme için
+   `sql/08-create-vector-indexes.sql` ayrı dosyadır.
 3. **`VECTOR_SEARCH` sözdizimi.** Eski `TOP (N) WITH APPROXIMATE` RTM'de yok; yerine:
    ```sql
    WITH hits AS (
