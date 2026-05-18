@@ -1,18 +1,17 @@
-# Caddyfile — DMCShop HTTPS reverse proxy
+# Caddyfile — DMCShop HTTPS (Let's Encrypt)
 #
-# Self-signed (Caddy internal CA) mode için bu dosya, FQDN için
-# tls internal kullanır. Tarayıcı "güvensiz" uyarısı verir, "devam et" ile
-# geçilir.
+# Production: domain DNS A-record + Let's Encrypt otomatik sertifika.
+# DNS A-record:  demo.dmcteknoloji.com → 20.71.172.88 (VM public IP)
+# NSG açık portlar: 80 (Let's Encrypt HTTP-01 / TLS-ALPN-01 challenge), 443.
 #
-# Production / Let's Encrypt için:
-#   - Caddyfile başındaki FQDN'i kendi domain'inle değiştir
-#   - "tls internal" satırını sil
-#   - DNS A-record: <DOMAIN> → VM public IP
-#   - NSG: 80 ve 443 açık
-#   - Caddy 2 otomatik Let's Encrypt sertifika alır
+# Self-signed mode için: `tls internal` ekle, ACME email satırını kaldır.
+# Detay: infra/caddy/README.md
 
-dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
-    tls internal
+{
+    email iletisim@dmcteknoloji.com
+}
+
+demo.dmcteknoloji.com {
     encode gzip zstd
     reverse_proxy localhost:5000 {
         flush_interval -1
@@ -21,8 +20,8 @@ dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
     }
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Content-Type-Options    "nosniff"
+        Referrer-Policy           "strict-origin-when-cross-origin"
         -Server
     }
     log {
@@ -32,6 +31,13 @@ dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
     }
 }
 
-http://dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
-    redir https://{host}{uri} permanent
+# Eski Azure FQDN: yeni domain'e redirect (eski paylaşılan linkler kırılmasın)
+dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
+    tls internal
+    redir https://demo.dmcteknoloji.com{uri} permanent
+}
+
+# HTTP isteklerini HTTPS'e zorla
+http://demo.dmcteknoloji.com, http://dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com {
+    redir https://demo.dmcteknoloji.com{uri} permanent
 }

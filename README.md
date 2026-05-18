@@ -22,11 +22,9 @@
 
 <p align="center">
   <strong>Canlı demo:</strong>
-  <a href="https://dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com">
-    https://dmcshop-eqaspinoarx3g.westeurope.cloudapp.azure.com
-  </a>
+  <a href="https://demo.dmcteknoloji.com">https://demo.dmcteknoloji.com</a>
   <br/>
-  <em style="font-size: 0.85em;">Self-signed sertifika — tarayıcı uyarısında "devam et" deyin. Production'da Let's Encrypt'e geçilir.</em>
+  <em style="font-size: 0.85em;">Let's Encrypt sertifikası · TLS-ALPN-01 challenge · Caddy 2 ile otomatik yenileme</em>
 </p>
 
 ---
@@ -231,7 +229,7 @@ dmcshop-sql2025/
 | Senaryo 5 (Vector + Graph hibrit) | ✓ Tamam | 2026-05-18 |
 | External model + retention + smoke tests + Caddy | ✓ Tamam | 2026-05-18 |
 | HTTPS (self-signed Caddy) | ✓ Tamam | 2026-05-18 |
-| Custom domain + Let's Encrypt | DNS A-record bekliyor | — |
+| Custom domain + Let's Encrypt (demo.dmcteknoloji.com) | ✓ Tamam | 2026-05-18 |
 | NSG SSH daraltma + SA password rotation + retention cron | ✓ Tamam | 2026-05-18 |
 | Container Apps autoscale (refaktör) | Planlı  | —           |
 | GitHub Actions CI/CD              | Planlı  | —           |
