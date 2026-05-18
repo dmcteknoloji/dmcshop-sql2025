@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-label="DMCShop architecture">
+    <defs>
+        <linearGradient id="layerBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#F4F6F8"/>
+        </linearGradient>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#9BA4B0"/>
+        </marker>
+        <marker id="arrowAccent" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#A4262C"/>
+        </marker>
+    </defs>
+
+    <rect width="1200" height="560" fill="#FAFBFC"/>
+
+    <text x="40" y="48" font-family="'Inter', sans-serif" font-size="22" font-weight="700" fill="#0F1419">Mimari</text>
+    <text x="40" y="72" font-family="'Inter', sans-serif" font-size="13" fill="#6B7280">Üç katman · tek VM (Azure B4ms westeurope) · aynı stack local docker'da</text>
+
+    <g font-family="'Inter', sans-serif">
+        <g transform="translate(40,110)">
+            <rect width="1120" height="100" rx="10" fill="url(#layerBg)" stroke="#E5E7EB"/>
+            <text x="20" y="28" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">SUNUM</text>
+            <line x1="20" y1="36" x2="100" y2="36" stroke="#E5E7EB"/>
+
+            <g transform="translate(20,50)">
+                <rect width="200" height="40" rx="6" fill="#A4262C"/>
+                <text x="100" y="25" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="middle">Blazor Server · .NET 10</text>
+            </g>
+
+            <g transform="translate(240,50)" font-size="11" fill="#4B5563">
+                <text x="0" y="14">/  · /katalog · /search</text>
+                <text x="0" y="32">/asistan (streaming) · /fraud · /urun/{id}</text>
+            </g>
+
+            <g transform="translate(560,50)">
+                <rect width="180" height="40" rx="6" fill="#1F2937"/>
+                <text x="90" y="25" font-size="13" font-weight="500" fill="#FFFFFF" text-anchor="middle">DMCShop.Search</text>
+            </g>
+
+            <g transform="translate(760,50)">
+                <rect width="180" height="40" rx="6" fill="#1F2937"/>
+                <text x="90" y="25" font-size="13" font-weight="500" fill="#FFFFFF" text-anchor="middle">DMCShop.Providers</text>
+            </g>
+
+            <g transform="translate(960,50)">
+                <rect width="140" height="40" rx="6" fill="#1F2937"/>
+                <text x="70" y="25" font-size="13" font-weight="500" fill="#FFFFFF" text-anchor="middle">DMCShop.Data</text>
+            </g>
+        </g>
+
+        <g transform="translate(40,250)">
+            <rect width="1120" height="160" rx="10" fill="url(#layerBg)" stroke="#E5E7EB"/>
+            <text x="20" y="28" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">VERİ KATMANI · SQL SERVER 2025</text>
+            <line x1="20" y1="36" x2="280" y2="36" stroke="#E5E7EB"/>
+
+            <g transform="translate(20,52)">
+                <rect width="240" height="92" rx="8" fill="#FFFFFF" stroke="#A4262C" stroke-width="1.5"/>
+                <text x="16" y="24" font-size="12" font-weight="600" fill="#A4262C">shop</text>
+                <text x="16" y="46" font-size="11" fill="#4B5563">product · customer · order</text>
+                <text x="16" y="62" font-size="11" fill="#4B5563">order_line · device · payment_method</text>
+                <text x="16" y="80" font-size="10" fill="#6B7280">9 tablo · transactional</text>
+            </g>
+
+            <g transform="translate(280,52)">
+                <rect width="240" height="92" rx="8" fill="#FFFFFF" stroke="#A4262C" stroke-width="1.5"/>
+                <text x="16" y="24" font-size="12" font-weight="600" fill="#A4262C">graph</text>
+                <text x="16" y="46" font-size="11" fill="#4B5563">customer_node · product_node</text>
+                <text x="16" y="62" font-size="11" fill="#4B5563">purchased · uses_device · uses_ip</text>
+                <text x="16" y="80" font-size="10" fill="#6B7280">5 NODE + 5 EDGE · MATCH · SHORTEST_PATH</text>
+            </g>
+
+            <g transform="translate(540,52)">
+                <rect width="240" height="92" rx="8" fill="#FFFFFF" stroke="#A4262C" stroke-width="1.5"/>
+                <text x="16" y="24" font-size="12" font-weight="600" fill="#A4262C">vector</text>
+                <text x="16" y="46" font-size="11" fill="#4B5563">product_embedding (1536 + 768)</text>
+                <text x="16" y="62" font-size="11" fill="#4B5563">DiskANN cosine · query_log</text>
+                <text x="16" y="80" font-size="10" fill="#6B7280">VECTOR(N) · VECTOR_SEARCH</text>
+            </g>
+
+            <g transform="translate(800,52)">
+                <rect width="300" height="92" rx="8" fill="#FFFFFF" stroke="#A4262C" stroke-width="1.5"/>
+                <text x="16" y="24" font-size="12" font-weight="600" fill="#A4262C">ops</text>
+                <text x="16" y="46" font-size="11" fill="#4B5563">provider_config (T-SQL ↔ .NET ortak truth)</text>
+                <text x="16" y="62" font-size="11" fill="#4B5563">rest_call_log · sp_embed_text · sp_chat_complete</text>
+                <text x="16" y="80" font-size="10" fill="#6B7280">sp_invoke_external_rest_endpoint</text>
+            </g>
+        </g>
+
+        <g transform="translate(40,440)">
+            <rect width="1120" height="100" rx="10" fill="url(#layerBg)" stroke="#E5E7EB"/>
+            <text x="20" y="28" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">MODEL PROVIDER</text>
+            <line x1="20" y1="36" x2="180" y2="36" stroke="#E5E7EB"/>
+
+            <g transform="translate(20,50)">
+                <rect width="220" height="36" rx="6" fill="#FFFFFF" stroke="#E5E7EB"/>
+                <text x="14" y="22" font-size="13" font-weight="500" fill="#0F1419">Ollama (local)</text>
+                <text x="124" y="22" font-size="11" fill="#6B7280">nomic-embed · qwen2.5:3b</text>
+            </g>
+
+            <g transform="translate(260,50)">
+                <rect width="220" height="36" rx="6" fill="#FFFFFF" stroke="#E5E7EB"/>
+                <text x="14" y="22" font-size="13" font-weight="500" fill="#0F1419">Azure OpenAI</text>
+                <text x="124" y="22" font-size="11" fill="#6B7280">text-embed-3-small · gpt-4o</text>
+            </g>
+
+            <g transform="translate(500,50)" font-size="11" fill="#6B7280">
+                <text x="0" y="14">Provider seçimi: appsettings.Provider.Active = "ollama" | "openai"</text>
+                <text x="0" y="32">ops.provider_config tablosu T-SQL'den de aynı seçimi okur (sp_embed_text, sp_chat_complete)</text>
+            </g>
+        </g>
+    </g>
+
+    <line x1="600" y1="210" x2="600" y2="250" stroke="#A4262C" stroke-width="2" marker-end="url(#arrowAccent)"/>
+    <line x1="600" y1="410" x2="600" y2="440" stroke="#9BA4B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using DMCShop.Domain.Abstractions;
@@ -46,5 +47,32 @@ public sealed class OpenAIChatProvider : IChatProvider
 
         var text = response.Value.Content.Count > 0 ? response.Value.Content[0].Text : string.Empty;
         return new ChatResult(text, (int)sw.ElapsedMilliseconds);
+    }
+
+    public async IAsyncEnumerable<string> StreamAsync(
+        string systemPrompt,
+        string userPrompt,
+        IEnumerable<string> contextChunks,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var context = string.Join("\n---\n", contextChunks);
+        var fullPrompt = string.IsNullOrWhiteSpace(context)
+            ? userPrompt
+            : $"Aşağıdaki ürün listesinden faydalanarak yanıt ver:\n{context}\n\nSoru: {userPrompt}";
+
+        var messages = new List<ChatMessage>
+        {
+            new SystemChatMessage(systemPrompt),
+            new UserChatMessage(fullPrompt)
+        };
+
+        await foreach (var update in _client.CompleteChatStreamingAsync(messages, cancellationToken: cancellationToken))
+        {
+            foreach (var part in update.ContentUpdate)
+            {
+                if (!string.IsNullOrEmpty(part.Text))
+                    yield return part.Text;
+            }
+        }
     }
 }

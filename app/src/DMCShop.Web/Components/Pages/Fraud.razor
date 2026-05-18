@@ -10,7 +10,7 @@
     <div class="dmc-hero-eyebrow">Senaryo 3</div>
     <h1>Fraud ring tespiti</h1>
     <p class="dmc-hero-lead">
-        Aynı cihazı, IP adresini veya kart parmak izini paylaşan müşterileri tek bir SQL sorgusu ile
+        Aynı cihazı, IP adresini veya kart parmak izini paylaşan müşterileri tek bir SQL sorgusuyla
         ortaya çıkarır. Risk seviyesi paylaşılan sinyal sayısına göre derecelendirilir.
         Workshop için sql/22-fraud-ring.sql içinde SHORTEST_PATH evidence chain örneği var.
     </p>
@@ -18,33 +18,43 @@
 
 <div class="dmc-toolbar">
     <div class="dmc-toolbar-count">
-        @if (rings is not null)
+        @if (summary is not null)
         {
-            <strong style="color:var(--text);">@filteredRings.Count</strong>
-            <span> / @rings.Count ring</span>
-            @if (highCount > 0)
+            <strong style="color:var(--text);">@summary.Total.ToString("N0")</strong>
+            <span> ring</span>
+            @if (summary.HighCount > 0)
             {
-                <span class="dmc-badge dmc-badge-high" style="margin-left: 0.8rem;">@highCount HIGH</span>
+                <span class="dmc-badge dmc-badge-high" style="margin-left: 0.8rem;">@summary.HighCount HIGH</span>
             }
-            @if (mediumCount > 0)
+            @if (summary.MediumCount > 0)
             {
-                <span class="dmc-badge dmc-badge-medium" style="margin-left: 0.4rem;">@mediumCount MEDIUM</span>
+                <span class="dmc-badge dmc-badge-medium" style="margin-left: 0.4rem;">@summary.MediumCount MEDIUM</span>
             }
+            <span style="margin-left: 0.8rem;">·</span>
+            <span style="margin-left: 0.4rem;" class="dmc-badge dmc-badge-soft">@summary.DeviceCount cihaz</span>
+            <span class="dmc-badge dmc-badge-soft">@summary.IpCount IP</span>
+            <span class="dmc-badge dmc-badge-soft">@summary.CardCount kart</span>
         }
     </div>
     <div class="dmc-toolbar-sort">
-        <input class="dmc-search-input" style="height: 38px; padding: 0.5rem 0.85rem; min-width: 260px;"
-               @bind="search" @bind:event="oninput" placeholder="Müşteri veya pattern ara…" />
-        <select class="dmc-select" @bind="riskFilter">
-            <option value="all">Tüm riskler</option>
+        <input class="dmc-search-input" style="height: 38px; padding: 0.5rem 0.85rem; min-width: 240px;"
+               @bind="search" @bind:event="oninput" @bind:after="ResetPageAndLoad" placeholder="Müşteri veya pattern ara…" />
+        <select class="dmc-select" @bind="riskFilter" @bind:after="ResetPageAndLoad">
+            <option value="">Tüm riskler</option>
             <option value="HIGH">Sadece HIGH</option>
             <option value="MEDIUM">Sadece MEDIUM</option>
         </select>
-        <select class="dmc-select" @bind="patternFilter">
-            <option value="all">Tüm patternler</option>
+        <select class="dmc-select" @bind="patternFilter" @bind:after="ResetPageAndLoad">
+            <option value="">Tüm patternler</option>
             <option value="shared_device">Paylaşılan cihaz</option>
             <option value="shared_ip">Paylaşılan IP</option>
             <option value="shared_card">Paylaşılan kart</option>
+        </select>
+        <select class="dmc-select" @bind="sortBy" @bind:after="ResetPageAndLoad">
+            <option value="count-desc">En fazla müşteri</option>
+            <option value="count-asc">En az müşteri</option>
+            <option value="risk">Risk seviyesi (HIGH önce)</option>
+            <option value="pattern">Pattern (alfabetik)</option>
         </select>
         <button class="dmc-btn dmc-btn-ghost" style="height: 38px; padding: 0 0.85rem;" @onclick="LoadAsync" disabled="@busy">
             @(busy ? "Taranıyor…" : "Yenile")
@@ -57,14 +67,14 @@
     <div class="dmc-alert dmc-alert-error">@error</div>
 }
 
-@if (busy && rings is null)
+@if (busy && currentPageRings is null)
 {
     <div class="dmc-loading">Fraud ringleri taranıyor…</div>
 }
-else if (filteredRings.Count == 0)
+else if (currentPageRings is { Count: 0 })
 {
     <div class="dmc-empty">
-        @if (rings is { Count: 0 })
+        @if (summary is { Total: 0 })
         {
             <span>Şu anda risk taşıyan herhangi bir ring tespit edilemedi.</span>
         }
@@ -74,10 +84,10 @@ else if (filteredRings.Count == 0)
         }
     </div>
 }
-else
+else if (currentPageRings is not null)
 {
     <div class="dmc-grid" style="gap: 0.85rem;">
-        @foreach (var r in filteredRings)
+        @foreach (var r in currentPageRings)
         {
             <div class="dmc-card">
                 <div class="dmc-fraud-head">
@@ -108,6 +118,17 @@ else
             </div>
         }
     </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="dmc-currentPager">
+            <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(1)"            disabled="@(currentPage <= 1)">«</button>
+            <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(currentPage - 1)"     disabled="@(currentPage <= 1)">‹ Önceki</button>
+            <span class="dmc-currentPager-info">@currentPage / @totalPages</span>
+            <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(currentPage + 1)"     disabled="@(currentPage >= totalPages)">Sonraki ›</button>
+            <button class="dmc-btn dmc-btn-ghost" @onclick="() => GotoPage(totalPages)"   disabled="@(currentPage >= totalPages)">»</button>
+        </div>
+    }
 }
 
 <style>
@@ -128,43 +149,38 @@ else
     }
     .dmc-badge-high   { background: rgba(220,38,38,0.08); color: #B91C1C; border-color: rgba(220,38,38,0.25); font-weight: 600; }
     .dmc-badge-medium { background: rgba(180,83,9,0.08);  color: #B45309; border-color: rgba(180,83,9,0.25);  font-weight: 600; }
+    .dmc-currentPager {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding: 1rem 0;
+    }
+    .dmc-currentPager .dmc-btn { height: 38px; padding: 0 0.85rem; font-size: 0.88rem; }
+    .dmc-currentPager-info {
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+        padding: 0 0.85rem;
+        font-variant-numeric: tabular-nums;
+    }
 </style>
 
 @code {
-    private List<FraudRing>? rings;
+    private const int PageSize = 20;
+
+    private FraudSummary? summary;
+    private List<FraudRing>? currentPageRings;
     private bool busy;
     private string? error;
 
+    private int currentPage = 1;
+    private int totalPages = 1;
+
     private string search        = string.Empty;
-    private string riskFilter    = "all";
-    private string patternFilter = "all";
-
-    private int highCount   => rings?.Count(r => r.RiskLevel == "HIGH")   ?? 0;
-    private int mediumCount => rings?.Count(r => r.RiskLevel == "MEDIUM") ?? 0;
-
-    private IReadOnlyList<FraudRing> filteredRings
-    {
-        get
-        {
-            if (rings is null) return Array.Empty<FraudRing>();
-            IEnumerable<FraudRing> q = rings;
-            if (riskFilter    != "all") q = q.Where(r => r.RiskLevel == riskFilter);
-            if (patternFilter != "all") q = q.Where(r => r.Pattern   == patternFilter);
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var needle = search.Trim();
-                q = q.Where(r =>
-                    r.CustomerList.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
-                    r.Evidence.Contains(needle,     StringComparison.OrdinalIgnoreCase) ||
-                    r.Pattern.Contains(needle,      StringComparison.OrdinalIgnoreCase));
-            }
-            return q.ToList();
-        }
-    }
-
-    private bool MatchesSearch(string name) =>
-        !string.IsNullOrWhiteSpace(search) &&
-        name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+    private string riskFilter    = string.Empty;
+    private string patternFilter = string.Empty;
+    private string sortBy        = "count-desc";
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -174,7 +190,21 @@ else
         error = null;
         try
         {
-            rings = await Detection.DetectAsync();
+            summary = await Detection.SummaryAsync(
+                riskFilter:    NullIfEmpty(riskFilter),
+                patternFilter: NullIfEmpty(patternFilter),
+                search:        NullIfEmpty(search));
+
+            totalPages = Math.Max(1, (int)Math.Ceiling(summary.Total / (double)PageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            currentPageRings = await Detection.DetectAsync(
+                skip: (currentPage - 1) * PageSize,
+                take: PageSize,
+                riskFilter:    NullIfEmpty(riskFilter),
+                patternFilter: NullIfEmpty(patternFilter),
+                search:        NullIfEmpty(search),
+                sortBy:        sortBy);
         }
         catch (Exception ex)
         {
@@ -185,6 +215,24 @@ else
             busy = false;
         }
     }
+
+    private async Task ResetPageAndLoad()
+    {
+        currentPage = 1;
+        await LoadAsync();
+    }
+
+    private async Task GotoPage(int p)
+    {
+        currentPage = Math.Max(1, Math.Min(totalPages, p));
+        await LoadAsync();
+    }
+
+    private bool MatchesSearch(string name) =>
+        !string.IsNullOrWhiteSpace(search) &&
+        name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static string? NullIfEmpty(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     private static string RiskBadge(string risk) => risk switch
     {

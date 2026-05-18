@@ -1,11 +1,13 @@
 @page "/asistan"
 @rendermode InteractiveServer
+@using System.Text
 @using DMCShop.Domain.Abstractions
 @using DMCShop.Domain.Dtos
 @using DMCShop.Search
 @inject RagAssistantService Rag
 @inject IEmbeddingProvider EmbedProvider
 @inject IChatProvider ChatProvider
+@implements IDisposable
 
 <PageTitle>Ürün asistanı — DMCShop</PageTitle>
 
@@ -14,7 +16,7 @@
     <h1>RAG tabanlı ürün asistanı</h1>
     <p class="dmc-hero-lead">
         Sorduğunuz soruya vector retrieval ile en yakın 5 ürünü çekip chat modeline bağlam olarak
-        verir. Her çağrı <code>vector.query_log</code>'a yazılır. Bağlam dışında ürün önermez.
+        verir. Yanıt streaming olarak token-token gelir. Her çağrı <code>vector.query_log</code>'a yazılır.
     </p>
     <div class="dmc-stack-row">
         <span class="dmc-badge dmc-badge-accent">Retrieval: @EmbedProvider.Name / @EmbedProvider.ModelName</span>
@@ -43,39 +45,81 @@
     <div class="dmc-alert dmc-alert-error">@error</div>
 }
 
-@if (history.Count > 0)
+@if (active is not null)
 {
-    <div class="dmc-grid" style="gap: 1.25rem;">
-        @foreach (var t in history)
-        {
-            <div class="dmc-card">
-                <div class="dmc-chat-q">@t.Question</div>
-                <div class="dmc-chat-a">@t.Response</div>
+    <div class="dmc-card dmc-active-card">
+        <div class="dmc-chat-q">@active.Question</div>
 
-                <details style="margin-top: 0.75rem;">
-                    <summary style="cursor:pointer; color:var(--text-muted); font-size:0.82rem; user-select:none;">
-                        Kullanılan ürünler (@t.UsedProducts.Count) · retrieval @t.RetrievalLatencyMs ms · LLM @t.LlmLatencyMs ms · toplam @t.TotalLatencyMs ms
-                    </summary>
-                    <div class="dmc-grid dmc-results-grid dmc-results-grid-compact" style="margin-top: 0.75rem;">
-                        @foreach (var h in t.UsedProducts)
-                        {
-                            <a href="urun/@h.ProductId" class="dmc-pcard">
-                                <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
-                                <div class="dmc-pcard-body">
-                                    <div class="dmc-pcard-cat">@h.CategoryName</div>
-                                    <h3 class="dmc-pcard-name">@h.Name</h3>
-                                    <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
-                                </div>
-                            </a>
-                        }
-                    </div>
-                </details>
-            </div>
+        <div class="dmc-stream-status">
+            <span class="dmc-stream-dot @(active.Phase switch { "retrieval" => "pulse-amber", "streaming" => "pulse-green", "done" => "ok", _ => "" })"></span>
+            <span>@PhaseLabel(active.Phase)</span>
+            @if (active.UsedProducts is { Count: > 0 })
+            {
+                <span style="margin-left: 0.75rem; color: var(--text-dim);">
+                    · @active.UsedProducts.Count ürün retrieve · retrieval @active.RetrievalLatencyMs ms
+                    @if (active.LlmLatencyMs > 0)
+                    {
+                        <span> · LLM @active.LlmLatencyMs ms</span>
+                    }
+                </span>
+            }
+        </div>
+
+        <div class="dmc-chat-a">@active.AccumulatedText@(active.Phase == "streaming" ? "▍" : "")</div>
+
+        @if (active.UsedProducts is { Count: > 0 })
+        {
+            <details style="margin-top: 0.75rem;" open="@(active.Phase != "done")">
+                <summary style="cursor:pointer; color:var(--text-muted); font-size:0.82rem; user-select:none;">
+                    Kullanılan @active.UsedProducts.Count ürün
+                </summary>
+                <div class="dmc-grid dmc-results-grid dmc-results-grid-compact" style="margin-top: 0.75rem;">
+                    @foreach (var h in active.UsedProducts)
+                    {
+                        <a href="urun/@h.ProductId" class="dmc-pcard">
+                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                            <div class="dmc-pcard-body">
+                                <div class="dmc-pcard-cat">@h.CategoryName</div>
+                                <h3 class="dmc-pcard-name">@h.Name</h3>
+                                <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </details>
         }
     </div>
 }
 
+@foreach (var t in history)
+{
+    <div class="dmc-card" style="margin-top: 1rem;">
+        <div class="dmc-chat-q">@t.Question</div>
+        <div class="dmc-chat-a">@t.Response</div>
+
+        <details style="margin-top: 0.75rem;">
+            <summary style="cursor:pointer; color:var(--text-muted); font-size:0.82rem; user-select:none;">
+                Kullanılan ürünler (@t.UsedProducts.Count) · retrieval @t.RetrievalLatencyMs ms · LLM @t.LlmLatencyMs ms · toplam @t.TotalLatencyMs ms
+            </summary>
+            <div class="dmc-grid dmc-results-grid dmc-results-grid-compact" style="margin-top: 0.75rem;">
+                @foreach (var h in t.UsedProducts)
+                {
+                    <a href="urun/@h.ProductId" class="dmc-pcard">
+                        <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                        <div class="dmc-pcard-body">
+                            <div class="dmc-pcard-cat">@h.CategoryName</div>
+                            <h3 class="dmc-pcard-name">@h.Name</h3>
+                            <div class="dmc-pcard-price">@h.Price.ToString("N2") ₺</div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </details>
+    </div>
+}
+
 <style>
+    .dmc-active-card { border-color: var(--accent); }
     .dmc-chat-q {
         font-weight: 600;
         font-size: 1.05rem;
@@ -89,6 +133,31 @@
         font-size: 0.98rem;
         line-height: 1.65;
         white-space: pre-wrap;
+        min-height: 1.65em;
+    }
+    .dmc-stream-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin: 0.6rem 0 1rem;
+        padding: 0.45rem 0.75rem;
+        background: var(--surface-2);
+        border-radius: var(--radius-sm);
+    }
+    .dmc-stream-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        display: inline-block;
+    }
+    .dmc-stream-dot.pulse-amber { background: #F59E0B; animation: dmc-pulse 1s ease-in-out infinite; }
+    .dmc-stream-dot.pulse-green { background: #10B981; animation: dmc-pulse 1s ease-in-out infinite; }
+    .dmc-stream-dot.ok          { background: var(--ok); }
+    @@keyframes dmc-pulse {
+        0%,100% { opacity: 1;   transform: scale(1);   }
+        50%     { opacity: 0.4; transform: scale(1.3); }
     }
 </style>
 
@@ -97,6 +166,8 @@
     private bool busy;
     private string? error;
     private readonly List<RagAnswer> history = new();
+    private ActiveStream? active;
+    private CancellationTokenSource? cts;
 
     private static readonly string[] samples =
     {
@@ -109,19 +180,54 @@
 
     private async Task AskAsync()
     {
-        if (string.IsNullOrWhiteSpace(question)) return;
+        if (string.IsNullOrWhiteSpace(question) || busy) return;
 
-        busy  = true;
-        error = null;
+        busy   = true;
+        error  = null;
+        active = new ActiveStream(question, "retrieval");
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        var sb = new StringBuilder();
+
         try
         {
-            var answer = await Rag.AskAsync(question, topK: 5);
-            history.Insert(0, answer);
+            await foreach (var chunk in Rag.StreamAsync(question, topK: 5, cts.Token))
+            {
+                active.UsedProducts       = chunk.UsedProducts;
+                active.RetrievalLatencyMs = chunk.RetrievalLatencyMs;
+                active.LlmLatencyMs       = chunk.LlmLatencyMs;
+                active.TotalLatencyMs     = chunk.TotalLatencyMs;
+
+                if (!string.IsNullOrEmpty(chunk.TokenChunk))
+                {
+                    if (active.Phase == "retrieval") active.Phase = "streaming";
+                    sb.Append(chunk.TokenChunk);
+                    active.AccumulatedText = sb.ToString();
+                }
+                if (chunk.IsFinal) active.Phase = "done";
+
+                await InvokeAsync(StateHasChanged);
+            }
+
+            var finalAnswer = new RagAnswer(
+                active.Question,
+                active.AccumulatedText,
+                active.UsedProducts ?? Array.Empty<ProductHit>(),
+                active.RetrievalLatencyMs,
+                active.LlmLatencyMs,
+                active.TotalLatencyMs);
+            history.Insert(0, finalAnswer);
+            active   = null;
             question = string.Empty;
+        }
+        catch (OperationCanceledException)
+        {
+            active = null;
         }
         catch (Exception ex)
         {
-            error = $"Asistan hatası: {ex.Message}";
+            error  = $"Asistan hatası: {ex.Message}";
+            active = null;
         }
         finally
         {
@@ -138,5 +244,28 @@
     private async Task HandleKey(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !busy) await AskAsync();
+    }
+
+    private static string PhaseLabel(string phase) => phase switch
+    {
+        "retrieval" => "Vector retrieval — ilgili ürünler aranıyor",
+        "streaming" => "Model yanıt yazıyor",
+        "done"      => "Tamamlandı",
+        _           => phase
+    };
+
+    public void Dispose() => cts?.Cancel();
+
+    private sealed class ActiveStream
+    {
+        public string Question { get; }
+        public string Phase { get; set; }
+        public IReadOnlyList<ProductHit>? UsedProducts { get; set; }
+        public string AccumulatedText { get; set; } = string.Empty;
+        public int RetrievalLatencyMs { get; set; }
+        public int LlmLatencyMs { get; set; }
+        public int TotalLatencyMs { get; set; }
+
+        public ActiveStream(string q, string phase) { Question = q; Phase = phase; }
     }
 }

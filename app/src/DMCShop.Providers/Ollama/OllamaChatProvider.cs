@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using DMCShop.Domain.Abstractions;
 using Microsoft.Extensions.Options;
@@ -45,6 +47,55 @@ public sealed class OllamaChatProvider(IHttpClientFactory httpFactory, IOptions<
 
         sw.Stop();
         return new ChatResult(body.Message?.Content ?? string.Empty, (int)sw.ElapsedMilliseconds);
+    }
+
+    public async IAsyncEnumerable<string> StreamAsync(
+        string systemPrompt,
+        string userPrompt,
+        IEnumerable<string> contextChunks,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var http = httpFactory.CreateClient(OllamaHttpClient.Name);
+        http.BaseAddress = new Uri(_options.Endpoint);
+        http.Timeout = TimeSpan.FromMinutes(5);
+
+        var context = string.Join("\n---\n", contextChunks);
+        var fullUser = string.IsNullOrWhiteSpace(context)
+            ? userPrompt
+            : $"Aşağıdaki ürün listesinden faydalanarak yanıt ver:\n{context}\n\nSoru: {userPrompt}";
+
+        var request = new OllamaChatRequest(
+            _options.ChatModel,
+            [
+                new OllamaMessage("system", systemPrompt),
+                new OllamaMessage("user",   fullUser)
+            ],
+            Stream: true);
+
+        using var content = JsonContent.Create(request);
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = content };
+        using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        resp.EnsureSuccessStatusCode();
+
+        await using var stream = await resp.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new StreamReader(stream);
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(cancellationToken);
+            if (line is null) break;
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            using var doc = JsonDocument.Parse(line);
+            if (doc.RootElement.TryGetProperty("message", out var msg) &&
+                msg.TryGetProperty("content", out var ct) &&
+                ct.GetString() is { Length: > 0 } chunk)
+            {
+                yield return chunk;
+            }
+            if (doc.RootElement.TryGetProperty("done", out var done) && done.GetBoolean()) break;
+        }
     }
 }
 
