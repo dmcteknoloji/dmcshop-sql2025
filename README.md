@@ -123,7 +123,7 @@ flowchart LR
 
 ## Hızlı başlangıç
 
-### Local — Docker Compose
+### Local — Tek komut
 
 Önkoşullar: Docker · .NET 10 SDK · `sqlcmd` (`brew install sqlcmd`).
 
@@ -131,20 +131,15 @@ flowchart LR
 git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
 cd dmcshop-sql2025
 
-docker compose -f scripts/docker-compose.yml up -d
-docker exec dmcshop-ollama ollama pull nomic-embed-text
-docker exec dmcshop-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
-./scripts/bootstrap.sh                                       # schema + 120 showcase ürün
-dotnet run --project app/src/DMCShop.Cli -- embed-products   # vector embedding üret
-dotnet run --project app/src/DMCShop.Web                     # http://localhost:5295
+./scripts/setup.sh                       # showcase (120 ürün, ~3 dk)
+# veya
+DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dk)
+
+dotnet run --project app/src/DMCShop.Web # http://localhost:5295
 ```
 
-Kurumsal ölçek (50K ürün) için ek adım:
-```bash
-sqlcmd -C -I -S localhost -U sa -P 'dmcShop_2026!Demo' -d dmcshop \
-    -i sql/30-seed-large.sql -i sql/31-seed-large-customers.sql \
-    -i sql/32-seed-large-orders.sql -i sql/33-seed-large-graph.sql
-```
+`setup.sh` idempotent: container + model + schema + seed + embedding + DiskANN index hepsini yönetir.
+Adım adım kılavuz ve sorun giderme: [docs/01-getting-started.md](docs/01-getting-started.md).
 
 ### Azure — Bicep + cloud-init
 
