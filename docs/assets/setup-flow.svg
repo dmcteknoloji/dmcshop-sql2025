@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="DMCShop setup flow — adım adım kurulum">
+    <defs>
+        <linearGradient id="stepGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#F4F6F8"/>
+        </linearGradient>
+        <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="#A4262C"/>
+            <stop offset="100%" stop-color="#DD4853"/>
+        </linearGradient>
+        <marker id="arrowR" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#A4262C"/>
+        </marker>
+        <marker id="arrowG" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#9BA4B0"/>
+        </marker>
+    </defs>
+
+    <rect width="1200" height="760" fill="#FAFBFC"/>
+
+    <text x="60" y="50" font-family="'Inter',sans-serif" font-size="22" font-weight="700" fill="#0F1419">Kurulum Akışı</text>
+    <text x="60" y="74" font-family="'Inter',sans-serif" font-size="13" fill="#6B7280">scripts/setup.sh tek komutla 7 adımı sırayla yürütür. Her adım idempotent.</text>
+
+    <text x="60" y="110" font-family="'Inter',sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">ÖNKOŞUL</text>
+    <line x1="60" y1="118" x2="160" y2="118" stroke="#E5E7EB"/>
+
+    <g transform="translate(60,135)">
+        <rect width="1080" height="60" rx="8" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+        <text x="24" y="28" font-family="'JetBrains Mono',monospace" font-size="13" fill="#0F1419">git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git &amp;&amp; cd dmcshop-sql2025</text>
+        <text x="24" y="48" font-family="'Inter',sans-serif" font-size="11" fill="#6B7280">Önkoşullar: Docker · .NET 10 SDK · sqlcmd (brew install sqlcmd) · git</text>
+    </g>
+
+    <text x="60" y="226" font-family="'Inter',sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">7 ADIM</text>
+    <line x1="60" y1="234" x2="120" y2="234" stroke="#E5E7EB"/>
+
+    <g font-family="'Inter',sans-serif">
+        <g transform="translate(60,250)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">1 · Docker container</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">SQL Server 2025 + Ollama</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">dmcshop-mssql · dmcshop-ollama</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">restart: unless-stopped</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~30 saniye</text>
+        </g>
+
+        <g transform="translate(340,250)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">2 · Ollama modelleri</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">embed + chat indirme</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">nomic-embed-text (270 MB)</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">qwen2.5:3b (2 GB)</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~2-4 dakika</text>
+        </g>
+
+        <g transform="translate(620,250)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">3 · Schema + showcase</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">bootstrap.sh</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">sql/00-07: 4 schema</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">+ 120 showcase ürün</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~20 saniye</text>
+        </g>
+
+        <g transform="translate(900,250)">
+            <rect width="240" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">4 · Kurumsal seed</text>
+            <text x="22" y="46" font-size="11" font-style="italic" fill="#6B7280">(DMCSHOP_SCALE=large)</text>
+            <text x="22" y="66" font-size="13" font-weight="600" fill="#0F1419">sql/30-33</text>
+            <text x="22" y="84" font-size="11" fill="#6B7280">+50K ürün, +10K müşteri</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~2 dakika</text>
+        </g>
+
+        <g transform="translate(60,400)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">5 · Vector tablosu</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">Eksik satır INSERT</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">DROP INDEX vix_pe_ollama</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">+ source_text doldur</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~2 saniye</text>
+        </g>
+
+        <g transform="translate(340,400)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">6 · Embedding</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">dmcshop embed-products</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">Ollama · batch 32</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">~1.000 ürün/dakika (B4ms)</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~50 dakika (50K)</text>
+        </g>
+
+        <g transform="translate(620,400)">
+            <rect width="260" height="110" rx="10" fill="url(#stepGrad)" stroke="#E5E7EB"/>
+            <rect x="0" y="0" width="6" height="110" fill="url(#ribbon)" rx="3"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#A4262C">7 · DiskANN index</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#0F1419">CREATE VECTOR INDEX</text>
+            <text x="22" y="70" font-size="11" fill="#6B7280">cosine · DiskANN · MAXDOP 4</text>
+            <text x="22" y="88" font-size="11" fill="#6B7280">sqlcmd -t 600 (timeout)</text>
+            <text x="22" y="102" font-family="'JetBrains Mono',monospace" font-size="10" fill="#9CA3AF">~70 saniye (50K)</text>
+        </g>
+
+        <g transform="translate(900,400)">
+            <rect width="240" height="110" rx="10" fill="#0F1419" stroke="#A4262C" stroke-width="2"/>
+            <text x="22" y="26" font-size="12" font-weight="700" fill="#DD4853">HAZIR</text>
+            <text x="22" y="50" font-size="13" font-weight="600" fill="#ECEFF4">dotnet run --project</text>
+            <text x="22" y="68" font-size="13" font-weight="600" fill="#ECEFF4">app/src/DMCShop.Web</text>
+            <text x="22" y="92" font-family="'JetBrains Mono',monospace" font-size="11" fill="#9BA4B0">http://localhost:5295</text>
+        </g>
+    </g>
+
+    <line x1="320" y1="305" x2="340" y2="305" stroke="#9BA4B0" stroke-width="1.5" marker-end="url(#arrowG)"/>
+    <line x1="600" y1="305" x2="620" y2="305" stroke="#9BA4B0" stroke-width="1.5" marker-end="url(#arrowG)"/>
+    <line x1="880" y1="305" x2="900" y2="305" stroke="#9BA4B0" stroke-width="1.5" marker-end="url(#arrowG)"/>
+    <line x1="320" y1="455" x2="340" y2="455" stroke="#A4262C" stroke-width="2" marker-end="url(#arrowR)"/>
+    <line x1="600" y1="455" x2="620" y2="455" stroke="#A4262C" stroke-width="2" marker-end="url(#arrowR)"/>
+    <line x1="880" y1="455" x2="900" y2="455" stroke="#A4262C" stroke-width="2" marker-end="url(#arrowR)"/>
+    <line x1="190" y1="360" x2="190" y2="400" stroke="#A4262C" stroke-width="2" marker-end="url(#arrowR)"/>
+
+    <text x="60" y="560" font-family="'Inter',sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9CA3AF">ÖNEMLİ NÜANSLAR (SQL SERVER 2025 RTM-CU4)</text>
+    <line x1="60" y1="568" x2="380" y2="568" stroke="#E5E7EB"/>
+
+    <g transform="translate(60,585)" font-family="'Inter',sans-serif">
+        <rect width="350" height="135" rx="8" fill="#FFF" stroke="#E5E7EB"/>
+        <text x="18" y="26" font-size="12" font-weight="700" fill="#A4262C">PREVIEW_FEATURES bayrağı</text>
+        <text x="18" y="50" font-size="11" fill="#4B5563">ALTER DATABASE SCOPED CONFIGURATION</text>
+        <text x="18" y="68" font-size="11" fill="#4B5563">SET PREVIEW_FEATURES = ON</text>
+        <text x="18" y="92" font-size="11" fill="#6B7280">VECTOR(N) tipi RTM'de preview altında.</text>
+        <text x="18" y="108" font-size="11" fill="#6B7280">00-database-create.sql otomatik açar.</text>
+    </g>
+
+    <g transform="translate(430,585)" font-family="'Inter',sans-serif">
+        <rect width="350" height="135" rx="8" fill="#FFF" stroke="#E5E7EB"/>
+        <text x="18" y="26" font-size="12" font-weight="700" fill="#A4262C">Vector index + DML kısıtı</text>
+        <text x="18" y="50" font-size="11" fill="#4B5563">Msg 42231 — index varken</text>
+        <text x="18" y="68" font-size="11" fill="#4B5563">INSERT/UPDATE/DELETE yasak.</text>
+        <text x="18" y="92" font-size="11" fill="#6B7280">Pattern: DROP → DML → CREATE.</text>
+        <text x="18" y="108" font-size="11" fill="#6B7280">setup.sh bunu otomatik yönetir.</text>
+    </g>
+
+    <g transform="translate(800,585)" font-family="'Inter',sans-serif">
+        <rect width="340" height="135" rx="8" fill="#FFF" stroke="#E5E7EB"/>
+        <text x="18" y="26" font-size="12" font-weight="700" fill="#A4262C">VECTOR_SEARCH sözdizimi</text>
+        <text x="18" y="50" font-family="'JetBrains Mono',monospace" font-size="10" fill="#4B5563">VECTOR_SEARCH(... TOP_N = 5)</text>
+        <text x="18" y="68" font-family="'JetBrains Mono',monospace" font-size="10" fill="#4B5563">WITH hits AS (...)</text>
+        <text x="18" y="92" font-size="11" fill="#6B7280">"TOP (N) WITH APPROXIMATE" yok.</text>
+        <text x="18" y="108" font-size="11" fill="#6B7280">JOIN için CTE wrap şart.</text>
+    </g>
+</svg>

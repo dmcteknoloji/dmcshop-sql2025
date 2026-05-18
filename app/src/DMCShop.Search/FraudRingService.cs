@@ -5,15 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DMCShop.Search;
 
+/// <summary>
+/// Üç fraud pattern UNION'lanır, server-side filter + pagination ile döner.
+///   1) shared_device  — aynı device birden çok customer
+///   2) shared_ip      — aynı IP'yi paylaşan customer'lar
+///   3) shared_card    — aynı card_fingerprint farklı müşteriler
+///
+/// EF Core 10'da SqlQueryRaw + CTE/OFFSET kombinasyonu "non-composable" hatası
+/// veriyor; ADO.NET (Microsoft.Data.SqlClient) ile direkt komut çalıştırılır.
+/// </summary>
 public sealed class FraudRingService(DMCShopDbContext db)
 {
-    /// <summary>
-    /// Üç fraud pattern UNION'lanır, server-side filter + pagination ile döner:
-    ///   1) shared_device  — aynı device birden çok customer (graph.uses_device)
-    ///   2) shared_ip      — aynı IP'yi paylaşan customer'lar (uses_device → uses_ip)
-    ///   3) shared_card    — aynı card_fingerprint farklı müşteriler
-    /// </summary>
-    public Task<List<FraudRing>> DetectAsync(
+    public async Task<List<FraudRing>> DetectAsync(
         int skip = 0, int take = 20,
         string? riskFilter = null,
         string? patternFilter = null,
@@ -22,13 +25,38 @@ public sealed class FraudRingService(DMCShopDbContext db)
         CancellationToken cancellationToken = default)
     {
         var sql = BuildSql(sortBy);
-        return db.Database.SqlQueryRaw<FraudRing>(sql,
-            new SqlParameter("@skip", skip),
-            new SqlParameter("@take", take),
-            new SqlParameter("@risk",    (object?)riskFilter    ?? DBNull.Value),
-            new SqlParameter("@pattern", (object?)patternFilter ?? DBNull.Value),
-            new SqlParameter("@search",  (object?)search        ?? DBNull.Value)
-        ).ToListAsync(cancellationToken);
+        var rows = new List<FraudRing>();
+
+        var conn = (SqlConnection)db.Database.GetDbConnection();
+        var opened = conn.State != System.Data.ConnectionState.Open;
+        if (opened) await conn.OpenAsync(cancellationToken);
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText    = sql;
+            cmd.CommandTimeout = 60;
+            cmd.Parameters.Add(new SqlParameter("@skip", skip));
+            cmd.Parameters.Add(new SqlParameter("@take", take));
+            cmd.Parameters.Add(new SqlParameter("@risk",    (object?)riskFilter    ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@pattern", (object?)patternFilter ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@search",  (object?)search        ?? DBNull.Value));
+
+            await using var rdr = await cmd.ExecuteReaderAsync(cancellationToken);
+            while (await rdr.ReadAsync(cancellationToken))
+            {
+                rows.Add(new FraudRing(
+                    Pattern:       rdr.GetString(0),
+                    RiskLevel:     rdr.GetString(1),
+                    CustomerCount: rdr.GetInt32(2),
+                    CustomerList:  rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
+                    Evidence:      rdr.IsDBNull(4) ? string.Empty : rdr.GetString(4)));
+            }
+        }
+        finally
+        {
+            if (opened) await conn.CloseAsync();
+        }
+        return rows;
     }
 
     public async Task<FraudSummary> SummaryAsync(
@@ -37,38 +65,58 @@ public sealed class FraudRingService(DMCShopDbContext db)
         string? search = null,
         CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            WITH all_rings AS (__BODY__)
+        var sql = $"""
+            WITH all_rings AS ({AllRingsCte()})
             SELECT
-                COUNT_BIG(*)                                                    AS Total,
-                SUM(CASE WHEN RiskLevel = 'HIGH'   THEN 1 ELSE 0 END)            AS HighCount,
-                SUM(CASE WHEN RiskLevel = 'MEDIUM' THEN 1 ELSE 0 END)            AS MediumCount,
-                SUM(CASE WHEN Pattern   = 'shared_device' THEN 1 ELSE 0 END)    AS DeviceCount,
-                SUM(CASE WHEN Pattern   = 'shared_ip'     THEN 1 ELSE 0 END)    AS IpCount,
-                SUM(CASE WHEN Pattern   = 'shared_card'   THEN 1 ELSE 0 END)    AS CardCount
+                COUNT_BIG(*)                                                AS Total,
+                SUM(CASE WHEN RiskLevel = 'HIGH'   THEN 1 ELSE 0 END)        AS HighCount,
+                SUM(CASE WHEN RiskLevel = 'MEDIUM' THEN 1 ELSE 0 END)        AS MediumCount,
+                SUM(CASE WHEN Pattern   = 'shared_device' THEN 1 ELSE 0 END) AS DeviceCount,
+                SUM(CASE WHEN Pattern   = 'shared_ip'     THEN 1 ELSE 0 END) AS IpCount,
+                SUM(CASE WHEN Pattern   = 'shared_card'   THEN 1 ELSE 0 END) AS CardCount
             FROM all_rings
             WHERE (@risk    IS NULL OR RiskLevel = @risk)
               AND (@pattern IS NULL OR Pattern   = @pattern)
               AND (@search  IS NULL OR CustomerList LIKE '%' + @search + '%'
                                     OR Evidence     LIKE '%' + @search + '%');
             """;
-        var query = sql.Replace("__BODY__", AllRingsCte());
-        var row = await db.Database.SqlQueryRaw<FraudSummary>(query,
-            new SqlParameter("@risk",    (object?)riskFilter    ?? DBNull.Value),
-            new SqlParameter("@pattern", (object?)patternFilter ?? DBNull.Value),
-            new SqlParameter("@search",  (object?)search        ?? DBNull.Value)
-        ).FirstAsync(cancellationToken);
-        return row;
+
+        var conn = (SqlConnection)db.Database.GetDbConnection();
+        var opened = conn.State != System.Data.ConnectionState.Open;
+        if (opened) await conn.OpenAsync(cancellationToken);
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText    = sql;
+            cmd.CommandTimeout = 60;
+            cmd.Parameters.Add(new SqlParameter("@risk",    (object?)riskFilter    ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@pattern", (object?)patternFilter ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@search",  (object?)search        ?? DBNull.Value));
+
+            await using var rdr = await cmd.ExecuteReaderAsync(cancellationToken);
+            await rdr.ReadAsync(cancellationToken);
+            return new FraudSummary(
+                Total:       rdr.GetInt64(0),
+                HighCount:   rdr.IsDBNull(1) ? 0 : rdr.GetInt32(1),
+                MediumCount: rdr.IsDBNull(2) ? 0 : rdr.GetInt32(2),
+                DeviceCount: rdr.IsDBNull(3) ? 0 : rdr.GetInt32(3),
+                IpCount:     rdr.IsDBNull(4) ? 0 : rdr.GetInt32(4),
+                CardCount:   rdr.IsDBNull(5) ? 0 : rdr.GetInt32(5));
+        }
+        finally
+        {
+            if (opened) await conn.CloseAsync();
+        }
     }
 
     private static string BuildSql(string sortBy)
     {
         var orderBy = sortBy switch
         {
-            "count-asc"   => "CustomerCount ASC, Pattern",
-            "risk"        => "CASE RiskLevel WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, CustomerCount DESC",
-            "pattern"     => "Pattern, CustomerCount DESC",
-            _             => "CustomerCount DESC, Pattern"
+            "count-asc" => "CustomerCount ASC, Pattern",
+            "risk"      => "CASE RiskLevel WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, CustomerCount DESC",
+            "pattern"   => "Pattern, CustomerCount DESC",
+            _           => "CustomerCount DESC, Pattern"
         };
         return $"""
             WITH all_rings AS ({AllRingsCte()})

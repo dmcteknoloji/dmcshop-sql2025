@@ -139,7 +139,13 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295
 ```
 
 `setup.sh` idempotent: container + model + schema + seed + embedding + DiskANN index hepsini yönetir.
-Adım adım kılavuz ve sorun giderme: [docs/01-getting-started.md](docs/01-getting-started.md).
+
+- **Adım adım kurulum + sorun giderme**: [docs/01-getting-started.md](docs/01-getting-started.md)
+- **Workshop handbook (60-90 dk senaryo turu + T-SQL kod örnekleri)**: [docs/handbook.md](docs/handbook.md)
+
+<p align="center">
+  <img src="docs/assets/setup-flow.svg" alt="Setup flow — 7 adım" width="100%" />
+</p>
 
 ### Azure — Bicep + cloud-init
 
