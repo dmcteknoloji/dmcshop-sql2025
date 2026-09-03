@@ -1052,3 +1052,27 @@ a.dmc-card:hover,
     border-color: rgba(220,38,38,0.3);
     color: #B91C1C;
 }
+
+/* Blazor hata bandi — VARSAYILAN GIZLI.
+   Bu kural eksikti: `#blazor-error-ui` her sayfada gorunuyor ve ziyaretci,
+   hicbir hata olmasa bile surekli "Beklenmedik bir hata olustu" bandini
+   goruyordu. Blazor calisma zamani gercek bir hata olunca `display: block`
+   yapar; bizim isimiz onu bastan gizlemek. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    padding: 0.75rem 1.25rem;
+    background: #ffefe0;
+    color: #6b2b00;
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    float: right;
+    padding: 0 0.5rem;
+}

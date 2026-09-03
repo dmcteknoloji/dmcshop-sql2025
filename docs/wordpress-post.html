@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DMCShop yazı paketi — WordPress'e kopyala</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --line:#2a2f3a; --txt:#e6e8eb; --muted:#9aa3b2; --acc:#4aa3ff; --ok:#2ea043; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--txt); padding:32px 18px; }
+  .wrap { max-width:920px; margin:0 auto; }
+  h1.page { font-size:24px; margin:0 0 6px; }
+  p.lead { color:var(--muted); margin:0 0 26px; }
+  .field { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:0 0 18px; }
+  .field h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--acc); margin:0 0 10px; }
+  .field .val { background:#0b0d11; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-word; user-select:all; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  button.copy { background:var(--acc); color:#06121f; border:0; border-radius:7px; padding:6px 14px; font-weight:600; font-size:13px; cursor:pointer; }
+  button.copy:hover { filter:brightness(1.08); }
+  button.copy.done { background:var(--ok); color:#03150a; }
+  textarea { width:100%; min-height:320px; background:#0b0d11; color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:12px; font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; resize:vertical; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .grid2 { grid-template-columns:1fr; } }
+  details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin-top:8px; }
+  details summary { cursor:pointer; font-weight:600; color:var(--acc); }
+  .preview { background:#fff; color:#1a1a1a; border-radius:10px; padding:24px 28px; margin-top:14px; }
+  .preview h2 { color:#0b3d91; } .preview h3 { color:#1a1a1a; }
+  .preview table { border-collapse:collapse; width:100%; margin:12px 0; }
+  .preview th,.preview td { border:1px solid #ddd; padding:7px 10px; text-align:left; font-size:14px; }
+  .preview pre { background:#f5f6f8; border:1px solid #e2e4e8; border-radius:8px; padding:12px; overflow:auto; font-size:12.5px; }
+  .preview code { background:#f0f1f3; padding:1px 5px; border-radius:4px; }
+  .preview pre code { background:none; padding:0; }
+  .note { color:var(--muted); font-size:13px; margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">DMCShop — SQL Server 2025 yazı paketi</h1>
+  <p class="lead">Bu dosyayı tarayıcıda aç. Her kutudaki <b>Kopyala</b> ile WordPress'in ilgili alanına yapıştır. En alttaki büyük kutu yazının tam HTML gövdesidir.</p>
+
+  <div class="field">
+    <div class="row"><h2>Title (Başlık)</h2><button class="copy" data-target="f-title">Kopyala</button></div>
+    <div class="val" id="f-title">SQL Server 2025: Vector, Graph ve RAG'ı Tek Veritabanında Birleştirmek — DMCShop Referans Uygulaması</div>
+  </div>
+
+  <div class="field">
+    <div class="row"><h2>Permalink / Slug</h2><button class="copy" data-target="f-slug">Kopyala</button></div>
+    <div class="val" id="f-slug">sql-server-2025-vector-graph-rag-dmcshop</div>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <div class="row"><h2>Categories</h2><button class="copy" data-target="f-cat">Kopyala</button></div>
+      <div class="val" id="f-cat">SQL Server, Yapay Zekâ, Veri Mimarisi</div>
+    </div>
+    <div class="field">
+      <div class="row"><h2>Tags (virgülle)</h2><button class="copy" data-target="f-tags">Kopyala</button></div>
+      <div class="val" id="f-tags">SQL Server 2025, VECTOR, DiskANN, Graph Database, RAG, .NET 10, Yapay Zekâ, Semantik Arama, Fraud Tespiti, Blazor, EF Core 10, Ollama, Vektör Veritabanı, Embedding</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <div class="row"><h2>AIOSEO — SEO Title</h2><button class="copy" data-target="f-seotitle">Kopyala</button></div>
+      <div class="val" id="f-seotitle">SQL Server 2025: Vector, Graph ve RAG Tek Veritabanında</div>
+    </div>
+    <div class="field">
+      <div class="row"><h2>AIOSEO — Focus Keyphrase</h2><button class="copy" data-target="f-focus">Kopyala</button></div>
+      <div class="val" id="f-focus">SQL Server 2025 vector</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="row"><h2>AIOSEO — Meta Description</h2><button class="copy" data-target="f-metadesc">Kopyala</button></div>
+    <div class="val" id="f-metadesc">Vector arama, graph fraud tespiti ve RAG asistanı ayrı sistemler kurmadan tek SQL Server 2025 veritabanında. DMCShop açık kaynak referans uygulamasıyla uçtan uca anlattık.</div>
+  </div>
+
+  <div class="field">
+    <div class="row"><h2>AIOSEO — Additional Keyphrases</h2><button class="copy" data-target="f-addkw">Kopyala</button></div>
+    <div class="val" id="f-addkw">SQL Server 2025 graph, VECTOR_SEARCH DiskANN, SQL Server RAG, GRAPH MATCH SHORTEST_PATH, SQL Server 2025 yapay zeka</div>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <div class="row"><h2>OG Title (Facebook/LinkedIn)</h2><button class="copy" data-target="f-ogt">Kopyala</button></div>
+      <div class="val" id="f-ogt">Vector + Graph + RAG: Hepsi Tek SQL Server 2025 Veritabanında</div>
+    </div>
+    <div class="field">
+      <div class="row"><h2>OG Description</h2><button class="copy" data-target="f-ogd">Kopyala</button></div>
+      <div class="val" id="f-ogd">50.000+ ürünlük açık kaynak referans uygulama DMCShop ile SQL Server 2025'in vector, graph ve RAG özelliklerini uçtan uca gösterdik.</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <div class="row"><h2>Twitter Title</h2><button class="copy" data-target="f-twt">Kopyala</button></div>
+      <div class="val" id="f-twt">SQL Server 2025: Pinecone + Neo4j + RAG servisi yerine tek motor</div>
+    </div>
+    <div class="field">
+      <div class="row"><h2>Twitter Description</h2><button class="copy" data-target="f-twd">Kopyala</button></div>
+      <div class="val" id="f-twd">DMCShop ile vector arama, graph fraud tespiti ve RAG'ı aynı veritabanında çalıştırdık. Açık kaynak, canlı demo ayakta.</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="row"><h2>Content — Yazı gövdesi (HTML)</h2><button class="copy" data-target="f-content">Tümünü kopyala</button></div>
+    <p class="note">Gutenberg'de: yeni bir <b>"Özel HTML" (Custom HTML)</b> bloğu ekle ve yapıştır. Klasik editörde: <b>Metin (Text)</b> sekmesine yapıştır.</p>
+    <textarea id="f-content" readonly>
+<p>Bir e-ticaret platformunda modern yapay zekâ özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir <strong>vektör veritabanı</strong> (Pinecone, Qdrant), ilişki analizi için bir <strong>graph veritabanı</strong> (Neo4j), sohbet asistanı için bir <strong>RAG servis katmanı</strong> ve tüm bunları besleyen <strong>ana ilişkisel veritabanı</strong>. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.</p>
+
+<p>SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi <strong>aynı veritabanı motorunda, aynı <code>SELECT</code> içinde, aynı yedeklemenin altında</strong> çalışıyor.</p>
+
+<p>Bunu somut bir örnekle göstermek için <strong>DMCShop</strong>'u geliştirdik: 50.000+ ürünlük gerçek ölçekli bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, <strong>açık kaynak (MIT)</strong> bir referans uygulaması.</p>
+
+<ul>
+  <li>🔗 <strong>Canlı demo:</strong> <a href="https://demo.dmcteknoloji.com" target="_blank" rel="noopener">demo.dmcteknoloji.com</a></li>
+  <li>🔗 <strong>Kaynak kod:</strong> <a href="https://github.com/dmcteknoloji/dmcshop-sql2025" target="_blank" rel="noopener">github.com/dmcteknoloji/dmcshop-sql2025</a></li>
+</ul>
+
+<h2>Neyi çözüyoruz?</h2>
+
+<p>Geleneksel yaklaşımda "ürün için anlamsal arama + birlikte alınan ürün önerisi + sohbet asistanı + fraud tespiti" demek, en az üç farklı uzmanlık alanı ve üç farklı altyapı demekti. Veriyi senkronize tutmak (ürün eklendiğinde hem SQL'e hem vektör DB'sine hem graph DB'sine yazmak), tutarlılığı sağlamak ve hepsini güvende tutmak başlı başına bir proje.</p>
+
+<p>SQL Server 2025'in getirdiği yeniliklerle bu senaryoların tamamı tek motorda toplanıyor:</p>
+
+<figure class="wp-block-table">
+<table>
+  <thead>
+    <tr><th>İhtiyaç</th><th>Klasik çözüm</th><th>SQL Server 2025</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Anlamsal arama</td><td>Pinecone / Qdrant</td><td><code>VECTOR(N)</code> tipi + <code>CREATE VECTOR INDEX</code> (DiskANN)</td></tr>
+    <tr><td>Embedding üretimi</td><td>Ayrı Python servisi</td><td><code>AI_GENERATE_EMBEDDINGS</code> + <code>CREATE EXTERNAL MODEL</code></td></tr>
+    <tr><td>Vektör sorgusu</td><td>Vektör DB API'si</td><td><code>VECTOR_SEARCH(...)</code> T-SQL fonksiyonu</td></tr>
+    <tr><td>İlişki / öneri analizi</td><td>Neo4j</td><td><code>GRAPH MATCH</code> + <code>SHORTEST_PATH</code></td></tr>
+    <tr><td>RAG asistanı</td><td>LangChain + servis</td><td>T-SQL içinde embed &#8594; search &#8594; chat &#8594; audit</td></tr>
+  </tbody>
+</table>
+</figure>
+
+<h2>DMCShop nedir?</h2>
+
+<p>DMCShop, SQL Server 2025'in <code>VECTOR(N) + DiskANN</code> ve <code>GRAPH MATCH + SHORTEST_PATH</code> özelliklerinin <strong>üretim senaryolarındaki</strong> karşılığını gösteren açık kaynak bir referans uygulamasıdır. Mock veri yok — gerçek ölçekte çalışıyor:</p>
+
+<figure class="wp-block-table">
+<table>
+  <thead>
+    <tr><th>Varlık</th><th>Adet</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Kategori</td><td>100 (10 ana &#215; 10 alt)</td></tr>
+    <tr><td>Ürün</td><td><strong>50.120</strong></td></tr>
+    <tr><td>Müşteri</td><td>10.050</td></tr>
+    <tr><td>Sipariş</td><td>100.400</td></tr>
+    <tr><td>Sipariş satırı</td><td>451.202</td></tr>
+    <tr><td>Cihaz</td><td>4.080</td></tr>
+    <tr><td>Tespit edilen fraud ring</td><td>~1.000</td></tr>
+    <tr><td>Vektör embedding</td><td>50.000+ (<code>nomic-embed-text</code>, 768 boyut, DiskANN cosine)</td></tr>
+  </tbody>
+</table>
+</figure>
+
+<p>Teknoloji yığını: <strong>.NET 10</strong>, <strong>Blazor Server</strong>, <strong>EF Core 10</strong>, embedding ve sohbet için <strong>Ollama</strong> (<code>nomic-embed-text</code> + <code>qwen2.5:3b-instruct</code>), tek Azure B4ms VM (4 vCPU / 16 GB) üzerinde canlı; aynı yığın local <code>docker-compose</code> ile birebir çalışıyor.</p>
+
+<h2>Beş senaryo, tek veritabanı</h2>
+
+<h3>1. Semantik ürün arama — <code>VECTOR_SEARCH</code> + DiskANN</h3>
+
+<p>Kullanıcı "rahat ergonomik klavye" yazdığında, kelime eşleşmesi (<code>LIKE</code>) çoğu zaman sıfır sonuç döner. Anlamsal arama ise ergonomik ofis ürünlerini — mouse pad, MX Master mouse, rahat ayakkabı — semantik uzayda yakın olduğu için getirir.</p>
+
+<pre><code>USE dmcshop;
+DECLARE @q VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+    N'rahat ergonomik klavye' USE MODEL ollama_embed_text
+);
+
+WITH hits AS (
+    SELECT * FROM VECTOR_SEARCH(
+        TABLE      = vector.product_embedding,
+        COLUMN     = embedding_ollama_768,
+        SIMILAR_TO = @q,
+        METRIC     = 'cosine',
+        TOP_N      = 5)
+)
+SELECT h.product_id, p.name, h.distance
+FROM   hits h JOIN shop.product p ON p.product_id = h.product_id
+ORDER BY h.distance;</code></pre>
+
+<p>Demoda vektör sorgusu ~150 ms, <code>LIKE</code> sorgusu ~10 ms sürer; ama <code>LIKE</code> çoğu sorguda boş döner. Anlam vs. lafzi arama farkı yan yana görülür.</p>
+
+<h3>2. RAG tabanlı ürün asistanı — embed &#8594; retrieval &#8594; chat &#8594; audit</h3>
+
+<p><code>/asistan</code> sayfasında "1500 TL altı ergonomik mouse" sorusu uçtan uca tek akışta yanıtlanır: soru embed edilir, vektör arama ile en alakalı 5 ürün getirilir, sohbet modeli bu bağlamla <strong>token-token</strong> yanıt üretir ve her çağrı <code>vector.query_log</code> tablosunda denetim için kayda alınır. Streaming yanıt, SignalR ile tarayıcıya canlı akar.</p>
+
+<p>İlk soru modelin RAM'e yüklenmesiyle ~15 sn (cold-start); sonraki sorular cache'li, ~3-5 sn.</p>
+
+<h3>3. Fraud ring tespiti — <code>GRAPH MATCH</code> + <code>SHORTEST_PATH</code></h3>
+
+<p>Aynı cihaz parmak izini, aynı IP'yi veya aynı kartı paylaşan müşteri kümeleri graph dolaşımıyla bulunur. En etkileyici kısım: dolandırıcılık zincirinin kanıtı doğrudan okunabilir bir metne dönüşür.</p>
+
+<pre><code>SELECT
+    cn1.display_name AS start_customer,
+    STRING_AGG(cn2.display_name, N' &#8594; ')
+        WITHIN GROUP (GRAPH PATH) AS hops
+FROM graph.customer_node AS cn1,
+     graph.uses_device FOR PATH AS ud1,
+     graph.device_node FOR PATH AS dn,
+     graph.uses_device FOR PATH AS ud2,
+     graph.customer_node FOR PATH AS cn2
+WHERE MATCH(SHORTEST_PATH(cn1(-(ud1)-&gt;dn&lt;-(ud2)-cn2)+))
+  AND cn1.customer_id = 10;</code></pre>
+
+<p><code>STRING_AGG ... WITHIN GROUP (GRAPH PATH)</code> ifadesiyle bir dolandırıcılık yolu doğrudan "Ali &#8594; Ayşe &#8594; Mehmet" gibi bir kanıt zincirine dönüşür. Müfettiş için anında rapor.</p>
+
+<h3>4. "Bunu alanlar bunu da aldı" — <code>GRAPH MATCH</code> 2-hop</h3>
+
+<p>Klasik co-purchase önerisi, ilişkisel JOIN ile yazıldığında 50+ satırı bulur. Graph diliyle tek bir <code>MATCH</code> yeter:</p>
+
+<pre><code>SELECT TOP (10) p2_shop.name, COUNT(DISTINCT c.customer_id) AS co_buyer_count
+FROM graph.product_node p1, graph.purchased pur1,
+     graph.customer_node c,
+     graph.purchased pur2, graph.product_node p2,
+     shop.product p2_shop
+WHERE MATCH(p1&lt;-(pur1)-c-(pur2)-&gt;p2)
+  AND p1.product_id = 1041
+  AND p2.product_id &lt;&gt; 1041
+  AND p2_shop.product_id = p2.product_id
+GROUP BY p2.product_id, p2_shop.name
+ORDER BY co_buyer_count DESC;</code></pre>
+
+<h3>5. "Sana özel" — Vector + Graph hibrit öneri</h3>
+
+<p>En ileri senaryo: müşterinin son siparişlerinin embedding centroid'i hesaplanır, <code>VECTOR_SEARCH</code> ile benzer ürünler bulunur, ardından <code>GRAPH MATCH</code> ile bu ürünlerin sosyal kanıtı (kaç kişi birlikte aldı) skora katılır. Hibrit skor = <code>mesafe + 1/(1+sosyal)</code>. Anlamsal benzerlik ve davranışsal sinyal <strong>tek sorguda</strong> birleşir.</p>
+
+<h2>Üretimden çıkan üç gerçek not (RTM-CU4)</h2>
+
+<p>Belgelerin anlatmadığı, sahada öğrenilen nüanslar — workshop'larda en çok soru alan kısım:</p>
+
+<ol>
+  <li><strong>VECTOR tipi preview bayrağıyla açılır.</strong> <code>ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;</code></li>
+  <li><strong>DiskANN vektör indeksi varken tabloya hiçbir DML yapılamaz</strong> (<code>Msg 42231</code> — INSERT, UPDATE ve DELETE hepsi reddedilir). Tek yol: önce <code>DROP INDEX</code>, sonra DML, sonra yeniden <code>CREATE VECTOR INDEX</code>. Toplu embedding yüklemesini buna göre tasarlamak gerekir.</li>
+  <li><strong><code>VECTOR_SEARCH</code> sözdizimi değişti.</strong> Eski <code>TOP (N) WITH APPROXIMATE</code> RTM'de yok; çıktı bir CTE içinde tutulup dışarıda JOIN'lenmeli (yukarıdaki örneklerdeki desen).</li>
+</ol>
+
+<p>Bu tür detaylar, "demo'da çalışıyor"dan "üretimde çalışıyor"a geçişin farkıdır.</p>
+
+<h2>Mimari: üç katman, tek VM</h2>
+
+<p>DMCShop tek bir Azure B4ms VM üzerinde (4 vCPU / 16 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:</p>
+
+<pre><code>git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
+cd dmcshop-sql2025
+./scripts/setup.sh                       # showcase (120 ürün, ~3 dk)
+# veya
+DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dk)
+dotnet run --project app/src/DMCShop.Web # http://localhost:5295</code></pre>
+
+<p><code>setup.sh</code> idempotent: container, model, schema, seed, embedding ve DiskANN indeksini uçtan uca yönetir.</p>
+
+<h2>Ne zaman SQL Server VECTOR, ne zaman ayrı bir vektör DB?</h2>
+
+<p>Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hâlâ güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların <strong>birlikte</strong> çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.</p>
+
+<h2>Denemek için</h2>
+
+<ul>
+  <li><strong>Canlı demo:</strong> <a href="https://demo.dmcteknoloji.com" target="_blank" rel="noopener">demo.dmcteknoloji.com</a></li>
+  <li><strong>Kaynak kod (MIT):</strong> <a href="https://github.com/dmcteknoloji/dmcshop-sql2025" target="_blank" rel="noopener">github.com/dmcteknoloji/dmcshop-sql2025</a></li>
+  <li><strong>Workshop handbook (60-90 dk uçtan uca tur):</strong> repo içindeki <code>docs/handbook.md</code></li>
+</ul>
+
+<p>DMCShop, <strong>SQL Server 2025: Herkes İçin, Her Rol İçin</strong> kitabının canlı çalışan karşılığıdır. Kitabın 32 bölümünden her birinin demoda hangi sayfa, T-SQL dosyası veya .NET kodu ile karşılandığı <code>docs/kitap-demo-koprusu.md</code> içinde eşleştirilmiştir — kitabı okurken yan ekranda demoyu açıp bölümün canlı karşılığını görebilirsiniz.</p>
+
+<hr/>
+
+<p><em>Açık kaynak · MIT · &#169; 2026 <a href="https://www.linkedin.com/in/caglarozenc" target="_blank" rel="noopener">Çağlar Özenç</a> &amp; DMC Bilgi Teknolojileri. Sorularınız için: iletisim@dmcteknoloji.com</em></p>
+    </textarea>
+  </div>
+
+  <details>
+    <summary>Yazının görünümü (önizleme)</summary>
+    <div class="preview" id="preview"></div>
+  </details>
+</div>
+
+<script>
+  document.querySelectorAll('button.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.getElementById(btn.dataset.target);
+      var text = (el.tagName === 'TEXTAREA') ? el.value : el.innerText;
+      navigator.clipboard.writeText(text.trim()).then(function(){
+        var old = btn.textContent; btn.textContent = '✓ Kopyalandı'; btn.classList.add('done');
+        setTimeout(function(){ btn.textContent = old; btn.classList.remove('done'); }, 1600);
+      });
+    });
+  });
+  // Önizlemeyi content textarea'sından doldur
+  document.getElementById('preview').innerHTML = document.getElementById('f-content').value;
+</script>
+</body>
+</html>

@@ -20,7 +20,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SQL_DIR="${REPO_ROOT}/sql"
 
-HOST="${DMCSHOP_HOST:-localhost,1433}"
+# 127.0.0.1 — `localhost` DEGIL. Konteyner portu yalnizca IPv4 loopback'e
+# baglaniyor (guvenlik: SA parolasi public depoda oldugu icin 1433 disariya
+# acilmamali). Bazi sunucularda `localhost` once ::1'e (IPv6) cozuluyor ve
+# baglanti reddediliyordu — Azure VM'inde birebir yasandi.
+HOST="${DMCSHOP_HOST:-127.0.0.1,1433}"
 PASSWORD="${DMCSHOP_SA_PASSWORD:-dmcShop_2026!Demo}"
 
 if ! command -v sqlcmd >/dev/null 2>&1; then

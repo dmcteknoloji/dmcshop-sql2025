@@ -38,6 +38,11 @@ write_files:
       Type=simple
       User=dmcshop
       WorkingDirectory=/home/dmcshop/dmcshop-publish
+      # Baglanti dizesi (SA parolasi) BURADA degil, dagitimda uretilen dosyada.
+      # `appsettings.json` PUBLIC depoda ve icinde varsayilan parola yaziyor;
+      # servis onu kullanirsa rastgele uretilen gercek parola devre disi kalir.
+      # `-` oneki: dosya yoksa servis yine de acilir.
+      EnvironmentFile=-/etc/dmcshop/web.env
       Environment=ASPNETCORE_ENVIRONMENT=Production
       Environment=ASPNETCORE_URLS=http://0.0.0.0:80
       Environment=DOTNET_ROOT=/usr/lib/dotnet

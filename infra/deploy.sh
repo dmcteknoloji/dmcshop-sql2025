@@ -19,7 +19,11 @@ set -euo pipefail
 : "${DMCSHOP_LOCATION:=germanywestcentral}"
 : "${DMCSHOP_NAME_PREFIX:=dmcshop}"
 : "${DMCSHOP_VM_SIZE:=Standard_B2ms}"
-: "${DMCSHOP_SA_PASSWORD:=dmcShop_2026!Demo}"
+# SA parolasi: env ile verilmezse HER DAGITIMDA rastgele uretilir.
+# Onceki varsayilan (`dmcShop_2026!Demo`) bu PUBLIC depoda yaziliydi; yani
+# herkesin bildigi bir parolayla SQL Server ayaga kalkiyordu. Uretilen parola
+# dagitim sonunda ekrana basilir ve VM'de /opt/dmcshop/.sa-password'a yazilir.
+: "${DMCSHOP_SA_PASSWORD:=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)Aa1!}"
 : "${DMCSHOP_SSH_KEY:=$HOME/.ssh/dmcshop_ed25519}"
 : "${DMCSHOP_ALLOWED_CIDR:=*}"   # production için kendi IP/32
 
@@ -127,6 +131,17 @@ dotnet publish src/DMCShop.Web -c Release -o /home/dmcshop/dmcshop-publish --nol
 
 echo "  -> embed-products"
 dotnet run -c Release --project src/DMCShop.Cli -- embed-products
+
+echo "  -> servis ortam dosyasi (baglanti dizesi)"
+# appsettings.json PUBLIC depoda ve varsayilan parolayi tasiyor; gercek
+# (rastgele uretilen) parola yalnizca burada, 0600 izinli dosyada durur.
+# 127.0.0.1: konteyner portu IPv4 loopback'e bagli, `localhost` ::1 olabilir.
+sudo install -d -m 0755 /etc/dmcshop
+sudo tee /etc/dmcshop/web.env >/dev/null <<ENVEOF
+DMCSHOP_ConnectionStrings__DMCShop=Server=127.0.0.1,1433;Database=dmcshop;User Id=sa;Password=${DMCSHOP_SA_PASSWORD};TrustServerCertificate=true;Encrypt=true
+ConnectionStrings__DMCShop=Server=127.0.0.1,1433;Database=dmcshop;User Id=sa;Password=${DMCSHOP_SA_PASSWORD};TrustServerCertificate=true;Encrypt=true
+ENVEOF
+sudo chmod 0600 /etc/dmcshop/web.env
 
 echo "  -> systemd service"
 sudo systemctl daemon-reload

@@ -6,6 +6,13 @@ using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CLI `DMCSHOP_` onekli ortam degiskeni okuyor, Web okumuyordu: ayni baglanti
+// dizesini iki farkli isimle vermek gerekiyordu ve dagitimda Web sessizce
+// appsettings.json'daki (PUBLIC depodaki) varsayilan parolaya dusuyordu.
+// Bu satir onekli ismi Web tarafinda da gecerli kilar; oneksiz olan
+// CreateBuilder tarafindan zaten ekleniyor.
+builder.Configuration.AddEnvironmentVariables(prefix: "DMCSHOP_");
+
 builder.Services
     .AddDMCShopData(builder.Configuration)
     .AddDMCShopProviders(builder.Configuration)

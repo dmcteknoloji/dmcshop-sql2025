@@ -27,7 +27,8 @@ set -euo pipefail
 # ---- ayarlar (env ile override edilebilir) ---------------------------------
 : "${DMCSHOP_SCALE:=showcase}"           # showcase | large
 : "${DMCSHOP_SA_PASSWORD:=dmcShop_2026!Demo}"
-: "${DMCSHOP_HOST:=localhost,1433}"
+# 127.0.0.1: konteyner portu IPv4 loopback'e bagli, `localhost` ::1 olabilir.
+: "${DMCSHOP_HOST:=127.0.0.1,1433}"
 : "${OLLAMA_EMBED_MODEL:=nomic-embed-text}"
 : "${OLLAMA_CHAT_MODEL:=qwen2.5:3b-instruct-q4_K_M}"
 : "${EMBED_BATCH:=32}"

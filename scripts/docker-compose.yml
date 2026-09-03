@@ -6,7 +6,12 @@ services:
     container_name: dmcshop-mssql
     restart: unless-stopped
     ports:
-      - "1433:1433"
+      # YALNIZ localhost. SA parolasinin varsayilani PUBLIC depoda yazili;
+      # 1433 tum arayuzlere baglanirsa NSG'de tek bir kural degisikligi
+      # veritabanini internete acar. Uygulama ayni Docker aginda oldugu icin
+      # bu kisitlama ise yaramiyor, yalnizca disaridan erisimi kapatiyor.
+      # Hata ayiklamak icin: ssh -L 1433:localhost:1433 <vm>
+      - "127.0.0.1:1433:1433"
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"

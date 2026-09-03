@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DMCShop / SQL Server 2025 — WordPress içe aktarma dosyası (WXR 1.2)
+  Yükleme: WP Admin → Araçlar → İçe Aktar → WordPress → bu dosyayı seç.
+  Tek seferde oluşturur: Başlık + İçerik (HTML) + Kategoriler + Etiketler + AIOSEO meta.
+
+  NOT (AIOSEO): AIOSEO v4 verilerini kendi tablosunda (aioseo_posts) tutar; bazı
+  kurulumlar _aioseo_* postmeta'sını içe aktarmada otomatik almayabilir. Almazsa,
+  yazıyı açıp AIOSEO kutusundaki başlık/açıklama/anahtar kelime alanlarını dosyanın
+  altındaki <wp:postmeta> değerlerinden elle yapıştır (hepsi burada hazır).
+-->
+<rss version="2.0"
+  xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:wp="http://wordpress.org/export/1.2/">
+<channel>
+  <title>DMC Teknoloji Blog</title>
+  <link>https://dmcteknoloji.com</link>
+  <description>SQL Server 2025, yapay zekâ ve veri mimarisi</description>
+  <language>tr-TR</language>
+  <wp:wxr_version>1.2</wp:wxr_version>
+
+  <wp:author>
+    <wp:author_login>caglarozenc</wp:author_login>
+    <wp:author_email>iletisim@dmcteknoloji.com</wp:author_email>
+    <wp:author_display_name><![CDATA[Çağlar Özenç]]></wp:author_display_name>
+  </wp:author>
+
+  <wp:category>
+    <wp:category_nicename>sql-server</wp:category_nicename>
+    <wp:cat_name><![CDATA[SQL Server]]></wp:cat_name>
+  </wp:category>
+  <wp:category>
+    <wp:category_nicename>yapay-zeka</wp:category_nicename>
+    <wp:cat_name><![CDATA[Yapay Zekâ]]></wp:cat_name>
+  </wp:category>
+  <wp:category>
+    <wp:category_nicename>veri-mimarisi</wp:category_nicename>
+    <wp:cat_name><![CDATA[Veri Mimarisi]]></wp:cat_name>
+  </wp:category>
+
+  <item>
+    <title>SQL Server 2025: Vector, Graph ve RAG'ı Tek Veritabanında Birleştirmek — DMCShop Referans Uygulaması</title>
+    <link>https://dmcteknoloji.com/sql-server-2025-vector-graph-rag-dmcshop/</link>
+    <dc:creator><![CDATA[caglarozenc]]></dc:creator>
+    <guid isPermaLink="false">dmcshop-sql2025-vector-graph-rag</guid>
+    <description></description>
+    <content:encoded><![CDATA[
+<p>Bir e-ticaret platformunda modern yapay zekâ özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir <strong>vektör veritabanı</strong> (Pinecone, Qdrant), ilişki analizi için bir <strong>graph veritabanı</strong> (Neo4j), sohbet asistanı için bir <strong>RAG servis katmanı</strong> ve tüm bunları besleyen <strong>ana ilişkisel veritabanı</strong>. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.</p>
+
+<p>SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi <strong>aynı veritabanı motorunda, aynı <code>SELECT</code> içinde, aynı yedeklemenin altında</strong> çalışıyor.</p>
+
+<p>Bunu somut bir örnekle göstermek için <strong>DMCShop</strong>'u geliştirdik: 50.000+ ürünlük gerçek ölçekli bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, <strong>açık kaynak (MIT)</strong> bir referans uygulaması.</p>
+
+<ul>
+  <li>🔗 <strong>Canlı demo:</strong> <a href="https://demo.dmcteknoloji.com" target="_blank" rel="noopener">demo.dmcteknoloji.com</a></li>
+  <li>🔗 <strong>Kaynak kod:</strong> <a href="https://github.com/dmcteknoloji/dmcshop-sql2025" target="_blank" rel="noopener">github.com/dmcteknoloji/dmcshop-sql2025</a></li>
+</ul>
+
+<h2>Neyi çözüyoruz?</h2>
+
+<p>Geleneksel yaklaşımda "ürün için anlamsal arama + birlikte alınan ürün önerisi + sohbet asistanı + fraud tespiti" demek, en az üç farklı uzmanlık alanı ve üç farklı altyapı demekti. Veriyi senkronize tutmak (ürün eklendiğinde hem SQL'e hem vektör DB'sine hem graph DB'sine yazmak), tutarlılığı sağlamak ve hepsini güvende tutmak başlı başına bir proje.</p>
+
+<p>SQL Server 2025'in getirdiği yeniliklerle bu senaryoların tamamı tek motorda toplanıyor:</p>
+
+<figure class="wp-block-table">
+<table>
+  <thead>
+    <tr><th>İhtiyaç</th><th>Klasik çözüm</th><th>SQL Server 2025</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Anlamsal arama</td><td>Pinecone / Qdrant</td><td><code>VECTOR(N)</code> tipi + <code>CREATE VECTOR INDEX</code> (DiskANN)</td></tr>
+    <tr><td>Embedding üretimi</td><td>Ayrı Python servisi</td><td><code>AI_GENERATE_EMBEDDINGS</code> + <code>CREATE EXTERNAL MODEL</code></td></tr>
+    <tr><td>Vektör sorgusu</td><td>Vektör DB API'si</td><td><code>VECTOR_SEARCH(...)</code> T-SQL fonksiyonu</td></tr>
+    <tr><td>İlişki / öneri analizi</td><td>Neo4j</td><td><code>GRAPH MATCH</code> + <code>SHORTEST_PATH</code></td></tr>
+    <tr><td>RAG asistanı</td><td>LangChain + servis</td><td>T-SQL içinde embed → search → chat → audit</td></tr>
+  </tbody>
+</table>
+</figure>
+
+<h2>DMCShop nedir?</h2>
+
+<p>DMCShop, SQL Server 2025'in <code>VECTOR(N) + DiskANN</code> ve <code>GRAPH MATCH + SHORTEST_PATH</code> özelliklerinin <strong>üretim senaryolarındaki</strong> karşılığını gösteren açık kaynak bir referans uygulamasıdır. Mock veri yok — gerçek ölçekte çalışıyor:</p>
+
+<figure class="wp-block-table">
+<table>
+  <thead>
+    <tr><th>Varlık</th><th>Adet</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Kategori</td><td>100 (10 ana × 10 alt)</td></tr>
+    <tr><td>Ürün</td><td><strong>50.120</strong></td></tr>
+    <tr><td>Müşteri</td><td>10.050</td></tr>
+    <tr><td>Sipariş</td><td>100.400</td></tr>
+    <tr><td>Sipariş satırı</td><td>451.202</td></tr>
+    <tr><td>Cihaz</td><td>4.080</td></tr>
+    <tr><td>Tespit edilen fraud ring</td><td>~1.000</td></tr>
+    <tr><td>Vektör embedding</td><td>50.000+ (<code>nomic-embed-text</code>, 768 boyut, DiskANN cosine)</td></tr>
+  </tbody>
+</table>
+</figure>
+
+<p>Teknoloji yığını: <strong>.NET 10</strong>, <strong>Blazor Server</strong>, <strong>EF Core 10</strong>, embedding ve sohbet için <strong>Ollama</strong> (<code>nomic-embed-text</code> + <code>qwen2.5:3b-instruct</code>), tek Azure B4ms VM (4 vCPU / 16 GB) üzerinde canlı; aynı yığın local <code>docker-compose</code> ile birebir çalışıyor.</p>
+
+<h2>Beş senaryo, tek veritabanı</h2>
+
+<h3>1. Semantik ürün arama — <code>VECTOR_SEARCH</code> + DiskANN</h3>
+
+<p>Kullanıcı "rahat ergonomik klavye" yazdığında, kelime eşleşmesi (<code>LIKE</code>) çoğu zaman sıfır sonuç döner. Anlamsal arama ise ergonomik ofis ürünlerini — mouse pad, MX Master mouse, rahat ayakkabı — semantik uzayda yakın olduğu için getirir.</p>
+
+<pre><code>USE dmcshop;
+DECLARE @q VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+    N'rahat ergonomik klavye' USE MODEL ollama_embed_text
+);
+
+WITH hits AS (
+    SELECT * FROM VECTOR_SEARCH(
+        TABLE      = vector.product_embedding,
+        COLUMN     = embedding_ollama_768,
+        SIMILAR_TO = @q,
+        METRIC     = 'cosine',
+        TOP_N      = 5)
+)
+SELECT h.product_id, p.name, h.distance
+FROM   hits h JOIN shop.product p ON p.product_id = h.product_id
+ORDER BY h.distance;</code></pre>
+
+<p>Demoda vektör sorgusu ~150 ms, <code>LIKE</code> sorgusu ~10 ms sürer; ama <code>LIKE</code> çoğu sorguda boş döner. Anlam vs. lafzi arama farkı yan yana görülür.</p>
+
+<h3>2. RAG tabanlı ürün asistanı — embed → retrieval → chat → audit</h3>
+
+<p><code>/asistan</code> sayfasında "1500 TL altı ergonomik mouse" sorusu uçtan uca tek akışta yanıtlanır: soru embed edilir, vektör arama ile en alakalı 5 ürün getirilir, sohbet modeli bu bağlamla <strong>token-token</strong> yanıt üretir ve her çağrı <code>vector.query_log</code> tablosunda denetim için kayda alınır. Streaming yanıt, SignalR ile tarayıcıya canlı akar.</p>
+
+<p>İlk soru modelin RAM'e yüklenmesiyle ~15 sn (cold-start); sonraki sorular cache'li, ~3-5 sn.</p>
+
+<h3>3. Fraud ring tespiti — <code>GRAPH MATCH</code> + <code>SHORTEST_PATH</code></h3>
+
+<p>Aynı cihaz parmak izini, aynı IP'yi veya aynı kartı paylaşan müşteri kümeleri graph dolaşımıyla bulunur. En etkileyici kısım: dolandırıcılık zincirinin kanıtı doğrudan okunabilir bir metne dönüşür.</p>
+
+<pre><code>SELECT
+    cn1.display_name AS start_customer,
+    STRING_AGG(cn2.display_name, N' → ')
+        WITHIN GROUP (GRAPH PATH) AS hops
+FROM graph.customer_node AS cn1,
+     graph.uses_device FOR PATH AS ud1,
+     graph.device_node FOR PATH AS dn,
+     graph.uses_device FOR PATH AS ud2,
+     graph.customer_node FOR PATH AS cn2
+WHERE MATCH(SHORTEST_PATH(cn1(-(ud1)-&gt;dn&lt;-(ud2)-cn2)+))
+  AND cn1.customer_id = 10;</code></pre>
+
+<p><code>STRING_AGG ... WITHIN GROUP (GRAPH PATH)</code> ifadesiyle bir dolandırıcılık yolu doğrudan "Ali → Ayşe → Mehmet" gibi bir kanıt zincirine dönüşür. Müfettiş için anında rapor.</p>
+
+<h3>4. "Bunu alanlar bunu da aldı" — <code>GRAPH MATCH</code> 2-hop</h3>
+
+<p>Klasik co-purchase önerisi, ilişkisel JOIN ile yazıldığında 50+ satırı bulur. Graph diliyle tek bir <code>MATCH</code> yeter:</p>
+
+<pre><code>SELECT TOP (10) p2_shop.name, COUNT(DISTINCT c.customer_id) AS co_buyer_count
+FROM graph.product_node p1, graph.purchased pur1,
+     graph.customer_node c,
+     graph.purchased pur2, graph.product_node p2,
+     shop.product p2_shop
+WHERE MATCH(p1&lt;-(pur1)-c-(pur2)-&gt;p2)
+  AND p1.product_id = 1041
+  AND p2.product_id &lt;&gt; 1041
+  AND p2_shop.product_id = p2.product_id
+GROUP BY p2.product_id, p2_shop.name
+ORDER BY co_buyer_count DESC;</code></pre>
+
+<h3>5. "Sana özel" — Vector + Graph hibrit öneri</h3>
+
+<p>En ileri senaryo: müşterinin son siparişlerinin embedding centroid'i hesaplanır, <code>VECTOR_SEARCH</code> ile benzer ürünler bulunur, ardından <code>GRAPH MATCH</code> ile bu ürünlerin sosyal kanıtı (kaç kişi birlikte aldı) skora katılır. Hibrit skor = <code>mesafe + 1/(1+sosyal)</code>. Anlamsal benzerlik ve davranışsal sinyal <strong>tek sorguda</strong> birleşir.</p>
+
+<h2>Üretimden çıkan üç gerçek not (RTM-CU4)</h2>
+
+<p>Belgelerin anlatmadığı, sahada öğrenilen nüanslar — workshop'larda en çok soru alan kısım:</p>
+
+<ol>
+  <li><strong>VECTOR tipi preview bayrağıyla açılır.</strong> <code>ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;</code></li>
+  <li><strong>DiskANN vektör indeksi varken tabloya hiçbir DML yapılamaz</strong> (<code>Msg 42231</code> — INSERT, UPDATE ve DELETE hepsi reddedilir). Tek yol: önce <code>DROP INDEX</code>, sonra DML, sonra yeniden <code>CREATE VECTOR INDEX</code>. Toplu embedding yüklemesini buna göre tasarlamak gerekir.</li>
+  <li><strong><code>VECTOR_SEARCH</code> sözdizimi değişti.</strong> Eski <code>TOP (N) WITH APPROXIMATE</code> RTM'de yok; çıktı bir CTE içinde tutulup dışarıda JOIN'lenmeli (yukarıdaki örneklerdeki desen).</li>
+</ol>
+
+<p>Bu tür detaylar, "demo'da çalışıyor"dan "üretimde çalışıyor"a geçişin farkıdır.</p>
+
+<h2>Mimari: üç katman, tek VM</h2>
+
+<p>DMCShop tek bir Azure B4ms VM üzerinde (4 vCPU / 16 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:</p>
+
+<pre><code>git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
+cd dmcshop-sql2025
+./scripts/setup.sh                       # showcase (120 ürün, ~3 dk)
+# veya
+DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dk)
+dotnet run --project app/src/DMCShop.Web # http://localhost:5295</code></pre>
+
+<p><code>setup.sh</code> idempotent: container, model, schema, seed, embedding ve DiskANN indeksini uçtan uca yönetir.</p>
+
+<h2>Ne zaman SQL Server VECTOR, ne zaman ayrı bir vektör DB?</h2>
+
+<p>Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hâlâ güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların <strong>birlikte</strong> çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.</p>
+
+<h2>Denemek için</h2>
+
+<ul>
+  <li><strong>Canlı demo:</strong> <a href="https://demo.dmcteknoloji.com" target="_blank" rel="noopener">demo.dmcteknoloji.com</a></li>
+  <li><strong>Kaynak kod (MIT):</strong> <a href="https://github.com/dmcteknoloji/dmcshop-sql2025" target="_blank" rel="noopener">github.com/dmcteknoloji/dmcshop-sql2025</a></li>
+  <li><strong>Workshop handbook (60-90 dk uçtan uca tur):</strong> repo içindeki <code>docs/handbook.md</code></li>
+</ul>
+
+<p>DMCShop, <strong>SQL Server 2025: Herkes İçin, Her Rol İçin</strong> kitabının canlı çalışan karşılığıdır. Kitabın 32 bölümünden her birinin demoda hangi sayfa, T-SQL dosyası veya .NET kodu ile karşılandığı <code>docs/kitap-demo-koprusu.md</code> içinde eşleştirilmiştir — kitabı okurken yan ekranda demoyu açıp bölümün canlı karşılığını görebilirsiniz.</p>
+
+<hr/>
+
+<p><em>Açık kaynak · MIT · © 2026 <a href="https://www.linkedin.com/in/caglarozenc" target="_blank" rel="noopener">Çağlar Özenç</a> &amp; DMC Bilgi Teknolojileri. Sorularınız için: iletisim@dmcteknoloji.com</em></p>
+]]></content:encoded>
+    <excerpt:encoded><![CDATA[Vector arama, graph fraud tespiti ve RAG asistanı ayrı sistemler kurmadan tek SQL Server 2025 veritabanında. DMCShop açık kaynak referans uygulamasıyla uçtan uca anlattık.]]></excerpt:encoded>
+    <wp:post_id>0</wp:post_id>
+    <wp:post_date><![CDATA[2026-06-01 09:00:00]]></wp:post_date>
+    <wp:comment_status><![CDATA[open]]></wp:comment_status>
+    <wp:ping_status><![CDATA[open]]></wp:ping_status>
+    <wp:post_name><![CDATA[sql-server-2025-vector-graph-rag-dmcshop]]></wp:post_name>
+    <wp:status><![CDATA[draft]]></wp:status>
+    <wp:post_parent>0</wp:post_parent>
+    <wp:menu_order>0</wp:menu_order>
+    <wp:post_type><![CDATA[post]]></wp:post_type>
+    <wp:post_password><![CDATA[]]></wp:post_password>
+    <wp:is_sticky>0</wp:is_sticky>
+
+    <category domain="category" nicename="sql-server"><![CDATA[SQL Server]]></category>
+    <category domain="category" nicename="yapay-zeka"><![CDATA[Yapay Zekâ]]></category>
+    <category domain="category" nicename="veri-mimarisi"><![CDATA[Veri Mimarisi]]></category>
+
+    <category domain="post_tag" nicename="sql-server-2025"><![CDATA[SQL Server 2025]]></category>
+    <category domain="post_tag" nicename="vector"><![CDATA[VECTOR]]></category>
+    <category domain="post_tag" nicename="diskann"><![CDATA[DiskANN]]></category>
+    <category domain="post_tag" nicename="graph-database"><![CDATA[Graph Database]]></category>
+    <category domain="post_tag" nicename="rag"><![CDATA[RAG]]></category>
+    <category domain="post_tag" nicename="dotnet-10"><![CDATA[.NET 10]]></category>
+    <category domain="post_tag" nicename="yapay-zeka-tag"><![CDATA[Yapay Zekâ]]></category>
+    <category domain="post_tag" nicename="semantik-arama"><![CDATA[Semantik Arama]]></category>
+    <category domain="post_tag" nicename="fraud-tespiti"><![CDATA[Fraud Tespiti]]></category>
+    <category domain="post_tag" nicename="blazor"><![CDATA[Blazor]]></category>
+    <category domain="post_tag" nicename="ef-core-10"><![CDATA[EF Core 10]]></category>
+    <category domain="post_tag" nicename="ollama"><![CDATA[Ollama]]></category>
+    <category domain="post_tag" nicename="vektor-veritabani"><![CDATA[Vektör Veritabanı]]></category>
+    <category domain="post_tag" nicename="embedding"><![CDATA[Embedding]]></category>
+
+    <!-- ===== AIOSEO meta (alınmazsa AIOSEO kutusuna elle yapıştır) ===== -->
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_title]]></wp:meta_key>
+      <wp:meta_value><![CDATA[SQL Server 2025: Vector, Graph ve RAG Tek Veritabanında]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_description]]></wp:meta_key>
+      <wp:meta_value><![CDATA[Vector arama, graph fraud tespiti ve RAG asistanı ayrı sistemler kurmadan tek SQL Server 2025 veritabanında. DMCShop açık kaynak referans uygulamasıyla uçtan uca anlattık.]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_keywords]]></wp:meta_key>
+      <wp:meta_value><![CDATA[SQL Server 2025 vector, SQL Server 2025 graph, VECTOR_SEARCH DiskANN, SQL Server RAG, GRAPH MATCH SHORTEST_PATH, SQL Server 2025 yapay zeka]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_og_title]]></wp:meta_key>
+      <wp:meta_value><![CDATA[Vector + Graph + RAG: Hepsi Tek SQL Server 2025 Veritabanında]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_og_description]]></wp:meta_key>
+      <wp:meta_value><![CDATA[50.000+ ürünlük açık kaynak referans uygulama DMCShop ile SQL Server 2025'in vector, graph ve RAG özelliklerini uçtan uca gösterdik.]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_twitter_title]]></wp:meta_key>
+      <wp:meta_value><![CDATA[SQL Server 2025: Pinecone + Neo4j + RAG servisi yerine tek motor]]></wp:meta_value>
+    </wp:postmeta>
+    <wp:postmeta>
+      <wp:meta_key><![CDATA[_aioseo_twitter_description]]></wp:meta_key>
+      <wp:meta_value><![CDATA[DMCShop ile vector arama, graph fraud tespiti ve RAG'ı aynı veritabanında çalıştırdık. Açık kaynak, canlı demo ayakta.]]></wp:meta_value>
+    </wp:postmeta>
+  </item>
+</channel>
+</rss>

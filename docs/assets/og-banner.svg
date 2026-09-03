@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="DMCShop — SQL Server 2025 vector + graph + RAG referans uygulaması">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#0B0E11"/>
+            <stop offset="60%"  stop-color="#161B22"/>
+            <stop offset="100%" stop-color="#1C232C"/>
+        </linearGradient>
+        <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="#A4262C"/>
+            <stop offset="100%" stop-color="#DD4853"/>
+        </linearGradient>
+        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+            <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#1F262E" stroke-width="1"/>
+        </pattern>
+    </defs>
+
+    <rect width="1200" height="630" fill="url(#bg)"/>
+    <rect width="1200" height="630" fill="url(#grid)" opacity="0.55"/>
+
+    <rect x="80" y="120" width="6" height="300" fill="url(#accent)"/>
+
+    <text x="112" y="170" font-family="'Inter','Segoe UI',sans-serif"
+          font-size="18" font-weight="600" letter-spacing="3.5" fill="#DD4853">DMC BİLGİ TEKNOLOJİLERİ</text>
+
+    <text x="110" y="262" font-family="'Inter','Segoe UI',sans-serif"
+          font-size="92" font-weight="700" letter-spacing="-2" fill="#ECEFF4">DMCShop</text>
+
+    <text x="112" y="318" font-family="'Inter','Segoe UI',sans-serif"
+          font-size="30" font-weight="600" letter-spacing="-0.5" fill="#ECEFF4">SQL Server 2025: Vector, Graph ve RAG</text>
+    <text x="112" y="356" font-family="'Inter','Segoe UI',sans-serif"
+          font-size="24" font-weight="500" letter-spacing="-0.3" fill="#9BA4B0">tek veritabanında — açık kaynak referans uygulama</text>
+
+    <g font-family="'JetBrains Mono','Cascadia Code',monospace" font-size="17" fill="#7B8492">
+        <text x="112" y="430">VECTOR_SEARCH</text>
+        <text x="270" y="430" fill="#4B5360">·</text>
+        <text x="292" y="430">DiskANN</text>
+        <text x="392" y="430" fill="#4B5360">·</text>
+        <text x="414" y="430">GRAPH MATCH</text>
+        <text x="566" y="430" fill="#4B5360">·</text>
+        <text x="588" y="430">SHORTEST_PATH</text>
+    </g>
+
+    <g font-family="'JetBrains Mono','Cascadia Code',monospace" font-size="15" fill="#5A6470">
+        <text x="112" y="470" fill="#5A6470">50.120 ürün</text>
+        <text x="270" y="470" fill="#5A6470">100.400 sipariş</text>
+        <text x="450" y="470" fill="#5A6470">~1.000 fraud ring</text>
+        <text x="650" y="470" fill="#5A6470">50K+ embedding</text>
+    </g>
+
+    <line x1="112" y1="510" x2="700" y2="510" stroke="#2A323D"/>
+    <text x="112" y="548" font-family="'JetBrains Mono','Cascadia Code',monospace" font-size="18" fill="#DD4853">demo.dmcteknoloji.com</text>
+
+    <g transform="translate(870,160)" font-family="'Inter','Segoe UI',sans-serif">
+        <rect width="250" height="230" rx="14" fill="#1C232C" stroke="#2A323D" stroke-width="1"/>
+        <text x="22" y="40" font-size="13" font-weight="600" letter-spacing="1.8" fill="#9BA4B0">STACK</text>
+        <line x1="22" y1="52" x2="228" y2="52" stroke="#2A323D"/>
+        <g font-size="15" fill="#ECEFF4">
+            <text x="22" y="86">SQL Server 2025 RTM-CU4</text>
+            <text x="22" y="118">.NET 10 · Blazor Server</text>
+            <text x="22" y="150">EF Core 10</text>
+            <text x="22" y="182">Ollama nomic-embed-text</text>
+            <text x="22" y="214">Ollama qwen2.5:3b-instruct</text>
+        </g>
+    </g>
+</svg>
