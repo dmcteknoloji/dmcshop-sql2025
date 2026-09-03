@@ -26,6 +26,7 @@ set -euo pipefail
 : "${DMCSHOP_SA_PASSWORD:=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)Aa1!}"
 : "${DMCSHOP_SSH_KEY:=$HOME/.ssh/dmcshop_ed25519}"
 : "${DMCSHOP_ALLOWED_CIDR:=*}"   # production için kendi IP/32
+: "${DMCSHOP_DOMAIN:=}"          # verilirse Caddy ile HTTPS (Let's Encrypt)
 
 # ---- yol hesaplamaları ----------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -104,7 +105,11 @@ rsync -azh --delete \
 
 # ---- 5) remote bootstrap + embed + service -----------------------------
 echo "==> Remote: docker compose + bootstrap + embed-products"
-ssh "${SSH_OPTS[@]}" "${USER}@${FQDN}" "DMCSHOP_SA_PASSWORD='${DMCSHOP_SA_PASSWORD}' bash -se" <<'REMOTE'
+# ⚠️ Heredoc `<<'REMOTE'` TIRNAKLI: icerideki degiskenler YERELDE genislemez,
+# uzak kabukta aranir. Bu yuzden gerekli her degisken ssh komut satirinda
+# aktarilmali. DMCSHOP_DOMAIN unutulursa Caddy adimi sessizce atlanir.
+ssh "${SSH_OPTS[@]}" "${USER}@${FQDN}" \
+  "DMCSHOP_SA_PASSWORD='${DMCSHOP_SA_PASSWORD}' DMCSHOP_DOMAIN='${DMCSHOP_DOMAIN:-}' bash -se" <<'REMOTE'
 set -euo pipefail
 cd ~/dmcshop-sql2025
 
@@ -143,16 +148,36 @@ ConnectionStrings__DMCShop=Server=127.0.0.1,1433;Database=dmcshop;User Id=sa;Pas
 ENVEOF
 sudo chmod 0600 /etc/dmcshop/web.env
 
+# Uygulama 5000'de dinler; 80/443'u Caddy alir (HTTPS + Let's Encrypt).
+# Onceden dogrudan 80'e baglaniyordu ve HTTPS HIC yoktu — kitaptaki basili QR
+# bu adrese cikiyor, tarayici "guvenli degil" diyordu (2026-09-03'te olculdu).
+sudo sed -i 's|ASPNETCORE_URLS=http://0.0.0.0:80|ASPNETCORE_URLS=http://127.0.0.1:5000|' \
+    /etc/systemd/system/dmcshop-web.service 2>/dev/null || true
+
 echo "  -> systemd service"
 sudo systemctl daemon-reload
 sudo systemctl enable --now dmcshop-web.service
 sleep 5
 sudo systemctl status dmcshop-web.service --no-pager | head -10
+
+# ── Caddy: HTTPS (Let's Encrypt, TLS-ALPN-01) ──
+if [[ -n "${DMCSHOP_DOMAIN:-}" ]]; then
+  echo "  -> Caddy (HTTPS: ${DMCSHOP_DOMAIN})"
+  printf 'DOMAIN=%s\n' "${DMCSHOP_DOMAIN}" > infra/caddy/.env
+  DOMAIN="${DMCSHOP_DOMAIN}" docker compose -f infra/caddy/docker-compose.yml up -d
+else
+  echo "  -> Caddy atlandi (DMCSHOP_DOMAIN verilmedi; uygulama 5000'de, 80/443 bos)"
+fi
 REMOTE
 
 echo ""
 echo "==> Deploy tamam"
-echo "    Web:  http://${FQDN}"
+if [[ -n "${DMCSHOP_DOMAIN:-}" ]]; then
+  echo "    Web:  https://${DMCSHOP_DOMAIN}   (Let's Encrypt, otomatik yenilenir)"
+  echo "          http://${FQDN}  (IP ile; sertifika alan adina bagli)"
+else
+  echo "    Web:  http://${FQDN}:5000   (HTTPS icin: DMCSHOP_DOMAIN=... ile calistirin)"
+fi
 echo "    SSH:  ssh -i ${DMCSHOP_SSH_KEY} ${USER}@${FQDN}"
 echo ""
 echo "    Logs: ssh -i ${DMCSHOP_SSH_KEY} ${USER}@${FQDN} 'sudo journalctl -u dmcshop-web -f'"

@@ -1,7 +1,7 @@
 # Caddyfile — DMCShop HTTPS (Let's Encrypt)
 #
 # Production: domain DNS A-record + Let's Encrypt otomatik sertifika.
-# DNS A-record:  demo.dmcteknoloji.com → 20.71.172.88 (VM public IP)
+# DNS A-record:  demo.dmcteknoloji.com → VM public IP (2026-09-03: 20.224.137.162)
 # NSG açık portlar: 80 (Let's Encrypt HTTP-01 / TLS-ALPN-01 challenge), 443.
 #
 # Self-signed mode için: `tls internal` ekle, ACME email satırını kaldır.
