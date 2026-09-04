@@ -121,32 +121,26 @@
     </div>
 }
 
-@if (history.Count == 0 && active is null && persistedHistory.Count > 0)
+@* Bu panel eskiden vector.query_log'daki son kayitlari, yani butun
+   ziyaretcilerin sorularini gosteriyordu. Iki sorunu vardi: birinin yazdigi
+   sey bir sonraki ziyaretcinin gordugu ilk sey oluyordu, ve duzeltilmis
+   hatalarin eski cevaplari (yanlis fiyat bicimi, yanlis fiyat filtresi)
+   guncel davranis gibi duruyordu. Artik yalniz bu oturumun sorulari. *@
+@if (history.Count == 0 && active is null)
 {
     <section class="dmc-section">
         <div class="dmc-section-head">
-            <span class="dmc-section-title">Geçmiş sorgular</span>
-            <span class="dmc-section-meta">vector.query_log · son @persistedHistory.Count</span>
+            <span class="dmc-section-title">Sorularınız burada birikir</span>
+            <span class="dmc-section-meta">vector.query_log</span>
         </div>
-        @foreach (var h in persistedHistory)
-        {
-            <div class="dmc-card" style="margin-bottom: 0.75rem;">
-                <div style="display:flex; justify-content:space-between; align-items:baseline; gap:1rem;">
-                    <div class="dmc-chat-q" style="margin:0; padding:0; border:0;">@h.Question</div>
-                    <span class="dmc-section-meta">@h.CreatedAt.ToString("yyyy-MM-dd HH:mm") · @h.Provider · @h.LatencyMs ms</span>
-                </div>
-                <div class="dmc-chat-a" style="margin-top: 0.5rem;">@h.Response</div>
-                @if (h.UsedProductIds.Count > 0)
-                {
-                    <div style="margin-top: 0.6rem; display:flex; gap: 0.3rem; flex-wrap: wrap;">
-                        @foreach (var id in h.UsedProductIds)
-                        {
-                            <a href="urun/@id" class="dmc-badge dmc-badge-soft" style="text-decoration:none;">#@id</a>
-                        }
-                    </div>
-                }
-            </div>
-        }
+        <div class="dmc-card">
+            <p class="dmc-sqlpanel-note" style="padding:0;">
+                Her soru, verilen cevap, kullanılan ürün numaraları, sağlayıcı adı ve süre
+                <code>vector.query_log</code> tablosuna yazılır. Yukarıdaki örneklerden birine
+                tıklayın, sorduğunuz her şey bu bölümde listelenecek.
+                Başkalarının soruları burada görünmez.
+            </p>
+        </div>
     </section>
 }
 
@@ -198,15 +192,12 @@
     private bool busy;
     private string? error;
     private readonly List<RagAnswer> history = new();
-    private List<RagHistoryEntry> persistedHistory = new();
     private ActiveStream? active;
     private CancellationTokenSource? cts;
 
-    protected override async Task OnInitializedAsync()
-    {
-        try { persistedHistory = await Rag.HistoryAsync(limit: 8); }
-        catch { /* history yoksa sessiz geç */ }
-    }
+    // Global gecmis artik cekilmiyor; gerekce yukaridaki panelde yazili.
+    // RagAssistantService.HistoryAsync duruyor, /api uclarindan ve
+    // atolye senaryolarindan kullanilabiliyor.
 
     private static readonly string[] samples =
     {
