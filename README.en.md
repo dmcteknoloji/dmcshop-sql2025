@@ -253,12 +253,14 @@ dmcshop-sql2025/
 ```bash
 dotnet build app/DMCShop.slnx                       # whole solution
 dotnet test  app/tests/DMCShop.Tests.Unit           # 21 unit tests, no database needed
-dotnet test  app/tests/DMCShop.Tests.Integration    # 9 tests against a real SQL Server 2025
+dotnet test  app/tests/DMCShop.Tests.Integration    # 13 tests against a real SQL Server 2025
 ```
 
-The integration tests start a SQL Server 2025 CU8 container through Testcontainers and assert
-the three engine behaviours documented below: DML blocked while a DiskANN index exists, no
-`AVG` aggregate over `VECTOR`, and `VECTOR_SEARCH` output needing a CTE before you join to it.
+The integration tests start a SQL Server 2025 CU8 container through Testcontainers. Nine of
+them assert the engine behaviours documented below: DML blocked while a DiskANN index exists,
+no `AVG` aggregate over `VECTOR`, and `VECTOR_SEARCH` output needing a CTE before you join to
+it. Four more cover `VectorSearchService` ranking against a small hand-built catalog with a
+deterministic fake embedding provider, so they measure the service rather than model quality.
 If a future cumulative update changes any of them, those tests go red and tell you this
 document has gone stale. The image tag is pinned for the same reason the Compose file pins it.
 

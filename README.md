@@ -269,7 +269,9 @@ Bedeli boyutun 768'den 1024'e çıkması, yani yeni kolon ve yeniden embedding. 
 
 Aşağıdaki üç davranış `app/tests/DMCShop.Tests.Integration` altında gerçek bir SQL Server 2025
 CU8 konteynerine karşı test ediliyor. Bir sonraki CU birini değiştirirse test kırmızı oluyor ve
-bu metnin bayatladığını haber veriyor.
+bu metnin bayatladığını haber veriyor. Aynı proje ayrıca `VectorSearchService` sıralamasını
+küçük ve elle kurulmuş bir katalog üzerinde doğruluyor; embedding sağlayıcısı sahte ve
+deterministik olduğu için ölçülen şey model kalitesi değil servisin kendi davranışı.
 
 Workshop için kayda değer üç davranış:
 
