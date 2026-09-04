@@ -33,7 +33,7 @@ DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dakika)
 
 Setup script şunları yapar:
 
-1. **docker compose up** — `dmcshop-mssql` (SQL Server 2025 RTM-CU4) + `dmcshop-ollama`
+1. **docker compose up** — `dmcshop-mssql` (SQL Server 2025 CU8) + `dmcshop-ollama`
 2. **Ollama modelleri** — `nomic-embed-text` (~270 MB) + `qwen2.5:3b-instruct-q4_K_M` (~2 GB)
 3. **Schema + showcase seed** — `bootstrap.sh` → 4 schema (`shop`, `graph`, `vector`, `ops`) + 120 ürün
 4. **(opsiyonel) Kurumsal seed** — `sql/30-33`: 50K ürün + 10K müşteri + 100K sipariş + 451K satır
@@ -116,7 +116,7 @@ DMCSHOP_SCALE=large ./scripts/setup.sh
 
 ### `Msg 42231: Data modification statement failed because table has a vector index on it`
 
-**Sebep**: SQL Server 2025 RTM-CU4'te DiskANN vector index varken **hiçbir DML** (INSERT/UPDATE/DELETE)
+**Sebep**: SQL Server 2025'te DiskANN vector index varken **hiçbir DML** (INSERT/UPDATE/DELETE)
 yapılamıyor.
 
 **Çözüm**: önce `DROP INDEX vix_pe_ollama ON vector.product_embedding`, sonra DML, sonra

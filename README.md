@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://learn.microsoft.com/sql/sql-server/what-s-new-in-sql-server-2025"><img alt="SQL Server 2025" src="https://img.shields.io/badge/SQL%20Server-2025%20RTM--CU4-A4262C?style=for-the-badge&logo=microsoftsqlserver&logoColor=white"></a>
+  <a href="https://learn.microsoft.com/sql/sql-server/what-s-new-in-sql-server-2025"><img alt="SQL Server 2025" src="https://img.shields.io/badge/SQL%20Server-2025%20RTM--CU8-A4262C?style=for-the-badge&logo=microsoftsqlserver&logoColor=white"></a>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
   <a href="https://learn.microsoft.com/aspnet/core/blazor/"><img alt="Blazor Server" src="https://img.shields.io/badge/Blazor-Server-512BD4?style=for-the-badge&logo=blazor&logoColor=white"></a>
   <a href="https://learn.microsoft.com/ef/core/"><img alt="EF Core 10" src="https://img.shields.io/badge/EF%20Core-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
@@ -236,7 +236,7 @@ dmcshop-sql2025/
 
 ---
 
-## SQL Server 2025 RTM-CU4 yakalanan nüanslar
+## SQL Server 2025'te yakalanan nüanslar
 
 Workshop için kayda değer üç davranış:
 

@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@using DMCShop.Data
+@inject SqlServerVersionService SqlVersion
 
 <FluentDesignTheme Mode="DesignThemeModes.Dark" CustomColor="#A4262C" StorageName="dmcshop-theme" />
 
@@ -33,7 +35,7 @@
                 <strong>DMC Bilgi Teknolojileri</strong> — SQL Server 2025 referans uygulaması
             </div>
             <div class="dmc-footer-stack">
-                <span class="dmc-badge">SQL Server 2025 RTM-CU4</span>
+                <span class="dmc-badge">@sqlVersionLabel</span>
                 <span class="dmc-badge">.NET 10</span>
                 <span class="dmc-badge">EF Core 10</span>
                 <a href="https://dmcteknoloji.com" target="_blank" rel="noreferrer">dmcteknoloji.com</a>
@@ -52,3 +54,10 @@
     <a href="." class="reload">Yeniden yükle</a>
     <span class="dismiss">x</span>
 </div>
+
+@code {
+    private string sqlVersionLabel = SqlServerVersionService.Fallback;
+
+    protected override async Task OnInitializedAsync()
+        => sqlVersionLabel = await SqlVersion.GetLabelAsync();
+}

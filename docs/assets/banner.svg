@@ -58,7 +58,7 @@
         <text x="20" y="36" font-size="11" font-weight="600" letter-spacing="1.5" fill="#9BA4B0">STACK</text>
         <line x1="20" y1="46" x2="200" y2="46" stroke="#2A323D"/>
         <g font-size="13" fill="#ECEFF4">
-            <text x="20" y="74">SQL Server 2025 RTM-CU4</text>
+            <text x="20" y="74">SQL Server 2025 CU8</text>
             <text x="20" y="100">.NET 10 · Blazor Server</text>
             <text x="20" y="126">EF Core 10</text>
             <text x="20" y="152">Ollama nomic-embed-text</text>

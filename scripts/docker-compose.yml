@@ -2,7 +2,10 @@ name: dmcshop
 
 services:
   mssql:
-    image: mcr.microsoft.com/mssql/server:2025-latest
+    # Etiket bilerek sabit. 2025-latest her dagitimda sessizce yeni CU indiriyordu:
+    # 3 Eylul 2026 kurulumunda sunucu CU8'e cikti, kimse fark etmedi.
+    # Yukseltme bilerek yapilir, bu satir elle degistirilir.
+    image: mcr.microsoft.com/mssql/server:2025-CU8-ubuntu-24.04
     container_name: dmcshop-mssql
     restart: unless-stopped
     ports:

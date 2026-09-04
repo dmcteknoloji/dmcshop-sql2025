@@ -19,6 +19,8 @@ public static class DependencyInjection
             });
         });
 
+        services.AddSingleton<SqlServerVersionService>();
+
         return services;
     }
 }

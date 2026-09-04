@@ -2,6 +2,7 @@
 @using DMCShop.Data
 @using Microsoft.EntityFrameworkCore
 @inject DMCShopDbContext Db
+@inject SqlServerVersionService SqlVersion
 
 <PageTitle>DMCShop — SQL Server 2025 referans uygulaması</PageTitle>
 
@@ -21,7 +22,7 @@
     </div>
 
     <div class="dmc-stack-row">
-        <span class="dmc-badge dmc-badge-accent">SQL Server 2025 RTM-CU4</span>
+        <span class="dmc-badge dmc-badge-accent">@sqlVersionLabel</span>
         <span class="dmc-badge">.NET 10 · Blazor Server</span>
         <span class="dmc-badge">EF Core 10</span>
         <span class="dmc-badge">Ollama nomic-embed-text · 768 dim</span>
@@ -164,8 +165,11 @@
         return null;
     }
 
+    private string sqlVersionLabel = SqlServerVersionService.Fallback;
+
     protected override async Task OnInitializedAsync()
     {
+        sqlVersionLabel = await SqlVersion.GetLabelAsync();
         loadedAt   = DateTime.UtcNow;
         loadedAtTr = TimeZoneInfo.ConvertTimeFromUtc(loadedAt, TrTimeZone);
 

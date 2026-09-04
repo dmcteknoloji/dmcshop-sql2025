@@ -24,7 +24,7 @@ Kısım III (Geliştirici) gösterir; ama DBA bölümlerinin altyapısı **zaten
 
 | Kitap bölümü | DMCShop'ta nerede |
 |---|---|
-| **Bölüm 4 — Kurulum (Docker)** | `scripts/docker-compose.yml` — SQL Server 2025 RTM-CU4 container |
+| **Bölüm 4 — Kurulum (Docker)** | `scripts/docker-compose.yml` — SQL Server 2025 CU8 container |
 | **Bölüm 6 — Optimized Locking** | DMCShop'un `shop.[order]` + `order_line` yazma yolları locking kontrastını gösterir (Workshop: SSMS sp_whoisactive ile gözlemle) |
 | **Bölüm 10 — Query Store v3** | `ALTER DATABASE dmcshop SET QUERY_STORE = ON` (`sql/00-database-create.sql`); `/admin/perf` sayfası (roadmap) |
 
@@ -64,7 +64,7 @@ DMCShop'un 5 senaryosunun her birinin **hangi kitap bölümleriyle birebir konu�
 
 Demo'da gözle göreceğiniz:
 - VECTOR(768) kolonunda saklanan `nomic-embed-text` çıktısı
-- DiskANN approximate kNN — `TOP_N = 5` parametre, CTE wrap (RTM-CU4 syntax'ı, kitap bölüm 23 erratası olarak not edildi)
+- DiskANN approximate kNN — `TOP_N = 5` parametre, CTE wrap (CU8'de de geçerli, kitap bölüm 23 erratası olarak not edildi)
 - Aynı sorgu LIKE ile yan panelde — anlamsal vs lexical kontrast
 
 ### `/asistan` — RAG asistan
@@ -93,7 +93,7 @@ Demo'da:
 **İlgili bölümler**: 2 + 21 + 23 (üç bölüm birlikte)
 
 Demo'da:
-- .NET'te vector centroid hesabı (RTM-CU4'te VECTOR AVG aggregate'i public yok)
+- .NET'te vector centroid hesabı (VECTOR AVG aggregate'i public yok; CU8'de de yok, Msg 8117)
 - `VECTOR_SEARCH` + `graph.purchased` social proof subquery
 - Hibrit skor = `distance + 1/(1+social)`
 

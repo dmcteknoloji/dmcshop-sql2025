@@ -23,7 +23,8 @@ public sealed class VectorSearchService(DMCShopDbContext db, IEmbeddingProvider 
         var vectorJson = ToVectorLiteral(queryVector);
         var column = ColumnFor(provider.Name);
 
-        // SQL Server 2025 RTM-CU4 notu:
+        // SQL Server 2025 notu (CU4'te yakalandi, CU8 / 17.0.4075.5 uzerinde
+        // 2026-09-04'te yeniden olculdu, davranis ayni):
         //   - VECTOR_SEARCH'ün ürettiği kolonlara dış SELECT'ten doğrudan
         //     join içinde referans verirken kolon adı bulunamıyor; CTE
         //     üzerinden okumak güvenli.
