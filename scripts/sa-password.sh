@@ -8,7 +8,7 @@
 #   2) scripts/.env icinde varsa oradan okur
 #   3) Yoksa rastgele uretir ve scripts/.env dosyasina (0600) yazar
 #
-# Neden: onceki varsayilan (`dmcShop_2026!Demo`) bu PUBLIC depoda yaziliydi.
+# Neden: onceki surumde sabit bir varsayilan parola bu PUBLIC depoda yaziliydi.
 # Herkesin bildigi bir parolayla SQL Server ayaga kalkiyordu ve ayni deger
 # appsettings.json icindeki baglanti dizesinde de duruyordu.
 #

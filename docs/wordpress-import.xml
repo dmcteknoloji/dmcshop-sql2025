@@ -52,7 +52,7 @@
 
 <p>SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi <strong>aynı veritabanı motorunda, aynı <code>SELECT</code> içinde, aynı yedeklemenin altında</strong> çalışıyor.</p>
 
-<p>Bunu somut bir örnekle göstermek için <strong>DMCShop</strong>'u geliştirdik: 50.000+ ürünlük gerçek ölçekli bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, <strong>açık kaynak (MIT)</strong> bir referans uygulaması.</p>
+<p>Bunu somut bir örnekle göstermek için <strong>DMCShop</strong>'u geliştirdik: kurumsal ölçeğe kadar (50.000 ürün) büyüyebilen bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, <strong>açık kaynak (MIT)</strong> bir referans uygulaması.</p>
 
 <ul>
   <li>🔗 <strong>Canlı demo:</strong> <a href="https://demo.dmcteknoloji.com" target="_blank" rel="noopener">demo.dmcteknoloji.com</a></li>
@@ -97,12 +97,12 @@
     <tr><td>Sipariş satırı</td><td>451.202</td></tr>
     <tr><td>Cihaz</td><td>4.080</td></tr>
     <tr><td>Tespit edilen fraud ring</td><td>~1.000</td></tr>
-    <tr><td>Vektör embedding</td><td>50.000+ (<code>nomic-embed-text</code>, 768 boyut, DiskANN cosine)</td></tr>
+    <tr><td>Vektör embedding</td><td>50.000+ (<code>bge-m3</code>, 1024 boyut, DiskANN cosine)</td></tr>
   </tbody>
 </table>
 </figure>
 
-<p>Teknoloji yığını: <strong>.NET 10</strong>, <strong>Blazor Server</strong>, <strong>EF Core 10</strong>, embedding ve sohbet için <strong>Ollama</strong> (<code>nomic-embed-text</code> + <code>qwen2.5:3b-instruct</code>), tek Azure B4ms VM (4 vCPU / 16 GB) üzerinde canlı; aynı yığın local <code>docker-compose</code> ile birebir çalışıyor.</p>
+<p><em>Yukarıdaki sayılar depodaki kurumsal ölçek verisine ait (<code>sql/30-33</code>). Canlı demo 120 ürünlük vitrin kataloğuyla çalışıyor, embedding sayısı da 120.</em></p><p>Teknoloji yığını: <strong>.NET 10</strong>, <strong>Blazor Server</strong>, <strong>EF Core 10</strong>, embedding ve sohbet için <strong>Ollama</strong> (<code>bge-m3</code> + <code>qwen2.5:3b-instruct</code>), tek Azure D2s_v5 VM (2 vCPU / 8 GB) üzerinde canlı; aynı yığın local <code>docker-compose</code> ile birebir çalışıyor.</p>
 
 <h2>Beş senaryo, tek veritabanı</h2>
 
@@ -111,14 +111,14 @@
 <p>Kullanıcı "rahat ergonomik klavye" yazdığında, kelime eşleşmesi (<code>LIKE</code>) çoğu zaman sıfır sonuç döner. Anlamsal arama ise ergonomik ofis ürünlerini — mouse pad, MX Master mouse, rahat ayakkabı — semantik uzayda yakın olduğu için getirir.</p>
 
 <pre><code>USE dmcshop;
-DECLARE @q VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+DECLARE @q VECTOR(1024) = AI_GENERATE_EMBEDDINGS(
     N'rahat ergonomik klavye' USE MODEL ollama_embed_text
 );
 
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @q,
         METRIC     = 'cosine',
         TOP_N      = 5)
@@ -173,7 +173,7 @@ ORDER BY co_buyer_count DESC;</code></pre>
 
 <p>En ileri senaryo: müşterinin son siparişlerinin embedding centroid'i hesaplanır, <code>VECTOR_SEARCH</code> ile benzer ürünler bulunur, ardından <code>GRAPH MATCH</code> ile bu ürünlerin sosyal kanıtı (kaç kişi birlikte aldı) skora katılır. Hibrit skor = <code>mesafe + 1/(1+sosyal)</code>. Anlamsal benzerlik ve davranışsal sinyal <strong>tek sorguda</strong> birleşir.</p>
 
-<h2>Üretimden çıkan üç gerçek not (RTM-CU4)</h2>
+<h2>Üretimden çıkan üç gerçek not (RTM-CU8)</h2>
 
 <p>Belgelerin anlatmadığı, sahada öğrenilen nüanslar — workshop'larda en çok soru alan kısım:</p>
 
@@ -187,7 +187,7 @@ ORDER BY co_buyer_count DESC;</code></pre>
 
 <h2>Mimari: üç katman, tek VM</h2>
 
-<p>DMCShop tek bir Azure B4ms VM üzerinde (4 vCPU / 16 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:</p>
+<p>DMCShop tek bir Azure D2s_v5 VM üzerinde (2 vCPU / 8 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:</p>
 
 <pre><code>git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
 cd dmcshop-sql2025
@@ -267,7 +267,7 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295</code></pre>
     </wp:postmeta>
     <wp:postmeta>
       <wp:meta_key><![CDATA[_aioseo_og_description]]></wp:meta_key>
-      <wp:meta_value><![CDATA[50.000+ ürünlük açık kaynak referans uygulama DMCShop ile SQL Server 2025'in vector, graph ve RAG özelliklerini uçtan uca gösterdik.]]></wp:meta_value>
+      <wp:meta_value><![CDATA[Kurumsal ölçekli açık kaynak referans uygulama DMCShop ile SQL Server 2025'in vector, graph ve RAG özelliklerini uçtan uca gösterdik.]]></wp:meta_value>
     </wp:postmeta>
     <wp:postmeta>
       <wp:meta_key><![CDATA[_aioseo_twitter_title]]></wp:meta_key>

@@ -183,3 +183,21 @@ dotnet list package --vulnerable
 ```
 
 Azure Defender for Cloud → Container vulnerabilities.
+
+## Sızmış varsayılan parola hakkında
+
+Deponun ilk sürümlerinde kurulum betiklerinde sabit bir SA parolası vardı ve depo
+herkese açık. Parola yedi commit'te, on dosyada geçti.
+
+Durum ölçüldü ve şöyle kapatıldı:
+
+- Parola **döndürüldü**. Kurulum artık her seferinde rastgele üretiyor
+  (`scripts/sa-password.sh`, `infra/deploy.sh`), canlı sunucuda farklı bir değer
+  kullanılıyor ve eski parolayla giriş denemesi reddediliyor. Ölçülerek doğrulandı.
+- Bugünkü ağaçta parola metni **hiçbir dosyada geçmiyor**, açıklama satırlarında bile.
+- Git **geçmişi yeniden yazılmadı**. Yazmak mevcut bütün klonları ve çatalları
+  bozar, üstelik sızmış bir sırrı geçmişten silmek onu güvenli yapmaz: doğru
+  karşılık döndürmektir ve döndürüldü.
+
+Aynı durumla karşılaşırsanız sıra şudur: önce döndür, sonra ağaçtan temizle,
+geçmişi yeniden yazmayı yalnızca sır hâlâ geçerliyse ve döndürülemiyorsa düşün.

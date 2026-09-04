@@ -20,7 +20,7 @@ set -euo pipefail
 : "${DMCSHOP_NAME_PREFIX:=dmcshop}"
 : "${DMCSHOP_VM_SIZE:=Standard_B2ms}"
 # SA parolasi: env ile verilmezse HER DAGITIMDA rastgele uretilir.
-# Onceki varsayilan (`dmcShop_2026!Demo`) bu PUBLIC depoda yaziliydi; yani
+# Onceki surumde sabit bir varsayilan parola bu PUBLIC depoda yaziliydi; yani
 # herkesin bildigi bir parolayla SQL Server ayaga kalkiyordu. Uretilen parola
 # dagitim sonunda ekrana basilir ve VM'de /opt/dmcshop/.sa-password'a yazilir.
 : "${DMCSHOP_SA_PASSWORD:=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)Aa1!}"

@@ -31,7 +31,7 @@ Bir e-ticaret platformunda modern yapay zekâ özelliklerini hayata geçirmek is
 
 SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi **aynı veritabanı motorunda, aynı `SELECT` içinde, aynı yedeklemenin altında** çalışıyor.
 
-Bunu somut bir örnekle göstermek için **DMCShop**'u geliştirdik: 50.000+ ürünlük gerçek ölçekli bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, **açık kaynak (MIT)** bir referans uygulaması.
+Bunu somut bir örnekle göstermek için **DMCShop**'u geliştirdik: kurumsal ölçeğe kadar (50.000 ürün) büyüyebilen bir e-ticaret kataloğu üzerinde anlamsal arama, ürün önerisi, RAG asistanı ve fraud ring tespitini uçtan uca çalıştıran, **açık kaynak (MIT)** bir referans uygulaması.
 
 🔗 **Canlı demo:** [demo.dmcteknoloji.com](https://demo.dmcteknoloji.com)
 🔗 **Kaynak kod:** [github.com/dmcteknoloji/dmcshop-sql2025](https://github.com/dmcteknoloji/dmcshop-sql2025)
@@ -67,9 +67,11 @@ DMCShop, SQL Server 2025'in `VECTOR(N) + DiskANN` ve `GRAPH MATCH + SHORTEST_PAT
 | Sipariş satırı | 451.202 |
 | Cihaz | 4.080 |
 | Tespit edilen fraud ring | ~1.000 |
-| Vektör embedding | 50.000+ (`nomic-embed-text`, 768 boyut, DiskANN cosine) |
+| Vektör embedding | 50.000+ (`bge-m3`, 1024 boyut, DiskANN cosine) |
 
-Teknoloji yığını: **.NET 10**, **Blazor Server**, **EF Core 10**, embedding ve sohbet için **Ollama** (`nomic-embed-text` + `qwen2.5:3b-instruct`), tek Azure B4ms VM (4 vCPU / 16 GB) üzerinde canlı; aynı yığın local `docker-compose` ile birebir çalışıyor.
+*Yukarıdaki sayılar depodaki kurumsal ölçek verisine ait (`sql/30-33`). Canlı demo 120 ürünlük vitrin kataloğuyla çalışıyor, embedding sayısı da 120.*
+
+Teknoloji yığını: **.NET 10**, **Blazor Server**, **EF Core 10**, embedding ve sohbet için **Ollama** (`bge-m3` + `qwen2.5:3b-instruct`), tek Azure D2s_v5 VM (2 vCPU / 8 GB) üzerinde canlı; aynı yığın local `docker-compose` ile birebir çalışıyor.
 
 ---
 
@@ -81,14 +83,14 @@ Kullanıcı "rahat ergonomik klavye" yazdığında, kelime eşleşmesi (`LIKE`) 
 
 ```sql
 USE dmcshop;
-DECLARE @q VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+DECLARE @q VECTOR(1024) = AI_GENERATE_EMBEDDINGS(
     N'rahat ergonomik klavye' USE MODEL ollama_embed_text
 );
 
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @q,
         METRIC     = 'cosine',
         TOP_N      = 5)
@@ -150,7 +152,7 @@ En ileri senaryo: müşterinin son siparişlerinin embedding centroid'i hesaplan
 
 ---
 
-### Üretimden çıkan üç gerçek not (RTM-CU4)
+### Üretimden çıkan üç gerçek not (RTM-CU8)
 
 Belgelerin anlatmadığı, sahada öğrenilen nüanslar — workshop'larda en çok soru alan kısım:
 
@@ -164,7 +166,7 @@ Bu tür detaylar, "demo'da çalışıyor"dan "üretimde çalışıyor"a geçişi
 
 ### Mimari: üç katman, tek VM
 
-DMCShop tek bir Azure B4ms VM üzerinde (4 vCPU / 16 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:
+DMCShop tek bir Azure D2s_v5 VM üzerinde (2 vCPU / 8 GB) çalışır; HTTPS için Caddy 2 + Let's Encrypt, otomatik sertifika yenileme. Tüm kurulum tek komutla otomatize:
 
 ```bash
 git clone https://github.com/dmcteknoloji/dmcshop-sql2025.git
@@ -213,7 +215,7 @@ SQL Server 2025 bu denklemi tek motora indiriyor. Kanıtlamak için açık kayna
 
 🛒 DMCShop — 50.000+ ürünlük gerçek ölçekli bir e-ticaret kataloğu. Üzerinde 4 senaryo, hepsi AYNI veritabanında:
 
-🔍 Semantik arama → VECTOR(768) + DiskANN index
+🔍 Semantik arama → VECTOR(1024) + DiskANN index
 🤖 RAG asistanı → embed → VECTOR_SEARCH → chat, uçtan uca T-SQL içinde, streaming yanıt
 🕵️ Fraud ring tespiti → GRAPH MATCH + SHORTEST_PATH (dolandırıcılık zinciri okunabilir bir metne dönüşüyor)
 🛍️ "Bunu alanlar bunu da aldı" → graph 2-hop, tek SELECT
@@ -227,7 +229,7 @@ Tamamı açık kaynak (MIT), canlı demo ayakta, tek komutla kuruluyor:
 🔗 Demo: demo.dmcteknoloji.com
 🔗 Kod: github.com/dmcteknoloji/dmcshop-sql2025
 
-Stack: .NET 10 · Blazor Server · EF Core 10 · Ollama (nomic-embed-text + qwen2.5)
+Stack: .NET 10 · Blazor Server · EF Core 10 · Ollama (bge-m3 + qwen2.5)
 
 SQL Server VECTOR'ü mü yoksa ayrı bir vektör veritabanını mı tercih edersiniz — hangi senaryoda hangisi? Yorumlarda konuşalım. 👇
 
@@ -267,7 +269,7 @@ Neo4j yok. Pinecone yok. Ayrı RAG servisi yok.
 **3/8**
 🔍 Semantik arama
 
-VECTOR(768) tipi + DiskANN index.
+VECTOR(1024) tipi + DiskANN index.
 
 "rahat ergonomik klavye" → LIKE sıfır sonuç döner; vektör arama ergonomik ofis ürünlerini semantik yakınlıkla getirir.
 
