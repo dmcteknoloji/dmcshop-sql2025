@@ -20,6 +20,7 @@
        yalnizca test projesine gorunur. -->
   <ItemGroup>
     <InternalsVisibleTo Include="DMCShop.Tests.Unit" />
+    <InternalsVisibleTo Include="DMCShop.Web" />
   </ItemGroup>
 
 </Project>

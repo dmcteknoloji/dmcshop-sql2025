@@ -232,16 +232,24 @@
                 {
                     if (active.Phase == "retrieval") active.Phase = "streaming";
                     sb.Append(chunk.TokenChunk);
-                    active.AccumulatedText = sb.ToString();
+                    // Akis sirasinda da suzuyoruz ki kullanici once "#1083"
+                    // gorup sonra kaybolmasin.
+                    active.AccumulatedText =
+                        RagAssistantService.StripStructuredData(sb.ToString());
                 }
                 if (chunk.IsFinal) active.Phase = "done";
 
                 await InvokeAsync(StateHasChanged);
             }
 
+            // Akis sirasinda ham token gosteriliyor, ama kalici cevaba
+            // yazilandan once urun numarasi ve fiyat temizleniyor. Servisin
+            // kendi StreamAsync'i de ayni temizligi yapiyor; burasi arayuzun
+            // biriktirdigi metin oldugu icin ayrica gerekiyordu, aksi halde
+            // ekranda "#1083 ... 450,00 ₺" kaliyordu.
             var finalAnswer = new RagAnswer(
                 active.Question,
-                active.AccumulatedText,
+                RagAssistantService.StripStructuredData(active.AccumulatedText),
                 active.UsedProducts ?? Array.Empty<ProductHit>(),
                 active.RetrievalLatencyMs,
                 active.LlmLatencyMs,
