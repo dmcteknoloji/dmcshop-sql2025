@@ -43,6 +43,12 @@ services:
     restart: unless-stopped
     ports:
       - "11434:11434"
+    environment:
+      # Varsayilan 5 dakika: model bellekten atiliyor ve gunun ilk ziyaretcisi
+      # 18 saniye bekliyordu (olculdu). -1 modeli bellekte tutar.
+      # Bedeli surekli ayrilmis ~2,5 GB; bu yuzden SQL Server'a da tavan
+      # konuldu, bkz. sql/09-server-memory.sql.
+      OLLAMA_KEEP_ALIVE: "-1"
     volumes:
       - ollama-models:/root/.ollama
     healthcheck:

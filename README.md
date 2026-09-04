@@ -161,6 +161,12 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295
 
 `setup.sh` idempotent: container + model + schema + seed + embedding + DiskANN index hepsini yönetir.
 
+Tek makinede SQL Server ve Ollama birlikte çalıştığı için bellek paylaştırılmış durumda:
+`OLLAMA_KEEP_ALIVE=-1` sohbet modelini bellekte tutuyor (yaklaşık 2,5 GB) ve buna karşılık
+`sql/09-server-memory.sql` SQL Server'a 3 GB tavan koyuyor. Tavan olmadan ikisi aynı belleği
+ister ve OOM killer genelde önce veritabanını düşürür. Daha büyük makinede iki değeri de
+büyütün.
+
 - **Adım adım kurulum + sorun giderme**: [docs/01-getting-started.md](docs/01-getting-started.md)
 - **Workshop handbook (60-90 dk senaryo turu + T-SQL kod örnekleri)**: [docs/handbook.md](docs/handbook.md)
 

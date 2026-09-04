@@ -54,6 +54,7 @@ for script in \
     "02-schema-graph.sql" \
     "03-schema-vector.sql" \
     "04-schema-ops.sql" \
+    "09-server-memory.sql" \
     "05-seed-shop.sql" \
     "06-seed-graph.sql" \
     "07-seed-vector.sql"

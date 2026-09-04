@@ -174,6 +174,12 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295
 `setup.sh` is idempotent and handles containers, models, schema, seed, embeddings and the
 DiskANN index.
 
+SQL Server and Ollama share one machine, so memory is divided on purpose.
+`OLLAMA_KEEP_ALIVE=-1` keeps the chat model resident, which costs about 2.5 GB, and
+`sql/09-server-memory.sql` caps SQL Server at 3 GB in return. Without the cap both processes
+claim the same memory and the OOM killer usually takes the database first. Raise both numbers
+on a larger machine.
+
 **About the SA password.** There is no default password in this repository. On first run
 `scripts/sa-password.sh` generates a random one and stores it in `scripts/.env` with mode
 `0600`. That file is git-ignored and Docker Compose reads it automatically. Set
