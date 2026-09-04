@@ -1,0 +1,76 @@
+name: Haftalik kontrol
+
+# Iki isi haftalik yapar:
+#  1) Entegrasyon testleri: gercek SQL Server 2025 konteynerine karsi kosar.
+#     Normal CI'da yok cunku imaj birkac GB; ama o testlerin amaci bir sonraki
+#     CU'nun motor davranisini degistirmesini yakalamak ve bunun icin duzenli
+#     kosmasi gerekiyor.
+#  2) Demo saglik kontrolu: sekiz sayfa ve iki API ucu.
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"      # her pazartesi 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  entegrasyon:
+    name: Entegrasyon testleri (gercek SQL Server 2025)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: testler
+        run: dotnet test app/tests/DMCShop.Tests.Integration -c Release --verbosity normal
+
+  demo-saglik:
+    name: Demo saglik kontrolu
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: sayfalar
+        run: |
+          hata=0
+          for yol in / /katalog /search /bana-ozel /asistan /fraud /harita /olcum; do
+            kod=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://demo.dmcteknoloji.com$yol")
+            if [ "$kod" != "200" ]; then
+              echo "::error::demo.dmcteknoloji.com$yol -> $kod"
+              hata=1
+            else
+              echo "ok  $yol"
+            fi
+          done
+          exit $hata
+
+      - name: retrieval ucu gercekten sonuc donduruyor mu
+        run: |
+          # Sayfanin acilmasi yetmiyor: arama bos donerse de sayfa 200 verir.
+          adet=$(curl -s --max-time 60 \
+            "https://demo.dmcteknoloji.com/api/retrieve?q=kahve&mode=hybrid&k=3" \
+            | grep -o '"productId"' | wc -l | tr -d ' ')
+          echo "donen urun: $adet"
+          if [ "$adet" -lt 1 ]; then
+            echo "::error::retrieval bos donuyor"
+            exit 1
+          fi
+
+      - name: sertifika suresi
+        run: |
+          gun=$(echo | openssl s_client -servername demo.dmcteknoloji.com \
+                  -connect demo.dmcteknoloji.com:443 2>/dev/null \
+                | openssl x509 -noout -enddate \
+                | cut -d= -f2 \
+                | xargs -I{} date -d "{}" +%s)
+          simdi=$(date +%s)
+          kalan=$(( (gun - simdi) / 86400 ))
+          echo "sertifika $kalan gun sonra doluyor"
+          if [ "$kalan" -lt 10 ]; then
+            echo "::error::Let's Encrypt yenilemesi calismamis olabilir"
+            exit 1
+          fi

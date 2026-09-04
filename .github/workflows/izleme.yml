@@ -1,0 +1,43 @@
+name: Demo izleme
+
+# Yarim saatte bir demoyu kontrol eder. Kampanya doneminde sekiz gonderi bu
+# adrese trafik gonderiyor ve dusmesi halinde kimsenin haberi olmuyordu.
+# Basarisiz kosu GitHub tarafindan e-posta ile bildirilir.
+#
+# Not: zamanlanmis is akislari, depoda 60 gun hicbir hareket olmazsa GitHub
+# tarafindan durdurulur. Depoya commit girdigi surece calisir.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: demo-izleme
+  cancel-in-progress: true
+
+jobs:
+  kontrol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: ana sayfa ve olcum
+        run: |
+          hata=0
+          for yol in / /olcum; do
+            kod=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "https://demo.dmcteknoloji.com$yol")
+            sure=$(curl -s -o /dev/null -w '%{time_total}' --max-time 25 "https://demo.dmcteknoloji.com$yol")
+            echo "$yol -> $kod (${sure}s)"
+            [ "$kod" = "200" ] || { echo "::error::$yol dondurdu: $kod"; hata=1; }
+          done
+          exit $hata
+
+      - name: arama gercekten sonuc donduruyor mu
+        run: |
+          # Sayfa acilsa bile arama bos donebilir; asil kontrol bu.
+          adet=$(curl -s --max-time 45 \
+            "https://demo.dmcteknoloji.com/api/retrieve?q=kahve&mode=hybrid&k=3" \
+            | grep -o '"productId"' | wc -l | tr -d ' ')
+          echo "donen urun: $adet"
+          [ "$adet" -ge 1 ] || { echo "::error::arama bos donuyor"; exit 1; }
