@@ -15,6 +15,8 @@
   <img alt="Scale" src="https://img.shields.io/badge/ölçek-50K%20ürün%20·%20100K%20sipariş-A4262C?style=flat-square">
 </p>
 
+<p align="center"><strong>Türkçe</strong> · <a href="README.en.md">English</a></p>
+
 > **DMCShop**, SQL Server 2025'in yerleşik `VECTOR(N) + DiskANN` ve `GRAPH MATCH + SHORTEST_PATH`
 > özelliklerinin üretim senaryolarındaki karşılığını gösteren açık kaynak referans uygulamadır.
 > Klasik bir e-ticaret kataloğu üzerinde **anlamsal arama**, **ürün önerisi**, **RAG asistan**
@@ -232,7 +234,7 @@ dmcshop-sql2025/
 | Custom domain + Let's Encrypt (demo.dmcteknoloji.com) | ✓ Tamam | 2026-05-18 |
 | NSG SSH daraltma + SA password rotation + retention cron | ✓ Tamam | 2026-05-18 |
 | Container Apps autoscale (refaktör) | Planlı  | —           |
-| GitHub Actions CI/CD              | Planlı  | —           |
+| GitHub Actions CI (build + test + guvenlik denetimi) | ✓ Tamam | 2026-09-04 |
 
 ---
 

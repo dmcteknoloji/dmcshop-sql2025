@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    name: Build ve birim testleri
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: restore
+        run: dotnet restore app/DMCShop.slnx
+
+      # TreatWarningsAsErrors acik; uyari birakan degisiklik burada duruyor.
+      - name: build
+        run: dotnet build app/DMCShop.slnx -c Release --no-restore
+
+      # Entegrasyon testleri Testcontainers ile SQL Server 2025 imaji indiriyor
+      # (birkac GB). CI'da yalnizca birim testleri kosuyor; entegrasyon testleri
+      # yerelde `dotnet test app/tests/DMCShop.Tests.Integration` ile calisir.
+      - name: birim testleri
+        run: dotnet test app/tests/DMCShop.Tests.Unit -c Release --no-build --verbosity normal
+
+  audit:
+    name: Bagimlilik guvenlik denetimi
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Acikli paket girdiginde build zaten NU1903 ile duruyor (NuGet audit),
+      # bu adim listeyi okunur bicimde raporluyor.
+      - name: acikli paketler
+        run: |
+          dotnet restore app/DMCShop.slnx
+          dotnet list app/DMCShop.slnx package --vulnerable --include-transitive 2>&1 | tee audit.txt
+          if grep -q "has the following vulnerable packages" audit.txt; then
+            echo "::error::Acikli paket bulundu"
+            exit 1
+          fi
+
+  sql-lint:
+    name: SQL betikleri
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Depoda sabit parola birakilmasi bir kez yasandi; tekrarini burada yakala.
+      - name: sabit parola taramasi
+        run: |
+          if grep -rInE 'Password=[^;$"]{6,}' --include='*.json' --include='*.yml' --include='*.sh' \
+               --exclude-dir=.git . | grep -v '__DMCSHOP_SA_PASSWORD__' | grep -v '\${'; then
+            echo "::error::Sabit parola bulundu"
+            exit 1
+          fi
+          echo "Sabit parola yok"
