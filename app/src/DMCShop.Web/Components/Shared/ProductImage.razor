@@ -52,8 +52,30 @@ else
             "Giyim"      => ("#E5C9FF", "#9775FA", "#311B6B"),   // lavender → violet
             "Ev"         => ("#B2F2BB", "#37B24D", "#0E3320"),   // mint → forest
             "Hobi"       => ("#FFC9C9", "#F03E3E", "#5C0E0E"),   // blush → red
-            _            => ("#DEE2E6", "#868E96", "#212529")
+            // Katalogda 100 kategori var, elle boyanmis alti tanesi disindaki
+            // her sey griye dusuyordu. Kategori adindan tureyen sabit bir renk
+            // uretiyoruz: ayni kategori her zaman ayni rengi aliyor.
+            _            => DerivedPalette(CategoryName)
         };
+
+    /// <summary>Kategori adindan deterministik pastel gradient uretir.</summary>
+    private static (string from, string to, string mono) DerivedPalette(string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return ("#DEE2E6", "#868E96", "#212529");
+
+        // FNV-1a: kisa, stabil ve platformdan bagimsiz. string.GetHashCode()
+        // surec basina rastgeleleniyor, kullanilamaz.
+        uint hash = 2166136261;
+        foreach (var ch in category)
+        {
+            hash ^= ch;
+            hash *= 16777619;
+        }
+
+        var hue = (int)(hash % 360);
+        return ($"hsl({hue} 78% 82%)", $"hsl({hue} 62% 48%)", $"hsl({hue} 70% 18%)");
+    }
 
     private string Gradient => $"linear-gradient(135deg, {Palette.from} 0%, {Palette.to} 100%)";
     private string Mono     => Palette.mono;

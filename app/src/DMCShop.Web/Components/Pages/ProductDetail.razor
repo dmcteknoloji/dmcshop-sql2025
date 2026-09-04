@@ -28,9 +28,9 @@ else
 
     <section class="dmc-product-hero">
         <ProductImage ProductId="product.ProductId"
-                      Name="product.Name"
-                      CategoryName="categoryName"
-                      Sku="product.Sku"
+                      Name="@product.Name"
+                      CategoryName="@categoryName"
+                      Sku="@product.Sku"
                       Variant="hero" />
 
         <div class="dmc-product-info">
@@ -120,8 +120,8 @@ else
                 {
                     <a href="urun/@r.RecommendedProductId" class="dmc-pcard">
                         <ProductImage ProductId="r.RecommendedProductId"
-                                      Name="r.RecommendedName"
-                                      CategoryName="r.CategoryName"
+                                      Name="@r.RecommendedName"
+                                      CategoryName="@r.CategoryName"
                                       Variant="card" />
                         <div class="dmc-pcard-body">
                             <div class="dmc-pcard-cat">@r.CategoryName</div>

@@ -82,7 +82,7 @@ else if (items is not null && context is not null)
             @foreach (var r in items)
             {
                 <a href="urun/@r.ProductId" class="dmc-pcard">
-                    <ProductImage ProductId="r.ProductId" Name="r.Name" CategoryName="r.CategoryName" Sku="r.Sku" Variant="card" />
+                    <ProductImage ProductId="r.ProductId" Name="@r.Name" CategoryName="@r.CategoryName" Sku="@r.Sku" Variant="card" />
                     <div class="dmc-pcard-body">
                         <div class="dmc-pcard-cat">@r.CategoryName</div>
                         <h3 class="dmc-pcard-name">@r.Name</h3>

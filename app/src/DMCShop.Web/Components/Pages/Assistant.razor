@@ -80,7 +80,7 @@
                     @foreach (var h in active.UsedProducts)
                     {
                         <a href="urun/@h.ProductId" class="dmc-pcard">
-                            <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                            <ProductImage ProductId="h.ProductId" Name="@h.Name" CategoryName="@h.CategoryName" Sku="@h.Sku" Variant="card" />
                             <div class="dmc-pcard-body">
                                 <div class="dmc-pcard-cat">@h.CategoryName</div>
                                 <h3 class="dmc-pcard-name">@h.Name</h3>
@@ -108,7 +108,7 @@
                 @foreach (var h in t.UsedProducts)
                 {
                     <a href="urun/@h.ProductId" class="dmc-pcard">
-                        <ProductImage ProductId="h.ProductId" Name="h.Name" CategoryName="h.CategoryName" Sku="h.Sku" Variant="card" />
+                        <ProductImage ProductId="h.ProductId" Name="@h.Name" CategoryName="@h.CategoryName" Sku="@h.Sku" Variant="card" />
                         <div class="dmc-pcard-body">
                             <div class="dmc-pcard-cat">@h.CategoryName</div>
                             <h3 class="dmc-pcard-name">@h.Name</h3>

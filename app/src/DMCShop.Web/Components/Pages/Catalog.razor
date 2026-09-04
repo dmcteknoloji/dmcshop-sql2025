@@ -73,7 +73,7 @@
                 @foreach (var p in pageItems)
                 {
                     <a href="urun/@p.ProductId" class="dmc-pcard">
-                        <ProductImage ProductId="p.ProductId" Name="p.Name" CategoryName="p.CategoryName" Sku="p.Sku" Variant="card" />
+                        <ProductImage ProductId="p.ProductId" Name="@p.Name" CategoryName="@p.CategoryName" Sku="@p.Sku" Variant="card" />
                         <div class="dmc-pcard-body">
                             <div class="dmc-pcard-cat">@p.CategoryName</div>
                             <h3 class="dmc-pcard-name">@p.Name</h3>

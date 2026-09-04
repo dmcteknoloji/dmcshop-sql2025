@@ -40,7 +40,7 @@
             @foreach (var p in featured)
             {
                 <a href="urun/@p.Id" class="dmc-pcard">
-                    <ProductImage ProductId="p.Id" Name="p.Name" CategoryName="p.Category" Sku="p.Sku" Variant="card" />
+                    <ProductImage ProductId="p.Id" Name="@p.Name" CategoryName="@p.Category" Sku="@p.Sku" Variant="card" />
                     <div class="dmc-pcard-body">
                         <div class="dmc-pcard-cat">@p.Category</div>
                         <h3 class="dmc-pcard-name">@p.Name</h3>
