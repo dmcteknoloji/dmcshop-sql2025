@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +17,13 @@ public sealed class RagAssistantService(
     IChatProvider chat,
     IEmbeddingProvider embed)
 {
+    /// <summary>
+    /// Fiyati bilerek tr-TR ile bicimlendiriyoruz. Sunucunun kulturu en-US
+    /// oldugu icin baglama "3,200.00" gidiyordu; model de onu oldugu gibi
+    /// kopyaladigi icin Turkce cevapta Ingiliz ayraci gorunuyordu.
+    /// </summary>
+    private static readonly CultureInfo TrCulture = CultureInfo.GetCultureInfo("tr-TR");
+
     private const string SystemPrompt = """
         Sen DMCShop'un ürün asistanısın. Aşağıdaki davranış kuralları KESİN:
 
@@ -24,7 +32,8 @@ public sealed class RagAssistantService(
            karakter kombinasyonu (örn. selectorselam, mergeword) yazma.
         3. Yanıt kısa olsun (en fazla 3-4 cümle). Madde işareti ya da uzun açıklama yok.
         4. Her ürünü #ürün_no formatıyla referans ver (örn. #1041).
-        5. Para birimi: ₺ (Türk Lirası). Fiyat varsa "X.XXX,XX ₺" formatıyla yaz.
+        5. Fiyatı bağlamda yazdığı gibi, rakamlarıyla kopyala ve sonuna ₺ koy.
+           Fiyat uydurma, yuvarlama, yerine harf ya da yer tutucu yazma.
         6. Eğer bağlamda hiç ürün yoksa veya hiçbiri kullanıcı sorusuyla ilgili değilse,
            "Bu sorgu için bağlamda uygun ürün bulamadım" de.
         """;
@@ -38,7 +47,7 @@ public sealed class RagAssistantService(
         rSw.Stop();
 
         var contextChunks = hits.Select(h =>
-            $"[#{h.ProductId}] {h.Name} — {h.CategoryName} — {h.Price:N2} ₺. {h.Preview}");
+            $"[#{h.ProductId}] {h.Name} — {h.CategoryName} — {h.Price.ToString("N2", TrCulture)} ₺. {h.Preview}");
 
         var lSw = Stopwatch.StartNew();
         var chatResult = await chat.CompleteAsync(SystemPrompt, question, contextChunks, cancellationToken);
@@ -92,7 +101,7 @@ public sealed class RagAssistantService(
             IsFinal: false);
 
         var contextChunks = hits.Select(h =>
-            $"[#{h.ProductId}] {h.Name} — {h.CategoryName} — {h.Price:N2} ₺. {h.Preview}");
+            $"[#{h.ProductId}] {h.Name} — {h.CategoryName} — {h.Price.ToString("N2", TrCulture)} ₺. {h.Preview}");
 
         var accumulated = new StringBuilder();
         var lSw = Stopwatch.StartNew();
