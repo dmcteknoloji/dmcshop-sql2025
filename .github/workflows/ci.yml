@@ -27,9 +27,10 @@ jobs:
       - name: build
         run: dotnet build app/DMCShop.slnx -c Release --no-restore
 
-      # Entegrasyon testleri Testcontainers ile SQL Server 2025 imaji indiriyor
-      # (birkac GB). CI'da yalnizca birim testleri kosuyor; entegrasyon testleri
-      # yerelde `dotnet test app/tests/DMCShop.Tests.Integration` ile calisir.
+      # Entegrasyon testleri gercek bir SQL Server 2025 CU8 konteyneri ayaga
+      # kaldiriyor ve imaj birkac GB. CI'da yalnizca birim testleri kosuyor.
+      # Entegrasyon icin yerelde:
+      #   dotnet test app/tests/DMCShop.Tests.Integration
       - name: birim testleri
         run: dotnet test app/tests/DMCShop.Tests.Unit -c Release --no-build --verbosity normal
 

@@ -31,14 +31,14 @@
 
 The UI is in Turkish. Every scenario page maps to a T-SQL script under `sql/`, so the SQL
 Server features are readable without speaking Turkish. This file documents the whole project
-in English; the table below tells you which script backs which screen.
+in English. The table below tells you which script backs which screen.
 
 ---
 
 ## Why this repository exists
 
 SQL Server 2025 moved vector search and graph traversal into the engine. Most material about
-it stops at a syntax sample. This repository answers the next question: what does it take to
+it stops at a syntax sample. This repository answers the next question. What does it take to
 run those features in a real application, and where do they push back?
 
 Everything here was measured on a running instance, including the parts that did not go
@@ -90,7 +90,7 @@ returns nothing for most natural language queries.
 
 Three layers on a single VM (Azure, westeurope). The local docker-compose stack is identical.
 
-### Scenario 2 — RAG assistant flow
+### Scenario 2: RAG assistant flow
 
 ```mermaid
 sequenceDiagram
@@ -119,7 +119,7 @@ sequenceDiagram
     W->>L: INSERT query_log (provider, latency, used_ids)
 ```
 
-### Scenario 3 — Fraud ring detection
+### Scenario 3: fraud ring detection
 
 ```mermaid
 flowchart LR
@@ -136,7 +136,7 @@ flowchart LR
     M --> UI
 ```
 
-### Scenario 5 — Vector + graph hybrid, one SELECT
+### Scenario 5: vector and graph hybrid in one SELECT
 
 ```mermaid
 flowchart LR
@@ -176,9 +176,9 @@ DiskANN index.
 
 **About the SA password.** There is no default password in this repository. On first run
 `scripts/sa-password.sh` generates a random one and stores it in `scripts/.env` with mode
-`0600`; that file is git-ignored and Docker Compose reads it automatically. Set
-`DMCSHOP_SA_PASSWORD` yourself if you prefer. Running `docker compose up` without either
-stops with an explicit message rather than falling back to a weak password.
+`0600`. That file is git-ignored and Docker Compose reads it automatically. Set
+`DMCSHOP_SA_PASSWORD` yourself if you prefer. Run `docker compose up` without either and it
+stops with an explicit message. There is no weak fallback to land on.
 
 - Step-by-step setup and troubleshooting: [docs/01-getting-started.md](docs/01-getting-started.md)
 - Workshop handbook, a 60-90 minute tour with T-SQL samples: [docs/handbook.md](docs/handbook.md)
@@ -197,7 +197,7 @@ az login
 Details in [infra/README.md](infra/README.md). Use `./infra/sync.sh` for subsequent code
 updates and `./infra/teardown.sh` to remove everything. `deploy.sh` generates a fresh random
 SA password on every deployment and keeps it in `/etc/dmcshop/web.env` (mode `0600`) on the
-VM; `appsettings.json` carries a placeholder, never a real credential.
+VM. The `appsettings.json` files carry a placeholder, never a real credential.
 
 ---
 
@@ -248,22 +248,28 @@ dmcshop-sql2025/
 ```bash
 dotnet build app/DMCShop.slnx                       # whole solution
 dotnet test  app/tests/DMCShop.Tests.Unit           # 21 unit tests, no database needed
-dotnet test  app/tests/DMCShop.Tests.Integration    # Testcontainers, pulls SQL Server 2025
+dotnet test  app/tests/DMCShop.Tests.Integration    # 9 tests against a real SQL Server 2025
 ```
+
+The integration tests start a SQL Server 2025 CU8 container through Testcontainers and assert
+the three engine behaviours documented below: DML blocked while a DiskANN index exists, no
+`AVG` aggregate over `VECTOR`, and `VECTOR_SEARCH` output needing a CTE before you join to it.
+If a future cumulative update changes any of them, those tests go red and tell you this
+document has gone stale. The image tag is pinned for the same reason the Compose file pins it.
 
 `TreatWarningsAsErrors` is on and NuGet auditing fails the build on a known vulnerable package,
 so a build that succeeds locally also passes CI. GitHub Actions runs the build, the unit tests,
 a dependency audit and a hardcoded-credential scan on every push and pull request.
 
-Integration tests are excluded from CI because Testcontainers downloads a multi-gigabyte SQL
-Server image; run them locally.
+Integration tests stay out of CI because Testcontainers pulls a multi-gigabyte SQL Server
+image. Run those locally.
 
 ---
 
 ## What SQL Server 2025 taught us
 
 Three behaviours worth knowing before you build on this. All three were first hit on RTM-CU4
-and re-measured on CU8 (build 17.0.4075.5) on 2026-09-04; none of them changed.
+and re-measured on CU8 (build 17.0.4075.5) on 2026-09-04. None of them changed.
 
 1. **The `VECTOR` type needs the preview flag.**
    ```sql
@@ -278,7 +284,7 @@ and re-measured on CU8 (build 17.0.4075.5) on 2026-09-04; none of them changed.
 
 3. **`VECTOR_SEARCH` syntax.** The older `TOP (N) WITH APPROXIMATE` form is gone. `TOP_N` is a
    parameter of `VECTOR_SEARCH`, and its output must be wrapped in a CTE before you can join to
-   it; joining directly fails with `Invalid column name`.
+   it. Joining directly fails with `Invalid column name`.
    ```sql
    WITH hits AS (
        SELECT * FROM VECTOR_SEARCH(
@@ -304,7 +310,7 @@ while the page still claimed CU4. The image tag is now pinned.
 [MIT](LICENSE) · © 2026 [Çağlar Özenç](https://www.linkedin.com/in/caglarozenc) and
 [DMC Bilgi Teknolojileri](https://dmcteknoloji.com)
 
-Companion book (Turkish, free): **SQL Server 2025: Herkes İçin, Her Rol İçin** —
-[dmcteknoloji/sql-server-2025-kitap](https://github.com/dmcteknoloji/sql-server-2025-kitap)
+Companion book (Turkish, free): **SQL Server 2025: Herkes İçin, Her Rol İçin**,
+at [dmcteknoloji/sql-server-2025-kitap](https://github.com/dmcteknoloji/sql-server-2025-kitap)
 
 Contact: `iletisim@dmcteknoloji.com`

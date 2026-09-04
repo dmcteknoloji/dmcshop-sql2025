@@ -245,6 +245,10 @@ dmcshop-sql2025/
 
 ## SQL Server 2025'te yakalanan nüanslar
 
+Aşağıdaki üç davranış `app/tests/DMCShop.Tests.Integration` altında gerçek bir SQL Server 2025
+CU8 konteynerine karşı test ediliyor. Bir sonraki CU birini değiştirirse test kırmızı oluyor ve
+bu metnin bayatladığını haber veriyor.
+
 Workshop için kayda değer üç davranış:
 
 1. **VECTOR tipi preview bayrağıyla açılır.** Database scoped configuration:
