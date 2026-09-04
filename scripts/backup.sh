@@ -10,7 +10,12 @@
 
 set -euo pipefail
 
-: "${DMCSHOP_SA_PASSWORD:=dmcShop_2026!Demo}"
+# SA parolasi: ortam -> scripts/.env -> rastgele uret (varsayilan parola YOK).
+# ConnectionStrings__DMCShop da burada export edilir.
+# shellcheck source=scripts/sa-password.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sa-password.sh"
+
+: "${DMCSHOP_SA_PASSWORD:?sa-password.sh source edin veya parolayi verin}"
 : "${BACKUP_DIR:=/backups}"
 : "${RETAIN_DAYS:=7}"
 

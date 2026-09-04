@@ -10,22 +10,26 @@
 #   - sqlcmd (mssql-tools18 veya go-sqlcmd) PATH'te.
 #
 # Ortam değişkenleri:
-#   DMCSHOP_SA_PASSWORD  (varsayılan: dmcShop_2026!Demo)
+#   DMCSHOP_SA_PASSWORD  (verilmezse scripts/.env icinden okunur/uretilir)
 #   DMCSHOP_HOST         (varsayılan: localhost,1433)
 # ============================================================================
 
 set -euo pipefail
+
+# SA parolasi: ortam -> scripts/.env -> rastgele uret (varsayilan parola YOK).
+# ConnectionStrings__DMCShop da burada export edilir.
+# shellcheck source=scripts/sa-password.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sa-password.sh"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SQL_DIR="${REPO_ROOT}/sql"
 
 # 127.0.0.1 — `localhost` DEGIL. Konteyner portu yalnizca IPv4 loopback'e
-# baglaniyor (guvenlik: SA parolasi public depoda oldugu icin 1433 disariya
-# acilmamali). Bazi sunucularda `localhost` once ::1'e (IPv6) cozuluyor ve
+# baglaniyor (1433 disariya acilmamali). Bazi sunucularda `localhost` once ::1'e (IPv6) cozuluyor ve
 # baglanti reddediliyordu — Azure VM'inde birebir yasandi.
 HOST="${DMCSHOP_HOST:-127.0.0.1,1433}"
-PASSWORD="${DMCSHOP_SA_PASSWORD:-dmcShop_2026!Demo}"
+PASSWORD="${DMCSHOP_SA_PASSWORD:?sa-password.sh source edilmedi}"
 
 if ! command -v sqlcmd >/dev/null 2>&1; then
     echo "HATA: sqlcmd bulunamadı. mssql-tools18 veya go-sqlcmd kurun." >&2

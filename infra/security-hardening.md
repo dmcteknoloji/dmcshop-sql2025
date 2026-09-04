@@ -38,7 +38,9 @@ az network nsg rule update \
 
 ## 2 — SA password rotation
 
-Repo'da varsayılan: `dmcShop_2026!Demo`. Production için **mutlaka değiştir**.
+Repo'da varsayılan parola **yok**. `scripts/sa-password.sh` ilk çalıştırmada
+rastgele üretip `scripts/.env` içine (0600) yazar; Azure tarafında `infra/deploy.sh`
+her dağıtımda yeni parola üretir.
 
 ```bash
 # Yeni güçlü password

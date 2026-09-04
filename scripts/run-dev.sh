@@ -7,6 +7,11 @@
 
 set -euo pipefail
 
+# SA parolasi: ortam -> scripts/.env -> rastgele uret (varsayilan parola YOK).
+# ConnectionStrings__DMCShop da burada export edilir.
+# shellcheck source=scripts/sa-password.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sa-password.sh"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 

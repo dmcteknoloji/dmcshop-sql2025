@@ -18,7 +18,10 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"
-      MSSQL_SA_PASSWORD: "${DMCSHOP_SA_PASSWORD:-dmcShop_2026!Demo}"
+      # Varsayilan YOK. Parola scripts/.env icinde durur ve
+      # scripts/sa-password.sh tarafindan bir kez rastgele uretilir.
+      # Tanimsizsa compose burada durur, sessizce zayif parolaya dusmez.
+      MSSQL_SA_PASSWORD: "${DMCSHOP_SA_PASSWORD:?scripts/setup.sh calistirin veya DMCSHOP_SA_PASSWORD verin}"
       MSSQL_COLLATION: "Turkish_100_CI_AS_SC_UTF8"
     volumes:
       - mssql-data:/var/opt/mssql
