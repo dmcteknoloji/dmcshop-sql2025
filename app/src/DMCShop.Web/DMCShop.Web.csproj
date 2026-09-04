@@ -18,4 +18,14 @@
     <ProjectReference Include="..\DMCShop.Search\DMCShop.Search.csproj" />
   </ItemGroup>
 
+  <!-- Senaryo sayfalarindaki "arkada calisan T-SQL" paneli bu dosyalari
+       calisma aninda okuyor. Kopyalamak, ekranda yazan sorgunun depodaki
+       betikle ayni kalmasini sagliyor. -->
+  <ItemGroup>
+    <None Include="../../../sql/2*.sql" LinkBase="sql-snippets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

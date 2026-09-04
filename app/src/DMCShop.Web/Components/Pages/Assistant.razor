@@ -24,6 +24,9 @@
     </div>
 </section>
 
+<SqlPanel File="21-rag-assistant.sql" FromLine="21" ToLine="60"
+          Note="Retrieval katmani. Sorunun embedding'i uretilir, VECTOR_SEARCH top-K urunu getirir, sonuc metni modele baglam olarak verilir." />
+
 <div class="dmc-search-row">
     <input @bind="question" @bind:event="oninput" @onkeydown="HandleKey"
            class="dmc-search-input" placeholder="Bir ürün sorusu sorun — örn. 1500 TL altı ergonomik mouse" />

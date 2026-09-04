@@ -25,6 +25,9 @@
     </div>
 </section>
 
+<SqlPanel File="20-vector-search.sql" FromLine="56" ToLine="85"
+          Note="Bu sayfa hibrit calisiyor: once DiskANN ile cosine yakin adaylar, sonra keyword overlap rerank. Asagidaki betik VECTOR_SEARCH tarafini gosteriyor." />
+
 <div class="dmc-search-row">
     <input @bind="query" @bind:event="oninput" @onkeydown="HandleKey"
            class="dmc-search-input" placeholder="Bir ürün arayın — anlamsal olarak…" />

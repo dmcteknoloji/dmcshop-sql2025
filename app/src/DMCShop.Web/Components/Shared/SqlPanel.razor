@@ -1,0 +1,68 @@
+@using System.IO
+@inject IWebHostEnvironment Env
+
+@* Senaryonun arkasinda calisan T-SQL'i sayfanin icinde gosterir. Metin
+   sql/ klasorundeki dosyadan okunur (build sirasinda cikti dizinine
+   kopyalanir), boylece ekranda yazan sorgu ile depodaki betik ayrisamaz. *@
+
+<details class="dmc-sqlpanel">
+    <summary>
+        <span class="dmc-sqlpanel-title">Arkada calisan T-SQL</span>
+        <span class="dmc-sqlpanel-file">@File</span>
+    </summary>
+
+    @if (Note is not null)
+    {
+        <p class="dmc-sqlpanel-note">@Note</p>
+    }
+
+    @if (body is null)
+    {
+        <p class="dmc-sqlpanel-note">Betik okunamadi. Depodaki karsiligi: sql/@File</p>
+    }
+    else
+    {
+        <pre class="dmc-sqlpanel-code"><code>@body</code></pre>
+    }
+
+    <p class="dmc-sqlpanel-note">
+        Tam betik:
+        <a href="https://github.com/dmcteknoloji/dmcshop-sql2025/blob/main/sql/@File"
+           target="_blank" rel="noreferrer">sql/@File</a>
+    </p>
+</details>
+
+@code {
+    /// <summary>sql/ altindaki dosya adi, ornek: 20-vector-search.sql</summary>
+    [Parameter, EditorRequired] public string File { get; set; } = default!;
+
+    /// <summary>Panelin ustunde gosterilecek kisa aciklama.</summary>
+    [Parameter] public string? Note { get; set; }
+
+    /// <summary>Yalnizca bu satir araligini goster (1 tabanli, dahil).</summary>
+    [Parameter] public int? FromLine { get; set; }
+    [Parameter] public int? ToLine { get; set; }
+
+    private string? body;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            var path = Path.Combine(Env.ContentRootPath, "sql-snippets", File);
+            if (!System.IO.File.Exists(path)) return;
+
+            var lines = System.IO.File.ReadAllLines(path);
+            var from = Math.Max(1, FromLine ?? 1);
+            var to = Math.Min(lines.Length, ToLine ?? lines.Length);
+            if (to < from) return;
+
+            body = string.Join('\n', lines[(from - 1)..to]).Trim();
+        }
+        catch
+        {
+            // Panel bir gosterim ayrintisi; okunamazsa sayfa calismaya devam etsin.
+            body = null;
+        }
+    }
+}
