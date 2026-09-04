@@ -227,8 +227,7 @@ dmcshop-sql2025/
 │   │   ├── DMCShop.Data          # EF Core 10 DbContext and configurations
 │   │   ├── DMCShop.Providers     # OpenAI and Ollama adapters (embed, chat, streaming)
 │   │   ├── DMCShop.Search        # Vector · GraphRecommend · Rag · FraudRing · Personalized
-│   │   ├── DMCShop.Api           # Minimal API (planned)
-│   │   ├── DMCShop.Web           # Blazor Server, six pages
+│   │   ├── DMCShop.Web           # Blazor Server, eight pages + 3 HTTP endpoints
 │   │   └── DMCShop.Cli           # CLI: seed, embed-products, health
 │   └── tests/                    # xUnit unit tests and Testcontainers integration tests
 ├── infra/                        # Azure deployment

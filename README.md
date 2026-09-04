@@ -205,8 +205,7 @@ dmcshop-sql2025/
 │       ├── DMCShop.Data          # EF Core 10 DbContext + configurations
 │       ├── DMCShop.Providers     # OpenAI ve Ollama adapter'leri (embed + chat + streaming)
 │       ├── DMCShop.Search        # Vector · GraphRecommend · RagAssistant · FraudRing · Personalized
-│       ├── DMCShop.Api           # Minimal API (planlı)
-│       ├── DMCShop.Web           # Blazor Server — 6 sayfa
+│       ├── DMCShop.Web           # Blazor Server, 8 sayfa + 3 HTTP ucu
 │       └── DMCShop.Cli           # dmcshop CLI: seed, embed-products, health
 ├── infra/                        # Azure deployment
 │   ├── main.bicep                # VM + VNet + NSG + Public IP

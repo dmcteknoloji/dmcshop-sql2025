@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/DMCShop.Api/DMCShop.Api.csproj" />
     <Project Path="src/DMCShop.Cli/DMCShop.Cli.csproj" />
     <Project Path="src/DMCShop.Data/DMCShop.Data.csproj" />
     <Project Path="src/DMCShop.Domain/DMCShop.Domain.csproj" />

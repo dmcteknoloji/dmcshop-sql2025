@@ -25,12 +25,6 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
-    <!-- Gecisli bagimlilik olarak gelen Microsoft.OpenApi 2.0.0'da yuksek onemli
-         guvenlik acigi var (GHSA-v5pm-xwqc-g5wc) ve NuGet denetimi bunu hataya
-         cevirdigi icin solution genelinde build durmustu. Yamali surume sabitlendi;
-         CentralPackageTransitivePinningEnabled acik oldugu icin bu satir yeterli. -->
-    <PackageVersion Include="Microsoft.OpenApi" Version="2.12.2" />
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.1" />
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.1" />
   </ItemGroup>
