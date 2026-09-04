@@ -1,0 +1,181 @@
+@page "/olcum"
+@rendermode InteractiveServer
+@using DMCShop.Data
+@inject DatabaseMetricsService Metrics
+
+<PageTitle>Ölçüm — DMCShop</PageTitle>
+
+<section class="dmc-hero">
+    <div class="dmc-hero-eyebrow">Ölçüm</div>
+    <h1>Bu demo ne kadar hızlı, ne kadar yer kaplıyor?</h1>
+    <p class="dmc-hero-lead">
+        Aşağıdaki sayılar sabit değil. Sayfayı her açtığınızda sorgular bu sunucuda
+        yeniden çalışır ve süreleri burada ölçülür. Her sorgu üç kez koşar: ilk koşu soğuk,
+        en iyi koşu ısınmış hali. Hepsi salt okuma, demoda hiçbir veri değişmez.
+    </p>
+    <div class="dmc-stack-row">
+        <span class="dmc-badge dmc-badge-accent">@server?.Version (@server?.UpdateLevel)</span>
+        <span class="dmc-badge">@server?.Edition</span>
+        @if (server?.StartedUtc is { } up)
+        {
+            <span class="dmc-badge">Sunucu @((DateTime.UtcNow - up).TotalHours.ToString("N1")) saattir ayakta</span>
+        }
+    </div>
+</section>
+
+<div class="dmc-search-row">
+    <button class="dmc-btn dmc-btn-dark" @onclick="LoadAsync" disabled="@busy">
+        @(busy ? "Ölçülüyor…" : "Yeniden ölç")
+    </button>
+    @if (measuredAt is { } t)
+    {
+        <span class="dmc-section-meta">Son ölçüm: @t.ToString("HH:mm:ss")</span>
+    }
+</div>
+
+@if (error is not null)
+{
+    <div class="dmc-alert dmc-alert-error">@error</div>
+}
+
+<div class="dmc-section-head">
+    <span class="dmc-panel-title">Sorgu süreleri</span>
+    <span class="dmc-section-meta">her sorgu 3 koşu</span>
+</div>
+
+@if (benchmarks is null)
+{
+    <div class="dmc-empty">@(busy ? "Sorgular çalışıyor…" : "Ölçüm yok.")</div>
+}
+else
+{
+    <div class="dmc-table-wrap">
+        <table class="dmc-table">
+            <thead>
+                <tr>
+                    <th>Sorgu</th>
+                    <th class="dmc-num">İlk koşu</th>
+                    <th class="dmc-num">En iyi koşu</th>
+                    <th class="dmc-num">Sonuç</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in benchmarks)
+                {
+                    <tr>
+                        <td>
+                            <strong>@b.Name</strong>
+                            <div class="dmc-sqlpanel-note" style="padding:0.25rem 0 0;">@b.Explains</div>
+                        </td>
+                        <td class="dmc-num">@b.FirstMs.ToString("N1") ms</td>
+                        <td class="dmc-num">@b.BestMs.ToString("N1") ms</td>
+                        <td class="dmc-num">@b.Rows.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="dmc-sqlpanel-note" style="padding-left:0;">
+        Süreler @server?.CpuCount çekirdekli, @((server?.MemoryMb ?? 0) / 1024) GB bellekli bir Azure VM'inde,
+        aynı makinede çalışan Ollama ile birlikte ölçülüyor.
+        Mutlak değerlerden çok aralarındaki farka bakın. Katalog şu an
+        @(tables?.FirstOrDefault(x => x.Table == "shop.product")?.Rows.ToString("N0") ?? "?") ürün içeriyor;
+        kurumsal ölçek seed'i (50.000 ürün) depoda <code>sql/30-33</code> dosyalarında.
+    </p>
+}
+
+<div class="dmc-section-head">
+    <span class="dmc-panel-title">Vektör indeksi</span>
+</div>
+
+@if (indexes is null || indexes.Count == 0)
+{
+    <div class="dmc-empty">Vektör indeksi bulunamadı.</div>
+}
+else
+{
+    <div class="dmc-table-wrap">
+        <table class="dmc-table">
+            <thead><tr><th>İndeks</th><th>Tür</th><th>Tablo</th></tr></thead>
+            <tbody>
+                @foreach (var i in indexes)
+                {
+                    <tr><td><code>@i.Name</code></td><td>@i.Kind</td><td><code>@i.Table</code></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="dmc-sqlpanel-note" style="padding-left:0;">
+        Bu indeks dururken tabloya INSERT, UPDATE veya DELETE yapılamıyor (<code>Msg 42231</code>).
+        Embedding üretimi bu yüzden önce indeksi düşürüp sonra yeniden kuruyor.
+    </p>
+}
+
+<div class="dmc-section-head">
+    <span class="dmc-panel-title">Tablolar</span>
+    <span class="dmc-section-meta">satır sayısı ve ayrılan alan</span>
+</div>
+
+@if (tables is null || tables.Count == 0)
+{
+    <div class="dmc-empty">Veri yok.</div>
+}
+else
+{
+    <div class="dmc-table-wrap">
+        <table class="dmc-table">
+            <thead><tr><th>Tablo</th><th class="dmc-num">Satır</th><th class="dmc-num">Alan</th></tr></thead>
+            <tbody>
+                @foreach (var row in tables)
+                {
+                    <tr>
+                        <td><code>@row.Table</code></td>
+                        <td class="dmc-num">@row.Rows.ToString("N0")</td>
+                        <td class="dmc-num">@FormatKb(row.Kilobytes)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private ServerInfo? server;
+    private IReadOnlyList<Benchmark>? benchmarks;
+    private IReadOnlyList<TableStat>? tables;
+    private IReadOnlyList<VectorIndexInfo>? indexes;
+    private DateTime? measuredAt;
+    private bool busy;
+    private string? error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        if (busy) return;
+        busy = true;
+        error = null;
+        StateHasChanged();
+
+        try
+        {
+            server  = await Metrics.GetServerInfoAsync();
+            tables  = await Metrics.GetTableStatsAsync();
+            indexes = await Metrics.GetVectorIndexesAsync();
+            benchmarks = await Metrics.RunBenchmarksAsync();
+            measuredAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            error = $"Ölçüm tamamlanamadı: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private static string FormatKb(long kb) =>
+        kb >= 1024 ? $"{kb / 1024.0:N1} MB" : $"{kb:N0} KB";
+}

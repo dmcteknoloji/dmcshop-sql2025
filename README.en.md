@@ -71,6 +71,11 @@ smoothly. See [What SQL Server 2025 taught us](#what-sql-server-2025-taught-us).
 | 4 | **Customers who bought this**         | `GRAPH MATCH`, 2-hop                    | `/urun/{id}`  | [`sql/23-graph-co-purchase.sql`](sql/23-graph-co-purchase.sql) |
 | 5 | **Hybrid recommendation**             | `VECTOR_SEARCH` + `GRAPH MATCH`, one SELECT | `/bana-ozel` | [`sql/24-personalized.sql`](sql/24-personalized.sql) |
 
+A sixth page, `/olcum`, measures the demo while you look at it: query latency for each
+scenario (first run versus warmed up), row counts and disk footprint per table, and the vector
+index as the catalog views report it. Every number is read at request time, nothing is
+hardcoded, and it performs no writes.
+
 Scenario 1 runs hybrid retrieval: DiskANN pulls roughly 300 cosine-nearest candidates, then a
 keyword-overlap rerank is applied. The page shows a classic `LIKE` column next to it, which
 returns nothing for most natural language queries.

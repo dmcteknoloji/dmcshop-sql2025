@@ -1139,3 +1139,51 @@ a.dmc-card:hover,
 }
 
 .dmc-sqlpanel-code code { white-space: pre; }
+
+/* ── /olcum sayfasindaki tablolar ────────────────────────────────────────── */
+.dmc-table-wrap {
+    /* Dar ekranda tablo kendi icinde kaysin, sayfa yatayda kaymasin. */
+    overflow-x: auto;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 10px;
+    background: var(--surface, #fff);
+    margin-bottom: 1.5rem;
+}
+
+.dmc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.dmc-table th,
+.dmc-table td {
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #eef0f3);
+    vertical-align: top;
+}
+
+.dmc-table thead th {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted, #6b7280);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dmc-table tbody tr:last-child td { border-bottom: none; }
+.dmc-table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }
+
+.dmc-table .dmc-num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dmc-table code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.82rem;
+}

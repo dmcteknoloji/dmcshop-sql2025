@@ -56,6 +56,11 @@
 | 3 | **Fraud ring tespiti**           | `GRAPH MATCH` + `SHORTEST_PATH`    | [`/fraud`](docs/04-senaryo-fraud-ring.md)            |
 | 4 | **Bunu alanlar bunu da aldı**    | `GRAPH MATCH` 2-hop                | [`/urun/{id}`](docs/05-senaryo-co-purchase.md)       |
 
+Ayrıca `/olcum` sayfası demoyu siz bakarken ölçüyor: her senaryonun sorgu süresi (ilk koşu ve
+ısınmış hali), tablo başına satır sayısı ve disk kullanımı, vektör indeksinin katalog
+görünümlerindeki hali. Sunucu sürümü, çekirdek sayısı ve bellek de oradan okunuyor; hiçbiri
+koda gömülü değil ve sayfa hiçbir yazma yapmıyor.
+
 ---
 
 ## Mimari

@@ -32,6 +32,7 @@ public static class DependencyInjection
         });
 
         services.AddSingleton<SqlServerVersionService>();
+        services.AddScoped<DatabaseMetricsService>();
 
         return services;
     }
