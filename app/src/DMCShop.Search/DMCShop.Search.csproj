@@ -16,4 +16,10 @@
     <ProjectReference Include="..\DMCShop.Providers\DMCShop.Providers.csproj" />
   </ItemGroup>
 
+  <!-- StripStructuredData birim testlerinden cagriliyor; disariya acmak yerine
+       yalnizca test projesine gorunur. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="DMCShop.Tests.Unit" />
+  </ItemGroup>
+
 </Project>

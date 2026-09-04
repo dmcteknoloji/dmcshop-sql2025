@@ -31,7 +31,7 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         // RAW SQL ile (kolon entity'de map'siz olduğu için)
         if (onlyMissing)
         {
-            var col = provider.Name == "openai" ? "embedding_openai_1536" : "embedding_ollama_768";
+            var col = provider.Name == "openai" ? "embedding_openai_1536" : "embedding_bge_1024";
             var sql = $"""
                 SELECT product_id AS ProductId, source_text AS SourceText
                 FROM   vector.product_embedding
@@ -125,7 +125,7 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         var (indexName, column) = provider.Name switch
         {
             "openai" => ("vix_pe_openai", "embedding_openai_1536"),
-            "ollama" => ("vix_pe_ollama", "embedding_ollama_768"),
+            "ollama" => ("vix_pe_bge", "embedding_bge_1024"),
             _ => throw new InvalidOperationException($"Bilinmeyen provider: {provider.Name}")
         };
 
@@ -151,7 +151,7 @@ internal sealed class EmbedProductsCommand(IServiceProvider sp)
         var (column, updatedAtColumn, modelColumn) = provider.Name switch
         {
             "openai" => ("embedding_openai_1536", "openai_updated_at", "openai_model"),
-            "ollama" => ("embedding_ollama_768",  "ollama_updated_at", "ollama_model"),
+            "ollama" => ("embedding_bge_1024",  "ollama_updated_at", "ollama_model"),
             _ => throw new InvalidOperationException($"Bilinmeyen provider: {provider.Name}")
         };
 

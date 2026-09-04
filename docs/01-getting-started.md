@@ -34,11 +34,11 @@ DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dakika)
 Setup script şunları yapar:
 
 1. **docker compose up** — `dmcshop-mssql` (SQL Server 2025 CU8) + `dmcshop-ollama`
-2. **Ollama modelleri** — `nomic-embed-text` (~270 MB) + `qwen2.5:3b-instruct-q4_K_M` (~2 GB)
+2. **Ollama modelleri** — `bge-m3` (~270 MB) + `qwen2.5:3b-instruct-q4_K_M` (~2 GB)
 3. **Schema + showcase seed** — `bootstrap.sh` → 4 schema (`shop`, `graph`, `vector`, `ops`) + 120 ürün
 4. **(opsiyonel) Kurumsal seed** — `sql/30-33`: 50K ürün + 10K müşteri + 100K sipariş + 451K satır
 5. **Eksik vector satırı INSERT** — `vector.product_embedding` her ürün için source_text
-6. **Embedding üretimi** — Ollama nomic-embed-text · batch 32 · paralel
+6. **Embedding üretimi** — Ollama bge-m3 · batch 32 · paralel
 7. **DiskANN vector index** — `CREATE VECTOR INDEX ... WITH (METRIC='cosine', TYPE='DiskANN')`
 
 ### Uygulamayı başlat
@@ -119,18 +119,18 @@ DMCSHOP_SCALE=large ./scripts/setup.sh
 **Sebep**: SQL Server 2025'te DiskANN vector index varken **hiçbir DML** (INSERT/UPDATE/DELETE)
 yapılamıyor.
 
-**Çözüm**: önce `DROP INDEX vix_pe_ollama ON vector.product_embedding`, sonra DML, sonra
+**Çözüm**: önce `DROP INDEX vix_pe_bge ON vector.product_embedding`, sonra DML, sonra
 `CREATE VECTOR INDEX ... WITH (METRIC='cosine', TYPE='DiskANN')`. `scripts/setup.sh` bunu
 otomatik yönetir.
 
-### `Cannot find a vector index with metric 'cosine' on column 'embedding_ollama_768'`
+### `Cannot find a vector index with metric 'cosine' on column 'embedding_bge_1024'`
 
 **Sebep**: `VECTOR_SEARCH` cosine metriği olan bir DiskANN index istiyor; tabloda index yok.
 
 **Çözüm**: `sql/08-create-vector-indexes.sql` çalıştır veya:
 ```sql
-CREATE VECTOR INDEX vix_pe_ollama
-ON vector.product_embedding (embedding_ollama_768)
+CREATE VECTOR INDEX vix_pe_bge
+ON vector.product_embedding (embedding_bge_1024)
 WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
 ```
 

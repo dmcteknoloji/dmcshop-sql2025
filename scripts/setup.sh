@@ -6,7 +6,7 @@
 #
 # Akış:
 #   1) docker compose up (mssql + ollama)
-#   2) ollama'ya nomic-embed-text + qwen2.5:3b indir
+#   2) ollama'ya bge-m3 + qwen2.5:3b indir
 #   3) bootstrap.sh (schema + showcase 120 ürün seed)
 #   4) DMCSHOP_SCALE=large ise: sql/30-33 (50K ürün, 10K müşteri, 100K sipariş)
 #   5) vector index drop → embedding üret → uzun-timeout ile index yeniden oluştur
@@ -33,7 +33,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sa-password.sh"
 : "${DMCSHOP_SCALE:=showcase}"           # showcase | large
 # 127.0.0.1: konteyner portu IPv4 loopback'e bagli, `localhost` ::1 olabilir.
 : "${DMCSHOP_HOST:=127.0.0.1,1433}"
-: "${OLLAMA_EMBED_MODEL:=nomic-embed-text}"
+: "${OLLAMA_EMBED_MODEL:=bge-m3}"
 : "${OLLAMA_CHAT_MODEL:=qwen2.5:3b-instruct-q4_K_M}"
 : "${EMBED_BATCH:=32}"
 
@@ -56,7 +56,7 @@ sqlexec() {
 count_embedded() {
     sqlcmd -C -I -S "${DMCSHOP_HOST}" -U sa -P "${DMCSHOP_SA_PASSWORD}" \
            -d dmcshop -h -1 -W -Q \
-           "SELECT SUM(CASE WHEN embedding_ollama_768 IS NOT NULL THEN 1 ELSE 0 END) FROM vector.product_embedding" \
+           "SELECT SUM(CASE WHEN embedding_bge_1024 IS NOT NULL THEN 1 ELSE 0 END) FROM vector.product_embedding" \
            | head -1 | tr -d ' '
 }
 
@@ -155,8 +155,8 @@ fi
 say "Eksik vector.product_embedding satırlarını ekle"
 # DiskANN index varsa DML yasak — drop, INSERT, embed sonunda recreate
 sqlexec "
-IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_ollama')
-    DROP INDEX vix_pe_ollama ON vector.product_embedding;
+IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_bge')
+    DROP INDEX vix_pe_bge ON vector.product_embedding;
 
 INSERT INTO vector.product_embedding (product_id, source_text)
 SELECT p.product_id, CONCAT(p.name, N'. ', c.name, N'. ', p.description_tr)
@@ -167,7 +167,7 @@ WHERE  NOT EXISTS (SELECT 1 FROM vector.product_embedding pe WHERE pe.product_id
 SELECT COUNT(*) AS satir FROM vector.product_embedding;
 "
 
-say "Embedding üretimi (Ollama nomic-embed-text)"
+say "Embedding üretimi (Ollama bge-m3)"
 before="$(count_embedded)"
 echo "  başlangıç: ${before} embedded"
 dotnet run --project "${REPO_ROOT}/app/src/DMCShop.Cli" -c Release -- \
@@ -180,11 +180,11 @@ echo "  bitiş:     ${after} embedded"
 # command timeout (30 sn) yetmez. Burada -t 600 ile manuel.
 say "DiskANN vector index (50K vector ~70 sn, 120 vector ~1 sn)"
 sqlexec "
-IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_ollama')
-    DROP INDEX vix_pe_ollama ON vector.product_embedding;
+IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_bge')
+    DROP INDEX vix_pe_bge ON vector.product_embedding;
 
-CREATE VECTOR INDEX vix_pe_ollama
-ON vector.product_embedding (embedding_ollama_768)
+CREATE VECTOR INDEX vix_pe_bge
+ON vector.product_embedding (embedding_bge_1024)
 WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
 
 SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID('vector.product_embedding') AND type = 8;
@@ -202,7 +202,7 @@ sqlcmd -C -I -S "${DMCSHOP_HOST}" -U sa -P "${DMCSHOP_SA_PASSWORD}" -d dmcshop -
 SELECT 'product' AS entity, COUNT(*) AS n FROM shop.product
 UNION ALL SELECT 'customer',  COUNT(*) FROM shop.customer
 UNION ALL SELECT 'order',     COUNT(*) FROM shop.[order]
-UNION ALL SELECT 'embedded',  SUM(CASE WHEN embedding_ollama_768 IS NOT NULL THEN 1 ELSE 0 END) FROM vector.product_embedding;
+UNION ALL SELECT 'embedded',  SUM(CASE WHEN embedding_bge_1024 IS NOT NULL THEN 1 ELSE 0 END) FROM vector.product_embedding;
 "
 
 cat <<EOF

@@ -61,7 +61,7 @@
             <text x="20" y="74">SQL Server 2025 CU8</text>
             <text x="20" y="100">.NET 10 · Blazor Server</text>
             <text x="20" y="126">EF Core 10</text>
-            <text x="20" y="152">Ollama nomic-embed-text</text>
+            <text x="20" y="152">Ollama bge-m3</text>
             <text x="20" y="178">Ollama qwen2.5:3b-instruct</text>
         </g>
     </g>

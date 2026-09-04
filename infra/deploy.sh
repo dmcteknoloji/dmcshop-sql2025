@@ -127,7 +127,7 @@ echo "  -> ollama model pull"
 # IKI model de sart. Uzun sure yalnizca embedding modeli indiriliyordu:
 # arama calisiyor, /asistan sayfasi ise Ollama'dan 404 alip 500 donuyordu.
 # scripts/setup.sh ikisini de indiriyordu, Azure yolu ayrisipti.
-docker exec dmcshop-ollama ollama pull nomic-embed-text
+docker exec dmcshop-ollama ollama pull bge-m3
 docker exec dmcshop-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
 
 echo "  -> bootstrap (schema + seed)"

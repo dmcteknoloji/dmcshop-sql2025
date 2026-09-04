@@ -18,10 +18,62 @@ public sealed class RagAssistantService(
     IEmbeddingProvider embed)
 {
     /// <summary>
+    /// Fiyat baglamda duruyor ki model dogru urunu secebilsin, ama cevaba
+    /// yazmasi yasak: 3B model numara ile adi karistirip fiyati kirpiyordu
+    /// ("#1051 Kahve Demleme French Press", "920,0 ₺"). Dogru veriyi zaten
+    /// sayfa "Kullanilan urunler" kartlarinda veritabanindan basiyor.
+    ///
     /// Fiyati bilerek tr-TR ile bicimlendiriyoruz. Sunucunun kulturu en-US
     /// oldugu icin baglama "3,200.00" gidiyordu; model de onu oldugu gibi
     /// kopyaladigi icin Turkce cevapta Ingiliz ayraci gorunuyordu.
     /// </summary>
+    /// <summary>
+    /// Modelin cevabindan urun numarasi ve fiyat gibi yapilandirilmis veriyi
+    /// siler.
+    ///
+    /// Neden kodda: prompt'ta "numara ve fiyat yazma" demek yetmedi. 3B model
+    /// uc sorgunun ucunde farkli davrandi; birinde kurala uydu, ikisinde
+    /// yazmaya devam etti. Once de numarayi yanlis urune baglamis
+    /// ("#1051 Kahve Demleme French Press") ve fiyati kirpmisti ("920,0 ₺").
+    /// Dogru veri zaten sayfadaki "Kullanilan urunler" kartlarinda,
+    /// veritabanindan geliyor. Model bir cumle kursun, sayilari uygulama bassin.
+    /// </summary>
+    internal static string StripStructuredData(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return text;
+
+        var s = ProductRefPattern.Replace(text, string.Empty);   // "#1041"
+        s = PricePattern.Replace(s, string.Empty);               // "1.234,56 ₺"
+
+        // Silinen parcalarin arkasinda kalan ayraclari topla. Cumle icindeki
+        // tire meşru (urun adi — kategori), yalniz basta kalan veya noktalama
+        // ile bitisen tireler atiliyor.
+        s = DanglingSeparator.Replace(s, string.Empty);
+        s = LeadingSeparator.Replace(s, string.Empty);
+        s = MultiSpace.Replace(s, " ");
+        s = SpaceBeforePunctuation.Replace(s, "$1");
+
+        return s.Trim();
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex ProductRefPattern =
+        new(@"#\d+\s*", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex PricePattern =
+        new(@"\d[\d.,]*\s*₺", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex DanglingSeparator =
+        new(@"\s*[—–-]\s*(?=[.,;:!?]|$)", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex LeadingSeparator =
+        new(@"^\s*[—–-]\s*", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex MultiSpace =
+        new(@"\s{2,}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex SpaceBeforePunctuation =
+        new(@"\s+([.,;:!?])", System.Text.RegularExpressions.RegexOptions.Compiled);
+
     private static readonly CultureInfo TrCulture = CultureInfo.GetCultureInfo("tr-TR");
 
     private const string SystemPrompt = """
@@ -31,10 +83,11 @@ public sealed class RagAssistantService(
         2. YANIT DİLİ: yalnızca Türkçe. İngilizce, başka dilde tek kelime veya garip
            karakter kombinasyonu (örn. selectorselam, mergeword) yazma.
         3. Yanıt kısa olsun (en fazla 3-4 cümle). Madde işareti ya da uzun açıklama yok.
-        4. Her ürünü #ürün_no formatıyla referans ver (örn. #1041).
-        5. Fiyatı bağlamda yazdığı gibi, rakamlarıyla kopyala ve sonuna ₺ koy.
-           Fiyat uydurma, yuvarlama, yerine harf ya da yer tutucu yazma.
-        6. Eğer bağlamda hiç ürün yoksa veya hiçbiri kullanıcı sorusuyla ilgili değilse,
+        4. Ürünü ADIYLA an, bağlamda yazdığı gibi. Ürün numarası (#1041) YAZMA.
+        5. Fiyat YAZMA. Fiyatı ve ürün kartını uygulama zaten ekranda gösteriyor;
+           senin işin hangi ürünü neden önerdiğini bir iki cümleyle anlatmak.
+        6. Soru genel ya da belirsizse bile bağlamdaki en uygun ürünü öner; listede
+           birebir karşılık aramak zorunda değilsin. Yalnızca bağlam gerçekten boşsa
            "Bu sorgu için bağlamda uygun ürün bulamadım" de.
         """;
 
@@ -62,7 +115,7 @@ public sealed class RagAssistantService(
             Scenario       = "rag",
             TopK           = topK,
             UsedProductIds = JsonSerializer.Serialize(hits.Select(h => h.ProductId)),
-            LlmResponse    = chatResult.Text,
+            LlmResponse    = StripStructuredData(chatResult.Text),
             LatencyMs      = (int)total.ElapsedMilliseconds,
             CreatedAt      = DateTime.UtcNow
         });
@@ -70,7 +123,7 @@ public sealed class RagAssistantService(
 
         return new RagAnswer(
             question,
-            chatResult.Text,
+            StripStructuredData(chatResult.Text),
             hits,
             (int)rSw.ElapsedMilliseconds,
             (int)lSw.ElapsedMilliseconds,
@@ -119,7 +172,7 @@ public sealed class RagAssistantService(
         lSw.Stop();
         total.Stop();
 
-        var finalText = accumulated.ToString();
+        var finalText = StripStructuredData(accumulated.ToString());
         db.QueryLogs.Add(new QueryLog
         {
             QueryText      = question,

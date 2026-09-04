@@ -31,7 +31,7 @@ SET NOCOUNT ON;
 GO
 
 -- ----------------------------------------------------------------------------
--- ollama_embed_text — nomic-embed-text üzerinden 768 dim embedding
+-- ollama_embed_text — bge-m3 üzerinden 768 dim embedding
 -- ----------------------------------------------------------------------------
 IF EXISTS (SELECT 1 FROM sys.external_models WHERE name = 'ollama_embed_text')
     DROP EXTERNAL MODEL ollama_embed_text;
@@ -42,7 +42,7 @@ WITH (
     LOCATION   = 'http://host.docker.internal:11434/api/embeddings',
     API_FORMAT = 'Ollama',
     MODEL_TYPE = EMBEDDINGS,
-    MODEL      = 'nomic-embed-text'
+    MODEL      = 'bge-m3'
 );
 GO
 
@@ -69,7 +69,7 @@ PRINT '> EXTERNAL MODEL ollama_chat_qwen hazır';
 -- ----------------------------------------------------------------------------
 -- Test
 -- ----------------------------------------------------------------------------
-DECLARE @v VECTOR(768) = AI_GENERATE_EMBEDDINGS(N'test merhaba' USE MODEL ollama_embed_text);
+DECLARE @v VECTOR(1024) = AI_GENERATE_EMBEDDINGS(N'test merhaba' USE MODEL ollama_embed_text);
 SELECT LEN(CAST(@v AS NVARCHAR(MAX))) AS embedding_json_length;
 GO
 

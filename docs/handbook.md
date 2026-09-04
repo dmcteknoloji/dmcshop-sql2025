@@ -61,11 +61,11 @@ DMCSHOP_SCALE=large ./scripts/setup.sh   # kurumsal (50K ürün, ~45 dakika)
 | # | Adım                  | Süre (showcase) | Süre (large) | Detay                                                          |
 | - | --------------------- | --------------- | ------------ | -------------------------------------------------------------- |
 | 1 | Docker container      | ~30 sn          | ~30 sn       | mssql + ollama; restart: unless-stopped                        |
-| 2 | Ollama modelleri      | ~2-4 dk          | ~2-4 dk      | nomic-embed-text (270 MB) + qwen2.5:3b-instruct (2 GB)         |
+| 2 | Ollama modelleri      | ~2-4 dk          | ~2-4 dk      | bge-m3 (270 MB) + qwen2.5:3b-instruct (2 GB)         |
 | 3 | Schema + showcase     | ~20 sn          | ~20 sn       | bootstrap.sh → 4 schema + 120 ürün                              |
 | 4 | (Opsiyonel) kurumsal  | —               | ~2 dk        | sql/30-33: +50K ürün, +10K müşteri, +100K sipariş               |
 | 5 | Vector tablo INSERT   | ~2 sn           | ~5 sn        | DROP index, eksik product_embedding satırı ekle                 |
-| 6 | Embedding üretimi     | ~15 sn          | ~50 dk       | Ollama nomic-embed-text, batch 32, paralel                      |
+| 6 | Embedding üretimi     | ~15 sn          | ~50 dk       | Ollama bge-m3, batch 32, paralel                      |
 | 7 | DiskANN index         | ~1 sn           | ~70 sn       | CREATE VECTOR INDEX (sqlcmd -t 600 timeout aşımı önlemi)         |
 
 ### Uygulamayı başlat
@@ -93,7 +93,7 @@ ile her sayfa açılışında DB'den çekilir.
 
 ### 3.2 Senaryo 1: Semantik arama (15 dakika)
 
-`/search` sayfası. Sağ üstte provider rozeti: `Provider: ollama / nomic-embed-text / 768 dim`.
+`/search` sayfası. Sağ üstte provider rozeti: `Provider: ollama / bge-m3 / 768 dim`.
 
 **Demo adımları**:
 
@@ -109,14 +109,14 @@ ile her sayfa açılışında DB'den çekilir.
 
 ```sql
 USE dmcshop;
-DECLARE @q VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+DECLARE @q VECTOR(1024) = AI_GENERATE_EMBEDDINGS(
     N'rahat ergonomik klavye' USE MODEL ollama_embed_text
 );
 
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @q,
         METRIC     = 'cosine',
         TOP_N      = 5)
@@ -243,8 +243,8 @@ Vector index drop edildi ama henüz yeniden oluşturulmadı. `scripts/setup.sh`
 adım 7'yi tekrar çalıştır veya manuel:
 
 ```sql
-CREATE VECTOR INDEX vix_pe_ollama
-ON vector.product_embedding (embedding_ollama_768)
+CREATE VECTOR INDEX vix_pe_bge
+ON vector.product_embedding (embedding_bge_1024)
 WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
 ```
 

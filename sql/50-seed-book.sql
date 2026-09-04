@@ -19,8 +19,8 @@ SET NOCOUNT ON;
 GO
 
 -- DiskANN varken DML yasak — önce drop
-IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_ollama')
-    DROP INDEX vix_pe_ollama ON vector.product_embedding;
+IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_bge')
+    DROP INDEX vix_pe_bge ON vector.product_embedding;
 GO
 
 -- ----------------------------------------------------------------------------

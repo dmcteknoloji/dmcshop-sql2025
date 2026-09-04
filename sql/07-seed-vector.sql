@@ -33,6 +33,6 @@ PRINT '> Sıra: dotnet run --project app/src/DMCShop.Cli -- embed-products --pro
 SELECT
     COUNT(*) AS row_count,
     SUM(CASE WHEN embedding_openai_1536 IS NOT NULL THEN 1 ELSE 0 END) AS openai_filled,
-    SUM(CASE WHEN embedding_ollama_768  IS NOT NULL THEN 1 ELSE 0 END) AS ollama_filled
+    SUM(CASE WHEN embedding_bge_1024  IS NOT NULL THEN 1 ELSE 0 END) AS ollama_filled
 FROM vector.product_embedding;
 GO

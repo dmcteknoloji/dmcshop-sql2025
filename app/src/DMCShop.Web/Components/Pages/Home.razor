@@ -25,7 +25,7 @@
         <span class="dmc-badge dmc-badge-accent">@sqlVersionLabel</span>
         <span class="dmc-badge">.NET 10 · Blazor Server</span>
         <span class="dmc-badge">EF Core 10</span>
-        <span class="dmc-badge">Ollama nomic-embed-text · 768 dim</span>
+        <span class="dmc-badge">Ollama bge-m3 · 768 dim</span>
     </div>
 </section>
 
@@ -183,7 +183,7 @@
         queryLogCount  = await Db.QueryLogs.AsNoTracking().CountAsync();
 
         embeddedCount = await Db.Database
-            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM vector.product_embedding WHERE embedding_ollama_768 IS NOT NULL OR embedding_openai_1536 IS NOT NULL")
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM vector.product_embedding WHERE embedding_bge_1024 IS NOT NULL OR embedding_openai_1536 IS NOT NULL")
             .FirstAsync();
 
         var ids = new[] { 1021, 1041, 1061, 1083, 1101, 1003 };

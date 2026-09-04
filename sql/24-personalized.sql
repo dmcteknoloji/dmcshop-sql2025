@@ -29,12 +29,12 @@ DECLARE @top_k       INT = 10;
 -- ----------------------------------------------------------------------------
 DECLARE @centroid_json NVARCHAR(MAX);
 SELECT TOP (1)
-       @centroid_json = CAST(pe.embedding_ollama_768 AS NVARCHAR(MAX))
+       @centroid_json = CAST(pe.embedding_bge_1024 AS NVARCHAR(MAX))
 FROM   shop.[order]      o
 JOIN   shop.order_line   ol ON ol.order_id   = o.order_id
 JOIN   vector.product_embedding pe ON pe.product_id = ol.product_id
 WHERE  o.customer_id = @customer_id
-  AND  pe.embedding_ollama_768 IS NOT NULL
+  AND  pe.embedding_bge_1024 IS NOT NULL
 ORDER BY o.order_date DESC;
 
 IF @centroid_json IS NULL
@@ -43,7 +43,7 @@ BEGIN
     RETURN;
 END
 
-DECLARE @centroid VECTOR(768) = CAST(@centroid_json AS VECTOR(768));
+DECLARE @centroid VECTOR(1024) = CAST(@centroid_json AS VECTOR(1024));
 
 -- ----------------------------------------------------------------------------
 -- 2-5) VECTOR_SEARCH + filter + graph social score + hibrit skor
@@ -51,7 +51,7 @@ DECLARE @centroid VECTOR(768) = CAST(@centroid_json AS VECTOR(768));
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @centroid,
         METRIC     = 'cosine',
         TOP_N      = 30)

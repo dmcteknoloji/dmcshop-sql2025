@@ -27,7 +27,7 @@ DECLARE @top_k INT = 5;
 DECLARE @vec_json NVARCHAR(MAX);
 EXEC ops.sp_embed_text @text = @question, @vec_json = @vec_json OUTPUT;
 
-DECLARE @q VECTOR(768) = CAST(@vec_json AS VECTOR(768));   -- ollama nomic 768
+DECLARE @q VECTOR(1024) = CAST(@vec_json AS VECTOR(1024));   -- ollama bge-m3 1024
 
 -- ----------------------------------------------------------------------------
 -- 2) Top-K ürün — DiskANN approximate kNN
@@ -38,7 +38,7 @@ DECLARE @used_ids NVARCHAR(MAX);
 ;WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @q,
         METRIC     = 'cosine',
         TOP_N      = @top_k)

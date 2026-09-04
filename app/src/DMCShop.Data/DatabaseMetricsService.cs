@@ -95,13 +95,13 @@ public sealed class DatabaseMetricsService(DMCShopDbContext db)
         ("VECTOR_SEARCH + DiskANN",
          "Kayitli bir embedding sonda vektor olarak veriliyor, yani Ollama cagrisi olmadan yalnizca motorun arama suresi olculuyor.",
          """
-         DECLARE @q VECTOR(768) = (SELECT TOP (1) embedding_ollama_768
+         DECLARE @q VECTOR(1024) = (SELECT TOP (1) embedding_bge_1024
                                    FROM vector.product_embedding
-                                   WHERE embedding_ollama_768 IS NOT NULL
+                                   WHERE embedding_bge_1024 IS NOT NULL
                                    ORDER BY product_id);
          ;WITH hits AS (
              SELECT * FROM VECTOR_SEARCH(
-                 TABLE = vector.product_embedding, COLUMN = embedding_ollama_768,
+                 TABLE = vector.product_embedding, COLUMN = embedding_bge_1024,
                  SIMILAR_TO = @q, METRIC = 'cosine', TOP_N = 10)
          )
          SELECT COUNT(*) FROM hits;

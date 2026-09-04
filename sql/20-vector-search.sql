@@ -91,14 +91,14 @@ GO
 /*
 DECLARE @query_text3 NVARCHAR(MAX) = N'rahat ergonomik klavye';
 
-DECLARE @qo VECTOR(768) = AI_GENERATE_EMBEDDINGS(
+DECLARE @qo VECTOR(1024) = AI_GENERATE_EMBEDDINGS(
     @query_text3 USE MODEL ollama_embed_text
 );
 
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(
         TABLE      = vector.product_embedding,
-        COLUMN     = embedding_ollama_768,
+        COLUMN     = embedding_bge_1024,
         SIMILAR_TO = @qo,
         METRIC     = 'cosine',
         TOP_N      = 5)

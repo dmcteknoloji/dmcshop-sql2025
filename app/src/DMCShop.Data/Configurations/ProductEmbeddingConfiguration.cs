@@ -6,7 +6,7 @@ namespace DMCShop.Data.Configurations;
 
 internal sealed class ProductEmbeddingConfiguration : IEntityTypeConfiguration<ProductEmbedding>
 {
-    // VECTOR(N) kolonları (embedding_openai_1536, embedding_ollama_768) EF Core 10
+    // VECTOR(N) kolonları (embedding_openai_1536, embedding_bge_1024) EF Core 10
     // ile native eşlemez; raw SQL ile okunup yazılır. Entity yalnızca metadata
     // kolonlarını içerir.
     public void Configure(EntityTypeBuilder<ProductEmbedding> b)
@@ -21,7 +21,5 @@ internal sealed class ProductEmbeddingConfiguration : IEntityTypeConfiguration<P
         b.Property(x => x.OpenaiUpdatedAt).HasColumnName("openai_updated_at").HasColumnType("datetime2(0)");
         b.Property(x => x.OllamaUpdatedAt).HasColumnName("ollama_updated_at").HasColumnType("datetime2(0)");
 
-        b.Ignore("EmbeddingOpenai1536");
-        b.Ignore("EmbeddingOllama768");
     }
 }

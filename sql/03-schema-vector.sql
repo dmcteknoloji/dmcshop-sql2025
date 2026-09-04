@@ -2,7 +2,7 @@
 -- 03-schema-vector.sql
 -- vector.* — embedding tablosu, DiskANN index, query log.
 -- İki provider iki kolon: openai_1536 (text-embedding-3-small) ve
--- ollama_768 (nomic-embed-text). Tek tablo, iki DiskANN.
+-- ollama_768 (bge-m3). Tek tablo, iki DiskANN.
 -- ============================================================================
 
 USE dmcshop;
@@ -16,7 +16,7 @@ GO
 CREATE TABLE vector.product_embedding (
     product_id            INT           NOT NULL PRIMARY KEY,
     embedding_openai_1536 VECTOR(1536)  NULL,
-    embedding_ollama_768  VECTOR(768)   NULL,
+    embedding_bge_1024  VECTOR(1024)   NULL,
     source_text           NVARCHAR(MAX) NOT NULL,
     openai_model          NVARCHAR(80)  NULL,
     ollama_model          NVARCHAR(80)  NULL,

@@ -7,7 +7,7 @@
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
   <a href="https://learn.microsoft.com/aspnet/core/blazor/"><img alt="Blazor Server" src="https://img.shields.io/badge/Blazor-Server-512BD4?style=for-the-badge&logo=blazor&logoColor=white"></a>
   <a href="https://learn.microsoft.com/ef/core/"><img alt="EF Core 10" src="https://img.shields.io/badge/EF%20Core-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
-  <a href="https://ollama.com/"><img alt="Ollama" src="https://img.shields.io/badge/Ollama-nomic--embed%20%2B%20qwen2.5-000000?style=for-the-badge&logo=ollama&logoColor=white"></a>
+  <a href="https://ollama.com/"><img alt="Ollama" src="https://img.shields.io/badge/Ollama-bge--m3%20%2B%20qwen2.5-000000?style=for-the-badge&logo=ollama&logoColor=white"></a>
   <a href="https://azure.microsoft.com/"><img alt="Azure" src="https://img.shields.io/badge/Azure-VM%20deploy-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white"></a>
   <br/>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2EA043?style=flat-square"></a>
@@ -42,7 +42,7 @@
 | Sipariş satırı      |  451.202 | Ortalama 4.5 satır/sipariş                                          |
 | Cihaz               |    4.080 | IP, parmak izi, user-agent                                          |
 | Fraud ring (tespit) |    ~1000 | Paylaşılan cihaz / IP / kart desenleri                              |
-| Vector embedding    |    50K+ | Ollama `nomic-embed-text` (768 dim) · DiskANN cosine                |
+| Vector embedding    |    50K+ | Ollama `bge-m3` (1024 dim) · DiskANN cosine                |
 
 ---
 
@@ -86,7 +86,7 @@ sequenceDiagram
 
     U->>W: "1500 TL altı ergonomik mouse"
     W->>E: EmbedAsync(soru)
-    E-->>W: float[768]
+    E-->>W: float[1024]
     W->>V: VECTOR_SEARCH TOP_N=5 (cosine)
     V-->>W: top-K product_id
     W->>S: JOIN ile ürün detayları
@@ -249,6 +249,23 @@ dmcshop-sql2025/
 
 ---
 
+## Embedding modeli neden `bge-m3`
+
+Demo önce `nomic-embed-text` ile çalışıyordu ve Türkçe sorgularda anlamsal arama çalışmıyordu.
+Ölçüldü: "Kahvaltıda kullanabileceğim bir ürün" sorgusunda ilgili ürünlerin ortalama benzerliği
+0,5924, alakasız ürünlerinki 0,6306 çıktı. Yani model alakasız ürünleri **üste** koyuyordu,
+ayrım **eksi** yönde. Görev ön ekleri (`search_query:` / `search_document:`) eklemek de
+kurtarmadı, ayrım -0,0277'de kaldı.
+
+Aynı ölçüm `bge-m3` ile +0,1723. Üç kahvaltılık ürün de üç alakasız ürünün üstünde.
+Belge tarafı iki dilli yazıldığı için İngilizce sorgular nomic ile de çalışıyordu; kırılan
+yalnızca Türkçe sorgu tarafıydı ve demonun ana iddiası orası.
+
+Bedeli boyutun 768'den 1024'e çıkması, yani yeni kolon ve yeniden embedding. 120 ürün
+59,5 saniyede yeniden üretildi.
+
+---
+
 ## SQL Server 2025'te yakalanan nüanslar
 
 Aşağıdaki üç davranış `app/tests/DMCShop.Tests.Integration` altında gerçek bir SQL Server 2025
@@ -270,7 +287,7 @@ Workshop için kayda değer üç davranış:
    WITH hits AS (
        SELECT * FROM VECTOR_SEARCH(
            TABLE      = vector.product_embedding,
-           COLUMN     = embedding_ollama_768,
+           COLUMN     = embedding_bge_1024,
            SIMILAR_TO = @q,
            METRIC     = 'cosine',
            TOP_N      = 5)

@@ -63,7 +63,7 @@ DMCShop'un 5 senaryosunun her birinin **hangi kitap bölümleriyle birebir konu�
 **İlgili bölümler**: 21 (VECTOR), 22 (AI_GENERATE_EMBEDDINGS), 23 (VECTOR_SEARCH), 29 (Türkçe)
 
 Demo'da gözle göreceğiniz:
-- VECTOR(768) kolonunda saklanan `nomic-embed-text` çıktısı
+- VECTOR(1024) kolonunda saklanan `bge-m3` çıktısı
 - DiskANN approximate kNN — `TOP_N = 5` parametre, CTE wrap (CU8'de de geçerli, kitap bölüm 23 erratası olarak not edildi)
 - Aynı sorgu LIKE ile yan panelde — anlamsal vs lexical kontrast
 

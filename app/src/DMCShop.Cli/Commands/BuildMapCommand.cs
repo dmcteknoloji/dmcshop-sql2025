@@ -11,7 +11,7 @@ namespace DMCShop.Cli.Commands;
 /// <summary>
 /// `dmcshop build-map` — embedding 2D haritası için JSON üretir.
 /// Random projection (Johnson-Lindenstrauss; deterministic seed) ile
-/// 768/1536D → 2D. Pure .NET, harici Python/numpy bağımlılığı yok.
+/// 1024/1536D → 2D. Pure .NET, harici Python/numpy bağımlılığı yok.
 ///
 /// Çıktı: wwwroot/embedding-map.json (Blazor static dosya olarak servis eder)
 ///
@@ -45,11 +45,11 @@ internal sealed class BuildMapCommand(IServiceProvider sp)
         var sql = """
             SELECT TOP (@n)
                 p.product_id, p.name, ISNULL(cat.name, '?') AS category,
-                CAST(pe.embedding_ollama_768 AS NVARCHAR(MAX)) AS vec
+                CAST(pe.embedding_bge_1024 AS NVARCHAR(MAX)) AS vec
             FROM   vector.product_embedding pe
             JOIN   shop.product             p   ON p.product_id   = pe.product_id
             JOIN   shop.product_category    cat ON cat.category_id = p.category_id
-            WHERE  pe.embedding_ollama_768 IS NOT NULL
+            WHERE  pe.embedding_bge_1024 IS NOT NULL
             ORDER BY (ABS(CHECKSUM(p.product_id, 42)) % 100000);   -- deterministic random sample
             """;
 

@@ -34,7 +34,7 @@ GO
 -- değiştirilebilir.
 INSERT INTO ops.provider_config (config_key, provider, model_name, endpoint_url, credential_name)
 VALUES
-    ('default_embed', 'ollama', 'nomic-embed-text',     'http://host.docker.internal:11434/api/embeddings', NULL),
+    ('default_embed', 'ollama', 'bge-m3',     'http://host.docker.internal:11434/api/embeddings', NULL),
     ('default_chat',  'ollama', 'llama3.1:8b-instruct', 'http://host.docker.internal:11434/api/chat',       NULL);
 GO
 

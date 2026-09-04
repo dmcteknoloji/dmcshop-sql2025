@@ -72,7 +72,7 @@ public sealed class PersonalizedRecommendService(DMCShopDbContext db, IEmbedding
     private static async Task<(List<int> Ids, List<float[]> Vectors)> GetCustomerVectorsAsync(
         SqlConnection conn, int customerId, int basisLimit, string providerName, CancellationToken ct)
     {
-        var col = providerName == "openai" ? "embedding_openai_1536" : "embedding_ollama_768";
+        var col = providerName == "openai" ? "embedding_openai_1536" : "embedding_bge_1024";
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = $"""
@@ -104,7 +104,7 @@ public sealed class PersonalizedRecommendService(DMCShopDbContext db, IEmbedding
         SqlConnection conn, string centroidLiteral, int customerId,
         int dim, string providerName, int topK, CancellationToken ct)
     {
-        var col = providerName == "openai" ? "embedding_openai_1536" : "embedding_ollama_768";
+        var col = providerName == "openai" ? "embedding_openai_1536" : "embedding_bge_1024";
 
         // VECTOR_SEARCH top 30 candidate → filter zaten alınmış olanlar →
         // graph'tan social count → hibrit skor ile TOP K

@@ -7,7 +7,7 @@
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
   <a href="https://learn.microsoft.com/aspnet/core/blazor/"><img alt="Blazor Server" src="https://img.shields.io/badge/Blazor-Server-512BD4?style=for-the-badge&logo=blazor&logoColor=white"></a>
   <a href="https://learn.microsoft.com/ef/core/"><img alt="EF Core 10" src="https://img.shields.io/badge/EF%20Core-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"></a>
-  <a href="https://ollama.com/"><img alt="Ollama" src="https://img.shields.io/badge/Ollama-nomic--embed%20%2B%20qwen2.5-000000?style=for-the-badge&logo=ollama&logoColor=white"></a>
+  <a href="https://ollama.com/"><img alt="Ollama" src="https://img.shields.io/badge/Ollama-bge--m3%20%2B%20qwen2.5-000000?style=for-the-badge&logo=ollama&logoColor=white"></a>
   <br/>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2EA043?style=flat-square"></a>
   <img alt="Status: Active" src="https://img.shields.io/badge/status-live%20demo-2EA043?style=flat-square">
@@ -57,7 +57,7 @@ smoothly. See [What SQL Server 2025 taught us](#what-sql-server-2025-taught-us).
 | Order line             |    451,202 | 4.5 lines per order on average                                                |
 | Device                 |      4,080 | IP, fingerprint, user agent                                                   |
 | Fraud ring (detected)  |     ~1,000 | Shared device / IP / card patterns                                            |
-| Vector embedding       |      50K+  | Ollama `nomic-embed-text` (768 dim) · DiskANN cosine                          |
+| Vector embedding       |      50K+  | Ollama `bge-m3` (1024 dim) · DiskANN cosine                          |
 
 ---
 
@@ -105,7 +105,7 @@ sequenceDiagram
 
     U->>W: "ergonomic mouse under 1500 TRY"
     W->>E: EmbedAsync(question)
-    E-->>W: float[768]
+    E-->>W: float[1024]
     W->>V: VECTOR_SEARCH TOP_N=5 (cosine)
     V-->>W: top-K product_id
     W->>S: JOIN for product detail
@@ -272,6 +272,24 @@ image. Run those locally.
 
 ---
 
+## Why the embedding model is `bge-m3`
+
+The demo started on `nomic-embed-text` and semantic search did not work for Turkish queries.
+Measured on the query "Kahvaltıda kullanabileceğim bir ürün" (a product I can use at
+breakfast), the three relevant products averaged 0.5924 similarity and the three irrelevant
+ones 0.6306. The model ranked the irrelevant items **higher**, a negative separation. Adding
+the documented task prefixes (`search_query:` / `search_document:`) did not rescue it either,
+separation stayed at -0.0277.
+
+The same measurement with `bge-m3` gives +0.1723, with all three breakfast items above all
+three unrelated ones. Document text in this repo is bilingual, so English queries worked with
+nomic as well. Turkish queries were the broken half, and that is the half this demo is about.
+
+The price is 1024 dimensions instead of 768, which means a new column and a re-embed. The 120
+showcase products took 59.5 seconds.
+
+---
+
 ## What SQL Server 2025 taught us
 
 Three behaviours worth knowing before you build on this. All three were first hit on RTM-CU4
@@ -295,7 +313,7 @@ and re-measured on CU8 (build 17.0.4075.5) on 2026-09-04. None of them changed.
    WITH hits AS (
        SELECT * FROM VECTOR_SEARCH(
            TABLE      = vector.product_embedding,
-           COLUMN     = embedding_ollama_768,
+           COLUMN     = embedding_bge_1024,
            SIMILAR_TO = @q,
            METRIC     = 'cosine',
            TOP_N      = 5)

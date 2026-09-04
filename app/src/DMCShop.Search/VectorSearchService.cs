@@ -293,7 +293,7 @@ public sealed class VectorSearchService(DMCShopDbContext db, IEmbeddingProvider 
     private static string ColumnFor(string providerName) => providerName switch
     {
         "openai" => "embedding_openai_1536",
-        "ollama" => "embedding_ollama_768",
+        "ollama" => "embedding_bge_1024",
         _ => throw new InvalidOperationException($"Bilinmeyen provider: {providerName}")
     };
 

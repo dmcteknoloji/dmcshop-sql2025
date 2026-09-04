@@ -31,20 +31,20 @@ BEGIN
 END
 GO
 
--- Ollama / nomic-embed-text (768)
-IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_ollama' AND object_id = OBJECT_ID('vector.product_embedding'))
-    DROP INDEX vix_pe_ollama ON vector.product_embedding;
+-- Ollama / bge-m3 (768)
+IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'vix_pe_bge' AND object_id = OBJECT_ID('vector.product_embedding'))
+    DROP INDEX vix_pe_bge ON vector.product_embedding;
 GO
 
-IF EXISTS (SELECT 1 FROM vector.product_embedding WHERE embedding_ollama_768 IS NOT NULL)
+IF EXISTS (SELECT 1 FROM vector.product_embedding WHERE embedding_bge_1024 IS NOT NULL)
 BEGIN
-    PRINT '> vix_pe_ollama oluşturuluyor';
-    CREATE VECTOR INDEX vix_pe_ollama
-    ON vector.product_embedding (embedding_ollama_768)
+    PRINT '> vix_pe_bge oluşturuluyor';
+    CREATE VECTOR INDEX vix_pe_bge
+    ON vector.product_embedding (embedding_bge_1024)
     WITH (METRIC = 'cosine', TYPE = 'DiskANN', MAXDOP = 4);
 END
 ELSE
 BEGIN
-    PRINT '> embedding_ollama_768 boş, vix_pe_ollama oluşturulmadı';
+    PRINT '> embedding_bge_1024 boş, vix_pe_bge oluşturulmadı';
 END
 GO

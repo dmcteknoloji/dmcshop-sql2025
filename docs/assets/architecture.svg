@@ -95,7 +95,7 @@
             <g transform="translate(20,50)">
                 <rect width="220" height="36" rx="6" fill="#FFFFFF" stroke="#E5E7EB"/>
                 <text x="14" y="22" font-size="13" font-weight="500" fill="#0F1419">Ollama (local)</text>
-                <text x="124" y="22" font-size="11" fill="#6B7280">nomic-embed · qwen2.5:3b</text>
+                <text x="124" y="22" font-size="11" fill="#6B7280">bge-m3 · qwen2.5:3b</text>
             </g>
 
             <g transform="translate(260,50)">
