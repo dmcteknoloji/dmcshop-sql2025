@@ -16,7 +16,20 @@ else
 {
     <div class="dmc-pimg dmc-pimg-@Variant" style="@($"background: {Gradient};")"
          role="img" aria-label="@Name">
-        <span class="dmc-pimg-mono" style="@($"color: {Mono};")">@Monogram</span>
+        @if (Glif is not null)
+        {
+            @* Urun adindan secilen cizim. Stok fotografi taklit etmiyoruz;
+               amac monogram yerine taninabilir bir sekil koymak. *@
+            <svg class="dmc-pimg-glif" viewBox="0 0 24 24" fill="none"
+                 stroke="@Mono" stroke-width="1.4" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+                <path d="@Glif" />
+            </svg>
+        }
+        else
+        {
+            <span class="dmc-pimg-mono" style="@($"color: {Mono};")">@Monogram</span>
+        }
         @if (Variant != "thumb")
         {
             <span class="dmc-pimg-watermark">@SkuOrId</span>
@@ -34,6 +47,7 @@ else
     [Parameter] public string Variant { get; set; } = "card";
 
     private string Monogram => BuildMonogram(Name);
+    private string? Glif     => ProductGlyph.Bul(Name, CategoryName);
     private string SkuOrId  => Sku ?? $"#{ProductId}";
 
     /// <summary>Özel kapak/görsel URL'i olan ürünler. Diğerleri monogram gradient.</summary>

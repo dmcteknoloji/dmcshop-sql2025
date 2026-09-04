@@ -1187,3 +1187,16 @@ a.dmc-card:hover,
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.82rem;
 }
+
+/* ── Urun kartindaki cizim ────────────────────────────────────────────────── */
+.dmc-pimg-glif {
+    width: 44%;
+    max-width: 120px;
+    height: auto;
+    opacity: 0.82;
+    /* Cizgi cok ince kalmasin diye gradyanin ustune hafif golge. */
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08));
+}
+
+.dmc-pimg-hero .dmc-pimg-glif { width: 38%; max-width: 190px; }
+.dmc-pimg-thumb .dmc-pimg-glif { width: 52%; }
