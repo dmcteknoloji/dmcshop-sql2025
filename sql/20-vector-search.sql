@@ -61,7 +61,7 @@ DECLARE @q VECTOR(1536) = AI_GENERATE_EMBEDDINGS(
 
 -- SQL Server 2025 sözdizimi: TOP_N parametresi VECTOR_SEARCH içinde;
 -- (CU4'te yakalandı, CU8 / 17.0.4075.5 üzerinde 2026-09-04'te yeniden ölçüldü,
---  CTE olmadan dış JOIN hâlâ "Invalid column name" veriyor.)
+--  CTE olmadan dış JOIN hala "Invalid column name" veriyor.)
 -- VECTOR_SEARCH'ün kolonlarına dış JOIN'den referans için CTE şart.
 WITH hits AS (
     SELECT * FROM VECTOR_SEARCH(

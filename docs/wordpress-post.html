@@ -51,11 +51,11 @@
   <div class="grid2">
     <div class="field">
       <div class="row"><h2>Categories</h2><button class="copy" data-target="f-cat">Kopyala</button></div>
-      <div class="val" id="f-cat">SQL Server, Yapay Zekâ, Veri Mimarisi</div>
+      <div class="val" id="f-cat">SQL Server, Yapay Zeka, Veri Mimarisi</div>
     </div>
     <div class="field">
       <div class="row"><h2>Tags (virgülle)</h2><button class="copy" data-target="f-tags">Kopyala</button></div>
-      <div class="val" id="f-tags">SQL Server 2025, VECTOR, DiskANN, Graph Database, RAG, .NET 10, Yapay Zekâ, Semantik Arama, Fraud Tespiti, Blazor, EF Core 10, Ollama, Vektör Veritabanı, Embedding</div>
+      <div class="val" id="f-tags">SQL Server 2025, VECTOR, DiskANN, Graph Database, RAG, .NET 10, Yapay Zeka, Semantik Arama, Fraud Tespiti, Blazor, EF Core 10, Ollama, Vektör Veritabanı, Embedding</div>
     </div>
   </div>
 
@@ -106,7 +106,7 @@
     <div class="row"><h2>Content — Yazı gövdesi (HTML)</h2><button class="copy" data-target="f-content">Tümünü kopyala</button></div>
     <p class="note">Gutenberg'de: yeni bir <b>"Özel HTML" (Custom HTML)</b> bloğu ekle ve yapıştır. Klasik editörde: <b>Metin (Text)</b> sekmesine yapıştır.</p>
     <textarea id="f-content" readonly>
-<p>Bir e-ticaret platformunda modern yapay zekâ özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir <strong>vektör veritabanı</strong> (Pinecone, Qdrant), ilişki analizi için bir <strong>graph veritabanı</strong> (Neo4j), sohbet asistanı için bir <strong>RAG servis katmanı</strong> ve tüm bunları besleyen <strong>ana ilişkisel veritabanı</strong>. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.</p>
+<p>Bir e-ticaret platformunda modern yapay zeka özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir <strong>vektör veritabanı</strong> (Pinecone, Qdrant), ilişki analizi için bir <strong>graph veritabanı</strong> (Neo4j), sohbet asistanı için bir <strong>RAG servis katmanı</strong> ve tüm bunları besleyen <strong>ana ilişkisel veritabanı</strong>. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.</p>
 
 <p>SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi <strong>aynı veritabanı motorunda, aynı <code>SELECT</code> içinde, aynı yedeklemenin altında</strong> çalışıyor.</p>
 
@@ -258,7 +258,7 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295</code></pre>
 
 <h2>Ne zaman SQL Server VECTOR, ne zaman ayrı bir vektör DB?</h2>
 
-<p>Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hâlâ güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların <strong>birlikte</strong> çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.</p>
+<p>Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hala güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların <strong>birlikte</strong> çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.</p>
 
 <h2>Denemek için</h2>
 

@@ -9,7 +9,7 @@
 
 > **Yayın notu:** WordPress blok editörüne yapıştırırken Markdown desteği yoksa başlıkları
 > `Başlık` bloğu, kod parçalarını `Kod` bloğu olarak ekle. Önerilen kategori: *SQL Server*,
-> *Yapay Zekâ*, *Veri Mimarisi*. Öne çıkan görsel için repo'daki `docs/assets/banner.svg`.
+> *Yapay Zeka*, *Veri Mimarisi*. Öne çıkan görsel için repo'daki `docs/assets/banner.svg`.
 
 ---
 
@@ -21,13 +21,13 @@ Vector arama, graph fraud tespiti ve RAG asistanı ayrı sistemler kurmadan tek 
 
 **URL slug:** `sql-server-2025-vector-graph-rag-dmcshop`
 
-**Etiketler:** SQL Server 2025, VECTOR, DiskANN, Graph Database, RAG, .NET 10, Yapay Zekâ, Semantik Arama, Fraud Tespiti
+**Etiketler:** SQL Server 2025, VECTOR, DiskANN, Graph Database, RAG, .NET 10, Yapay Zeka, Semantik Arama, Fraud Tespiti
 
 ---
 
 ## SQL Server 2025: Vector, Graph ve RAG'ı Tek Veritabanında Birleştirmek — DMCShop Referans Uygulaması
 
-Bir e-ticaret platformunda modern yapay zekâ özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir **vektör veritabanı** (Pinecone, Qdrant), ilişki analizi için bir **graph veritabanı** (Neo4j), sohbet asistanı için bir **RAG servis katmanı** ve tüm bunları besleyen **ana ilişkisel veritabanı**. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.
+Bir e-ticaret platformunda modern yapay zeka özelliklerini hayata geçirmek istediğinizde, klasik mimari size genelde dört ayrı sistem önerir: anlamsal arama için bir **vektör veritabanı** (Pinecone, Qdrant), ilişki analizi için bir **graph veritabanı** (Neo4j), sohbet asistanı için bir **RAG servis katmanı** ve tüm bunları besleyen **ana ilişkisel veritabanı**. Dört ayrı sistem; dört ayrı yedekleme stratejisi, dört ayrı yetkilendirme modeli, dört ayrı operasyon yükü.
 
 SQL Server 2025 bu denklemi değiştiriyor. Vektör arama, graph dolaşımı, harici AI model entegrasyonu ve uçtan uca RAG — hepsi **aynı veritabanı motorunda, aynı `SELECT` içinde, aynı yedeklemenin altında** çalışıyor.
 
@@ -183,7 +183,7 @@ dotnet run --project app/src/DMCShop.Web # http://localhost:5295
 
 ### Ne zaman SQL Server VECTOR, ne zaman ayrı bir vektör DB?
 
-Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hâlâ güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların **birlikte** çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.
+Dürüst olmak gerekirse her senaryo için tek doğru yok. Milyarlarca vektör ve aşırı yüksek QPS gerektiren saf vektör iş yüklerinde özelleşmiş vektör veritabanları hala güçlü. Ama verinizin zaten SQL Server'da olduğu, vektör + graph + ilişkisel sorguların **birlikte** çalışması gereken kurumsal senaryolarda; tek motorda toplama, operasyon ve tutarlılık açısından ciddi bir kazanç sağlıyor. Mikroservis dağıtımı yok, veri senkronizasyonu yok, tek yedekleme, tek yetki sistemi.
 
 ---
 

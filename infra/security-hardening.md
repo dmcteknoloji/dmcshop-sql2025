@@ -200,4 +200,4 @@ Durum ölçüldü ve şöyle kapatıldı:
   karşılık döndürmektir ve döndürüldü.
 
 Aynı durumla karşılaşırsanız sıra şudur: önce döndür, sonra ağaçtan temizle,
-geçmişi yeniden yazmayı yalnızca sır hâlâ geçerliyse ve döndürülemiyorsa düşün.
+geçmişi yeniden yazmayı yalnızca sır hala geçerliyse ve döndürülemiyorsa düşün.
