@@ -22,6 +22,12 @@ demo.dmcteknoloji.com {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options    "nosniff"
         Referrer-Policy           "strict-origin-when-cross-origin"
+        # Demo arama dizinine girmez (2026-10-22). Google 903 urun ve
+        # fraud sayfasini taramis, dmcteknoloji.com alan adi mulkunde
+        # "Tarandi - dizine eklenmedi" kumesini sisiriyordu. Bilerek
+        # robots.txt Disallow DEGIL: taranamayan sayfanin noindex'i
+        # gorulmez ve adres ciplak listelenebilir.
+        X-Robots-Tag              "noindex, nofollow"
         -Server
     }
     log {
